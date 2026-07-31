@@ -7,22 +7,6 @@ Inherits from: Session-2 (tokenizer), Session-3 assignment (fertility targets, v
 
 ---
 
-## 0. The correction that reframes everything
-
-The Session-3 submission specified a **40B dense** model on 15T tokens. That was the wrong anchor. ERA V4's actual reference is a **120B Mixture-of-Experts** trained on 1.15T tokens, and MoE changes the arithmetic at the root:
-
-> **Training FLOPs scale with *active* parameters, not total.**
-> `C = 6 · N_active · D`
-
-A 120B MoE with 15B active costs the same per token as a 15B dense model. This is *why* V4 could train 120B on an 8-GPU node in 67 days. It has two consequences that drive this entire plan:
-
-1. **The token budget is set by `N_active`** — so it is far smaller than a "120B model" intuitively suggests.
-2. **The data *diversity* requirement is set by `N_total`** — more experts means more distinct things to specialise in, so repeated tokens are worth *less* to an MoE than to a dense model of equal active size. Breadth beats epochs here.
-
-That second point is the whole justification for the "collect more, clean harder, don't inflate the budget" strategy below.
-
----
-
 ## 1. Model family and token budget
 
 | Model | Kind | Total | Active | tok/active | Tokens | Role |
@@ -371,7 +355,14 @@ Every ratio here is a hypothesis until a cheap experiment tests it. Each proxy s
 - **Metric:** max gradient-norm multiplier over the transition; loss-spike count.
 - **Rule:** keep the 100B band only if B spikes **≥5×** *and* C also spikes. **If 20B suffices, shorten the band** and reclaim schedule — the arm C exists specifically to catch us over-engineering.
 
-**Status: pre-registered, not yet executed.** This document is the hypothesis. Numbers in §1–§9 stand until a proxy fires.
+**Status: P4 and P5 have since been executed at small scale on real GPU hardware; P1, P2, P3 remain pre-registered and not yet executed.** This document is the hypothesis. Numbers in §1–§9 stand until a proxy fires.
+
+Summary of the executed runs (full write-ups, scripts, and raw data in [`../proxy_runs/`](../proxy_runs/), and the results are reproduced in §10 of [the README](../README.md)):
+
+- **P4 — mixture-transition gradient stability**, two passes of increasing rigor. Pass 2 (2.73M-param transformer, real prose vs. real Python source, 8 ramp lengths × 3 seeds): an abrupt transition spikes the gradient norm **6.04×**, while *every* non-zero ramp tested — down to 20 steps — sits at 1.5–1.8× with zero loss-spikes. The curve is flat and noisy beyond ~20 steps, so nearly all of the protection is captured by a short ramp. Read against this document's own decision rule, that argues for testing a **shorter** blending band than the 100B width, not for confirming it.
+- **P5 — loss-masking on tool observations** (152,832-param transformer, synthetic tool-use trajectories, 2 arms × 3 seeds): masking the tool-output span cut fabrication of a withheld tool response from **73.3% to 0.0%** on never-seen inputs, unanimous across all 3 seeds, at **zero task-success cost** — a 100% reduction against this document's own ≥50% bar. This is direct support for the loss-mapping correction in §2.1.
+
+Both are small-scale mechanism tests, not the full 1B/3B-scale runs specified above: they establish that the mechanisms behave as claimed, but do not set the production-scale numbers (the blending-band width in tokens, or the exact supervised-token fraction on real agent trajectories). Those still require the runs as specified.
 
 ---
 

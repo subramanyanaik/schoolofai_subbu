@@ -14,8 +14,8 @@ jobs:
         with:
           python-version: '3.12'
       - name: Run plan and assert consistency
-        working-directory: src
+        working-directory: assignmnet5/src
         run: python3 -m erav5.run_plan
       - name: Export JSON
-        working-directory: src
+        working-directory: assignmnet5/src
         run: python3 -m erav5.export > /dev/null

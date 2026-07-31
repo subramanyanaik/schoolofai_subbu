@@ -1,6 +1,6 @@
 # ERA V5 — Mixture & Curriculum Specification
 
-[![validate-plan](https://github.com/USERNAME/REPO/actions/workflows/validate.yml/badge.svg)](https://github.com/USERNAME/REPO/actions/workflows/validate.yml)
+[![validate-plan](https://github.com/subramanyanaik/schoolofai_subbu/actions/workflows/validate.yml/badge.svg)](https://github.com/subramanyanaik/schoolofai_subbu/actions/workflows/validate.yml)
 ![checks](https://img.shields.io/badge/validation-49%2F49%20passing-brightgreen)
 ![python](https://img.shields.io/badge/python-3.12-blue)
 ![deps](https://img.shields.io/badge/dependencies-none-lightgrey)
@@ -10,7 +10,8 @@
 **Every number below is computed by the code in this repo, not typed by hand.**
 
 ```bash
-git clone <this-repo> && cd erav5-mixture/src
+git clone https://github.com/subramanyanaik/schoolofai_subbu.git
+cd schoolofai_subbu/assignmnet5/src
 python3 -m erav5.run_plan        # regenerates every figure in this README
 echo $?                          # 0 = all 49 validation assertions pass
 ```
@@ -536,6 +537,7 @@ Full output: [`results/computed_output.txt`](results/computed_output.txt) · Mac
 │   ├── p4_gradient_stability/ P4 executed on GPU, two passes — scripts, raw traces, results.md/results_v2.md
 │   └── p5_loss_masking/       P5 executed on GPU — script, raw output, results.md
 └── src/erav5/
+    ├── __init__.py            package entry points
     ├── config.py              ALL input assumptions — change one number, plan re-derives
     ├── budget.py              compute → tokens (MoE-aware: C = 6·N_active·D)
     ├── mixture.py             supply audit, epochs, synthetic gaps, loss mapping
@@ -553,8 +555,10 @@ Full output: [`results/computed_output.txt`](results/computed_output.txt) · Mac
 ### Reproduce
 
 ```bash
-cd src
+cd assignmnet5/src
 python3 -m erav5.run_plan      # full plan, 11 sections
 python3 -m erav5.export        # JSON
 echo $?                        # non-zero if any assertion fails
 ```
+
+Verified: both commands exit 0 with **49/49 assertions passing**, and [`results/computed_output.txt`](results/computed_output.txt) is byte-for-byte identical to a fresh `run_plan` on this tree — the committed output is not stale. CI re-checks this on every push ([`.github/workflows/validate.yml`](../.github/workflows/validate.yml)).
