@@ -1,0 +1,87 @@
+{
+  "device": "cuda",
+  "model_params": 152832,
+  "vocab_size": 16,
+  "seq_len": 11,
+  "steps_per_arm": 4000,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "n_train_combos": 80,
+  "n_holdout_combos": 20,
+  "results": {
+    "A_masked_tool_output": {
+      "name": "A_masked_tool_output",
+      "mask_output": true,
+      "steps": 4000,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "fabrication_rate_train": 0.0,
+      "fabrication_rate_holdout": 0.0,
+      "task_success_train": 1.0,
+      "task_success_holdout": 1.0,
+      "fabrication_rate_train_runs": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "fabrication_rate_holdout_runs": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "task_success_train_runs": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "task_success_holdout_runs": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "final_train_loss": 0.6304754614830017
+    },
+    "B_full_loss": {
+      "name": "B_full_loss",
+      "mask_output": false,
+      "steps": 4000,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "fabrication_rate_train": 1.0,
+      "fabrication_rate_holdout": 0.7333333333333334,
+      "task_success_train": 1.0,
+      "task_success_holdout": 1.0,
+      "fabrication_rate_train_runs": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "fabrication_rate_holdout_runs": [
+        0.7,
+        0.75,
+        0.75
+      ],
+      "task_success_train_runs": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "task_success_holdout_runs": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "final_train_loss": 0.44315382838249207
+    }
+  },
+  "wall_clock_seconds": 284.86834692955017
+}
