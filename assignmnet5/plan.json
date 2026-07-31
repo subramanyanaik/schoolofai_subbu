@@ -1,0 +1,1341 @@
+{
+  "meta": {
+    "flagship": "V5-Base",
+    "train_budget_tokens": 4000000000000.0,
+    "collection_target_tokens": 8000000000000.0,
+    "vocab_size": 196608
+  },
+  "budget": {
+    "model": "V5-Base",
+    "total_params": 120000000000.0,
+    "active_params": 15000000000.0,
+    "sparsity": 0.125,
+    "cluster_flops": 7.875035136e+23,
+    "feasible_tokens": 8750039040000.0,
+    "planned_tokens": 4000000000000.0,
+    "flops_needed": 3.6e+23,
+    "compute_headroom": 2.18750976,
+    "chinchilla_floor": 300000000000.0,
+    "overtrain_x_chinchilla": 13.333333333333334,
+    "tok_per_active_param": 266.6666666666667,
+    "tok_per_total_param": 33.333333333333336,
+    "v4_tokens": 1150000000000.0,
+    "v5_over_v4_tokens": 3.4782608695652173,
+    "v4_flops_ref": 1.035e+23,
+    "flops_vs_v4": 3.478260869565217,
+    "collection_target": 8000000000000.0,
+    "selection_headroom": 2.0
+  },
+  "model_family": [
+    {
+      "name": "V5-Proxy-1B",
+      "kind": "dense",
+      "total": 1000000000.0,
+      "active": 1000000000.0,
+      "role": "mixture ablation",
+      "tok_per_active": 20.0,
+      "tokens": 20000000000.0,
+      "flops": 1.2e+20
+    },
+    {
+      "name": "V5-Proxy-3B",
+      "kind": "dense",
+      "total": 3000000000.0,
+      "active": 3000000000.0,
+      "role": "mixture ablation",
+      "tok_per_active": 20.0,
+      "tokens": 60000000000.0,
+      "flops": 1.08e+21
+    },
+    {
+      "name": "V5-Seed-8B",
+      "kind": "dense",
+      "total": 8000000000.0,
+      "active": 8000000000.0,
+      "role": "growth seed / data gate",
+      "tok_per_active": 267.0,
+      "tokens": 2136000000000.0,
+      "flops": 1.02528e+23
+    },
+    {
+      "name": "V5-Base",
+      "kind": "moe",
+      "total": 120000000000.0,
+      "active": 15000000000.0,
+      "role": "V4-parity flagship",
+      "tok_per_active": 267.0,
+      "tokens": 4005000000000.0,
+      "flops": 3.6045e+23
+    },
+    {
+      "name": "V5-Max",
+      "kind": "moe",
+      "total": 200000000000.0,
+      "active": 20000000000.0,
+      "role": "stretch, if collection over-delivers",
+      "tok_per_active": 267.0,
+      "tokens": 5340000000000.0,
+      "flops": 6.408e+23
+    }
+  ],
+  "mixture": [
+    {
+      "lane": "english",
+      "share": 0.3,
+      "target": 1200000000000.0,
+      "unique": 3780000000000.0,
+      "epochs": 0.31746031746031744,
+      "real": 1200000000000.0,
+      "synthetic": 0.0,
+      "synth_pct": 0.0,
+      "loss_frac": 1.0,
+      "supervised": 1200000000000.0,
+      "headroom": 3.15,
+      "can_generate": false
+    },
+    {
+      "lane": "code",
+      "share": 0.22,
+      "target": 880000000000.0,
+      "unique": 910000000000.0,
+      "epochs": 0.967032967032967,
+      "real": 880000000000.0,
+      "synthetic": 0.0,
+      "synth_pct": 0.0,
+      "loss_frac": 1.0,
+      "supervised": 880000000000.0,
+      "headroom": 1.0340909090909092,
+      "can_generate": false
+    },
+    {
+      "lane": "math",
+      "share": 0.12,
+      "target": 480000000000.0,
+      "unique": 250000000000.0,
+      "epochs": 1.92,
+      "real": 480000000000.0,
+      "synthetic": 0.0,
+      "synth_pct": 0.0,
+      "loss_frac": 1.0,
+      "supervised": 480000000000.0,
+      "headroom": 0.5208333333333334,
+      "can_generate": false
+    },
+    {
+      "lane": "indic_unverified",
+      "share": 0.07,
+      "target": 280000000000.0,
+      "unique": 450000000000.0,
+      "epochs": 0.6222222222222222,
+      "real": 280000000000.0,
+      "synthetic": 0.0,
+      "synth_pct": 0.0,
+      "loss_frac": 1.0,
+      "supervised": 280000000000.0,
+      "headroom": 1.6071428571428572,
+      "can_generate": false
+    },
+    {
+      "lane": "agentic",
+      "share": 0.06,
+      "target": 240000000000.0,
+      "unique": 50000000000.0,
+      "epochs": 1.5,
+      "real": 75000000000.0,
+      "synthetic": 165000000000.0,
+      "synth_pct": 0.6875,
+      "loss_frac": 0.35,
+      "supervised": 84000000000.0,
+      "headroom": 0.20833333333333334,
+      "can_generate": true
+    },
+    {
+      "lane": "indic_verified",
+      "share": 0.045,
+      "target": 180000000000.0,
+      "unique": 90000000000.0,
+      "epochs": 2.0,
+      "real": 180000000000.0,
+      "synthetic": 0.0,
+      "synth_pct": 0.0,
+      "loss_frac": 1.0,
+      "supervised": 180000000000.0,
+      "headroom": 0.5,
+      "can_generate": false
+    },
+    {
+      "lane": "indic_translated",
+      "share": 0.045,
+      "target": 180000000000.0,
+      "unique": 220000000000.0,
+      "epochs": 0.8181818181818182,
+      "real": 180000000000.0,
+      "synthetic": 0.0,
+      "synth_pct": 0.0,
+      "loss_frac": 1.0,
+      "supervised": 180000000000.0,
+      "headroom": 1.2222222222222223,
+      "can_generate": false
+    },
+    {
+      "lane": "indic_synthetic",
+      "share": 0.04,
+      "target": 160000000000.0,
+      "unique": 0.0,
+      "epochs": 0.0,
+      "real": 0.0,
+      "synthetic": 160000000000.0,
+      "synth_pct": 1.0,
+      "loss_frac": 1.0,
+      "supervised": 160000000000.0,
+      "headroom": 0.0,
+      "can_generate": true
+    },
+    {
+      "lane": "reasoning",
+      "share": 0.04,
+      "target": 160000000000.0,
+      "unique": 30000000000.0,
+      "epochs": 1.5,
+      "real": 45000000000.0,
+      "synthetic": 115000000000.0,
+      "synth_pct": 0.71875,
+      "loss_frac": 1.0,
+      "supervised": 160000000000.0,
+      "headroom": 0.1875,
+      "can_generate": true
+    },
+    {
+      "lane": "forums",
+      "share": 0.03,
+      "target": 120000000000.0,
+      "unique": 350000000000.0,
+      "epochs": 0.34285714285714286,
+      "real": 120000000000.0,
+      "synthetic": 0.0,
+      "synth_pct": 0.0,
+      "loss_frac": 1.0,
+      "supervised": 120000000000.0,
+      "headroom": 2.9166666666666665,
+      "can_generate": false
+    },
+    {
+      "lane": "multilingual",
+      "share": 0.03,
+      "target": 120000000000.0,
+      "unique": 1500000000000.0,
+      "epochs": 0.08,
+      "real": 120000000000.0,
+      "synthetic": 0.0,
+      "synth_pct": 0.0,
+      "loss_frac": 1.0,
+      "supervised": 120000000000.0,
+      "headroom": 12.5,
+      "can_generate": false
+    }
+  ],
+  "totals": {
+    "tokens": 4000000000000.0,
+    "share": 1.0,
+    "real": 3560000000000.0,
+    "synthetic": 440000000000.0,
+    "supervised": 3844000000000.0,
+    "synth_pct": 0.11,
+    "supervised_pct": 0.961
+  },
+  "indic": {
+    "tiers": {
+      "indic_verified": {
+        "tokens": 180000000000.0,
+        "unique": 90000000000.0,
+        "epochs": 2.0,
+        "share_of_budget": 0.045,
+        "share_of_indic": 0.225
+      },
+      "indic_unverified": {
+        "tokens": 280000000000.0,
+        "unique": 450000000000.0,
+        "epochs": 0.6222222222222222,
+        "share_of_budget": 0.07,
+        "share_of_indic": 0.35
+      },
+      "indic_translated": {
+        "tokens": 180000000000.0,
+        "unique": 220000000000.0,
+        "epochs": 0.8181818181818182,
+        "share_of_budget": 0.045,
+        "share_of_indic": 0.225
+      },
+      "indic_synthetic": {
+        "tokens": 160000000000.0,
+        "unique": 0.0,
+        "epochs": 0.0,
+        "share_of_budget": 0.04,
+        "share_of_indic": 0.2
+      }
+    },
+    "total": 800000000000.0,
+    "native": 460000000000.0,
+    "non_native": 340000000000.0,
+    "native_pct": 0.575,
+    "non_native_pct": 0.425,
+    "synthetic_to_native": 0.34782608695652173,
+    "parity_cap": 1.0,
+    "parity_ok": true,
+    "headline_share": 0.2
+  },
+  "starved": [
+    "agentic",
+    "indic_synthetic",
+    "reasoning"
+  ],
+  "stages": [
+    {
+      "name": "S0 Warmup",
+      "frac": 0.0375,
+      "ctx": 8192,
+      "lr": "warmup->peak",
+      "note": "embedding + router warmup; mixture held at S1 proportions",
+      "tokens": 150000000000.0,
+      "start": 0.0,
+      "end": 150000000000.0
+    },
+    {
+      "name": "S1 Foundation",
+      "frac": 0.6125,
+      "ctx": 8192,
+      "lr": "peak, cosine",
+      "note": "web-heavy; language, world knowledge, basic syntax",
+      "tokens": 2450000000000.0,
+      "start": 150000000000.0,
+      "end": 2600000000000.0
+    },
+    {
+      "name": "S2 Skill ramp",
+      "frac": 0.225,
+      "ctx": 32768,
+      "lr": "cosine decay",
+      "note": "code/math/reasoning up; ctx 8K->32K",
+      "tokens": 900000000000.0,
+      "start": 2600000000000.0,
+      "end": 3500000000000.0
+    },
+    {
+      "name": "S3 Long context",
+      "frac": 0.075,
+      "ctx": 262144,
+      "lr": "low, flat",
+      "note": "ctx 32K->256K on naturally-long docs only",
+      "tokens": 300000000000.0,
+      "start": 3500000000000.0,
+      "end": 3800000000000.0
+    },
+    {
+      "name": "S4 Anneal",
+      "frac": 0.05,
+      "ctx": 262144,
+      "lr": "->0",
+      "note": "Tier-A reserve only; LR cooldown",
+      "tokens": 200000000000.0,
+      "start": 3800000000000.0,
+      "end": 4000000000000.0
+    }
+  ],
+  "stage_mix": {
+    "S0 Warmup": {
+      "english": 0.38,
+      "code": 0.17,
+      "math": 0.09,
+      "indic_verified": 0.03,
+      "indic_unverified": 0.07,
+      "indic_translated": 0.055,
+      "indic_synthetic": 0.035,
+      "agentic": 0.03,
+      "reasoning": 0.02,
+      "forums": 0.06,
+      "multilingual": 0.06
+    },
+    "S1 Foundation": {
+      "english": 0.34367346938775506,
+      "code": 0.18959183673469385,
+      "math": 0.09857142857142855,
+      "indic_verified": 0.034897959183673465,
+      "indic_unverified": 0.06714285714285714,
+      "indic_translated": 0.05561224489795917,
+      "indic_synthetic": 0.043571428571428567,
+      "agentic": 0.04571428571428571,
+      "reasoning": 0.03489795918367347,
+      "forums": 0.043469387755102035,
+      "multilingual": 0.04285714285714285
+    },
+    "S2 Skill ramp": {
+      "english": 0.19,
+      "code": 0.31,
+      "math": 0.18,
+      "indic_verified": 0.04,
+      "indic_unverified": 0.07,
+      "indic_translated": 0.03,
+      "indic_synthetic": 0.04,
+      "agentic": 0.085,
+      "reasoning": 0.045,
+      "forums": 0.005,
+      "multilingual": 0.005
+    },
+    "S3 Long context": {
+      "english": 0.3,
+      "code": 0.29,
+      "math": 0.11,
+      "indic_verified": 0.06,
+      "indic_unverified": 0.1,
+      "indic_translated": 0.015,
+      "indic_synthetic": 0.02,
+      "agentic": 0.07,
+      "reasoning": 0.03,
+      "forums": 0.0,
+      "multilingual": 0.005
+    },
+    "S4 Anneal": {
+      "english": 0.2,
+      "code": 0.12,
+      "math": 0.15,
+      "indic_verified": 0.18,
+      "indic_unverified": 0.06,
+      "indic_translated": 0.02,
+      "indic_synthetic": 0.03,
+      "agentic": 0.13,
+      "reasoning": 0.11,
+      "forums": 0.0,
+      "multilingual": 0.0
+    }
+  },
+  "integration": {
+    "english": {
+      "tokens": 1200000000000.0,
+      "share": 0.3,
+      "target_share": 0.3,
+      "delta": 0.0
+    },
+    "code": {
+      "tokens": 880000000000.0,
+      "share": 0.22,
+      "target_share": 0.22,
+      "delta": 0.0
+    },
+    "math": {
+      "tokens": 479999999999.99994,
+      "share": 0.11999999999999998,
+      "target_share": 0.12,
+      "delta": -1.3877787807814457e-17
+    },
+    "indic_verified": {
+      "tokens": 180000000000.0,
+      "share": 0.045,
+      "target_share": 0.045,
+      "delta": 0.0
+    },
+    "indic_unverified": {
+      "tokens": 280000000000.0,
+      "share": 0.07,
+      "target_share": 0.07,
+      "delta": 0.0
+    },
+    "indic_translated": {
+      "tokens": 179999999999.99997,
+      "share": 0.04499999999999999,
+      "target_share": 0.045,
+      "delta": -6.938893903907228e-18
+    },
+    "indic_synthetic": {
+      "tokens": 160000000000.0,
+      "share": 0.04,
+      "target_share": 0.04,
+      "delta": 0.0
+    },
+    "agentic": {
+      "tokens": 240000000000.0,
+      "share": 0.06,
+      "target_share": 0.06,
+      "delta": 0.0
+    },
+    "reasoning": {
+      "tokens": 160000000000.0,
+      "share": 0.04,
+      "target_share": 0.04,
+      "delta": 0.0
+    },
+    "forums": {
+      "tokens": 119999999999.99998,
+      "share": 0.029999999999999995,
+      "target_share": 0.03,
+      "delta": -3.469446951953614e-18
+    },
+    "multilingual": {
+      "tokens": 119999999999.99998,
+      "share": 0.029999999999999995,
+      "target_share": 0.03,
+      "delta": -3.469446951953614e-18
+    }
+  },
+  "blend_bands": [
+    {
+      "frm": "S0 Warmup",
+      "to": "S1 Foundation",
+      "worst_lane": "english",
+      "worst_delta": -0.036326530612244945,
+      "ramp_tokens": 30272108843.537453,
+      "required_ramp": 30272108843.537453,
+      "tail_of_prev": 15136054421.768726,
+      "head_of_next": 15136054421.768726,
+      "pct_of_next": 0.006177981396640296,
+      "pp_per_100B": 12.0,
+      "within_limit": true,
+      "lr_protected": false
+    },
+    {
+      "frm": "S1 Foundation",
+      "to": "S2 Skill ramp",
+      "worst_lane": "english",
+      "worst_delta": -0.15367346938775506,
+      "ramp_tokens": 128061224489.79587,
+      "required_ramp": 128061224489.79587,
+      "tail_of_prev": 64030612244.897934,
+      "head_of_next": 64030612244.897934,
+      "pct_of_next": 0.07114512471655327,
+      "pp_per_100B": 12.0,
+      "within_limit": true,
+      "lr_protected": false
+    },
+    {
+      "frm": "S2 Skill ramp",
+      "to": "S3 Long context",
+      "worst_lane": "english",
+      "worst_delta": 0.10999999999999999,
+      "ramp_tokens": 91666666666.66666,
+      "required_ramp": 91666666666.66666,
+      "tail_of_prev": 45833333333.33333,
+      "head_of_next": 45833333333.33333,
+      "pct_of_next": 0.15277777777777776,
+      "pp_per_100B": 12.0,
+      "within_limit": true,
+      "lr_protected": false
+    },
+    {
+      "frm": "S3 Long context",
+      "to": "S4 Anneal",
+      "worst_lane": "code",
+      "worst_delta": -0.16999999999999998,
+      "ramp_tokens": 141666666666.6667,
+      "required_ramp": 141666666666.6667,
+      "tail_of_prev": 70833333333.33334,
+      "head_of_next": 70833333333.33334,
+      "pct_of_next": 0.35416666666666674,
+      "pp_per_100B": 11.999999999999998,
+      "within_limit": true,
+      "lr_protected": true
+    }
+  ],
+  "bands": [
+    {
+      "band": 0,
+      "name": "Direct recall",
+      "steps": "0",
+      "tokens": "<32",
+      "example": "Q: Odisha ki rajdhani kya hai? -> A: Bhubaneswar.",
+      "lanes": "english, indic, forums",
+      "sched": "S0-S1 dominant, never removed (keeps short answers short)"
+    },
+    {
+      "band": 1,
+      "name": "Short CoT",
+      "steps": "1-3",
+      "tokens": "32-256",
+      "example": "Sam has 3 apples, buys 2, gives 1 away. 3+2-1 = 4.",
+      "lanes": "math, reasoning, indic",
+      "sched": "S1 primary; carried through at reduced weight"
+    },
+    {
+      "band": 2,
+      "name": "Medium CoT",
+      "steps": "4-8",
+      "tokens": "256-1K",
+      "example": "JEE-mains projectile: pick formula -> substitute -> carry units -> sanity-check magnitude -> state answer.",
+      "lanes": "math, code, reasoning",
+      "sched": "ramps in through S2"
+    },
+    {
+      "band": 3,
+      "name": "Long CoT / tool-augmented",
+      "steps": "8-20",
+      "tokens": "1K-8K",
+      "example": "Agentic: 'Book an IRCTC ticket under Rs.800, verify the PNR, retry once on failure' -- plan, call, read error, replan.",
+      "lanes": "agentic, reasoning, code",
+      "sched": "S2 late + S3; concentrated in S4 anneal"
+    },
+    {
+      "band": 4,
+      "name": "Extended / cross-document",
+      "steps": "20+",
+      "tokens": "8K-64K",
+      "example": "Read a 40-page judgment + a prior ruling + a Hansard excerpt; identify which precedent controls and why.",
+      "lanes": "long-context pool (indic + english + code)",
+      "sched": "S3 and S4 only -- requires 256K context to exist first"
+    }
+  ],
+  "effort_levels": {
+    "low": {
+      "band_mix": {
+        "0": 0.6,
+        "1": 0.4
+      },
+      "budget": "<128 thinking tokens"
+    },
+    "medium": {
+      "band_mix": {
+        "1": 0.45,
+        "2": 0.55
+      },
+      "budget": "128-1K"
+    },
+    "high": {
+      "band_mix": {
+        "2": 0.35,
+        "3": 0.65
+      },
+      "budget": "1K-8K"
+    },
+    "ultra": {
+      "band_mix": {
+        "3": 0.4,
+        "4": 0.6
+      },
+      "budget": "8K-64K"
+    }
+  },
+  "long_context_pool": [
+    {
+      "lane": "code",
+      "doc": "whole repos concatenated by import graph",
+      "why": "cross-file dependency reasoning"
+    },
+    {
+      "lane": "indic_unverified",
+      "doc": "judgments, Hansard, gov reports",
+      "why": "long-document Indic comprehension"
+    },
+    {
+      "lane": "indic_verified",
+      "doc": "OCR'd full-length books",
+      "why": "sustained native narrative"
+    },
+    {
+      "lane": "english",
+      "doc": "books, legal/technical long-form",
+      "why": "RULER@256K parity"
+    },
+    {
+      "lane": "agentic",
+      "doc": "full multi-step trajectories, unsplit",
+      "why": "long tool-history management"
+    }
+  ],
+  "floor": {
+    "pct": 0.08,
+    "seqs_per_batch": 41,
+    "batch_seqs": 512,
+    "lanes": [
+      "indic_verified",
+      "indic_unverified"
+    ],
+    "native_global_share": 0.115,
+    "per_stage": {
+      "S0 Warmup": 0.1,
+      "S1 Foundation": 0.10204081632653061,
+      "S2 Skill ramp": 0.11000000000000001,
+      "S3 Long context": 0.16,
+      "S4 Anneal": 0.24
+    },
+    "binding_stage": "S0 Warmup",
+    "binding_share": 0.1,
+    "satisfiable": true,
+    "slack": 0.020000000000000004
+  },
+  "reserve": {
+    "total": 200000000000.0,
+    "pct_of_budget": 0.05,
+    "rows": [
+      {
+        "name": "Instruction-dense general text",
+        "share": 0.28,
+        "why": "matches downstream SFT distribution; sharpens instruction-following late",
+        "tokens": 56000000000.00001
+      },
+      {
+        "name": "Verified-native Indic (DEFERRED 2nd epoch)",
+        "share": 0.22,
+        "why": "the 2nd pass over verified native is SPENT here, not added; total exposure stays at 2.0x",
+        "tokens": 44000000000.0
+      },
+      {
+        "name": "Answer-verified math / worked solutions",
+        "share": 0.18,
+        "why": "OLMo 2 precedent: small late reserve moved GSM-style 24%->67%",
+        "tokens": 36000000000.0
+      },
+      {
+        "name": "Execution-verified agentic trajectories",
+        "share": 0.16,
+        "why": "only sandbox-successful traces; loss on model tokens only",
+        "tokens": 32000000000.0
+      },
+      {
+        "name": "Long-CoT Band 3-4 reasoning",
+        "share": 0.11,
+        "why": "effort-dial supervision lands where LR is lowest",
+        "tokens": 22000000000.0
+      },
+      {
+        "name": "Safety + long-context refresh",
+        "share": 0.05,
+        "why": "12+ lang refusals incl. romanized attacks; one 256K pass so long-context survives the cooldown",
+        "tokens": 10000000000.0
+      }
+    ],
+    "share_sum": 1.0,
+    "exclusions": [
+      "benchmark test items",
+      "eval-adjacent paraphrases",
+      "canary strings",
+      "unverified synthetic CoT"
+    ]
+  },
+  "verified_native_exposure": {
+    "unique": 90000000000.0,
+    "bulk_tokens": 180000000000.0,
+    "anneal_tokens": 44000000000.0,
+    "total_exposure": 180000000000.0,
+    "epochs": 2.0,
+    "anneal_is_subset": true,
+    "cap": 2.0,
+    "ok": true
+  },
+  "fertility": {
+    "weighted_indic": 1.71985,
+    "effective_words": {
+      "ERAV5 target": {
+        "fertility": 1.71985,
+        "words": 465156845073.69824,
+        "vs_english_bpe": 2.616507253539553
+      },
+      "english_centric_bpe": {
+        "fertility": 4.5,
+        "words": 177777777777.77777,
+        "vs_english_bpe": 1.0
+      },
+      "gemma4_262k": {
+        "fertility": 2.2,
+        "words": 363636363636.3636,
+        "vs_english_bpe": 2.0454545454545454
+      }
+    },
+    "session2_balance": {
+      "x_max": 2.15,
+      "x_min": 1.4,
+      "spread": 0.75,
+      "score": 1333.3333333333333
+    }
+  },
+  "proxies": [
+    {
+      "id": "P1",
+      "scale": "3B",
+      "n_active": 3000000000.0,
+      "tokens": 60000000000.0,
+      "arms": 2,
+      "title": "Indic synthetic parity cap",
+      "hypothesis": "Capping synthetic Indic at <=1.0x native beats a synthetic-heavy arm on native-quality metrics at matched compute.",
+      "arm_a": "plan mixture (synthetic at the computed synthetic/native ratio)",
+      "arm_b": "synthetic DOUBLED (2x the plan ratio), translated held constant",
+      "metric": "MILU per Tier-1 lang; FLORES chrF++; 200-sample native audit",
+      "rule": "Adopt the cap only if A beats B by >=2.0 pts mean MILU AND shows no chrF++ regression. If B wins, the cap RISES -- the plan was too conservative. If neither separates, drop the cap as unjustified machinery.",
+      "flops": 2.16e+21,
+      "gpu_hours": 1516.6835187057634,
+      "usd": 3791.7087967644084
+    },
+    {
+      "id": "P2",
+      "scale": "1B",
+      "n_active": 1000000000.0,
+      "tokens": 20000000000.0,
+      "arms": 2,
+      "title": "Protected floor necessity",
+      "hypothesis": "Without a native-only always-on floor, Indic capability drifts down during the code/math-heavy S2 phase.",
+      "arm_a": "8% native-Indic floor enforced every batch",
+      "arm_b": "same global Indic share, no batch-level floor (selector free)",
+      "metric": "MILU (hi + one Dravidian) at 5 checkpoints -- the CURVE SHAPE is the evidence. Secondary: HumanEval/GSM-mini to confirm no tax on dominant lanes.",
+      "rule": "Keep the floor if B shows a mid-training MILU dip >=3 pts that A avoids. If both curves are flat, DROP the floor -- it is unnecessary complexity.",
+      "flops": 2.4e+20,
+      "gpu_hours": 168.52039096730704,
+      "usd": 421.3009774182676
+    },
+    {
+      "id": "P3",
+      "scale": "1B",
+      "n_active": 1000000000.0,
+      "tokens": 20000000000.0,
+      "arms": 2,
+      "title": "Agentic verification gate",
+      "hypothesis": "Execution-verified sandbox trajectories beat imitation-only public agent data at equal token count.",
+      "arm_a": "sandbox self-play, kept only on task success",
+      "arm_b": "public trajectories, no verification gate",
+      "metric": "BFCL function-call accuracy; tau2-bench task success",
+      "rule": "A must clear B by >=5 pts on BOTH. If not, the generation pipeline is the defect to fix before the 6% agentic share scales -- not a reason to cut the lane.",
+      "flops": 2.4e+20,
+      "gpu_hours": 168.52039096730704,
+      "usd": 421.3009774182676
+    },
+    {
+      "id": "P4",
+      "scale": "3B",
+      "n_active": 3000000000.0,
+      "tokens": 60000000000.0,
+      "arms": 3,
+      "title": "Mixture-transition gradient stability",
+      "hypothesis": "Ramping lane-share changes across a >=100B-token blending band prevents the ~150x gradient-norm spike V4 recorded on an abrupt Hindi share increase.",
+      "arm_a": "100B-token linear ramp between stage mixes",
+      "arm_b": "abrupt step change at the stage boundary",
+      "arm_c": "20B-token ramp (is the band over-specified?)",
+      "metric": "max gradient-norm multiplier over the transition; loss-spike count",
+      "rule": "Keep the 100B band only if the abrupt arm spikes >=5x AND the 20B arm also spikes. If 20B is sufficient, shorten the band and reclaim schedule.",
+      "flops": 3.24e+21,
+      "gpu_hours": 2275.025278058645,
+      "usd": 5687.563195146613
+    },
+    {
+      "id": "P5",
+      "scale": "1B",
+      "n_active": 1000000000.0,
+      "tokens": 20000000000.0,
+      "arms": 2,
+      "title": "Loss-masking on tool observations",
+      "hypothesis": "Zero-loss masking of tool outputs prevents observation hallucination without costing task success.",
+      "arm_a": "loss on model-generated tokens only (plans, code, JSON calls)",
+      "arm_b": "loss on the full trajectory including tool responses",
+      "metric": "rate of fabricated tool observations in held-out rollouts; BFCL",
+      "rule": "A must cut fabricated-observation rate by >=50% at no BFCL cost. This is the cheapest proxy in the set and should run FIRST.",
+      "flops": 2.4e+20,
+      "gpu_hours": 168.52039096730704,
+      "usd": 421.3009774182676
+    }
+  ],
+  "proxy_total": {
+    "total_usd": 10743.174924165824,
+    "flagship_usd": 631951.4661274015,
+    "pct_of_flagship": 0.016999999999999998,
+    "total_gpu_hours": 4297.269969666329
+  },
+  "sensitivity": [
+    {
+      "name": "Baseline",
+      "vn_epochs": 2.0,
+      "vn_gap": 0.0,
+      "real_native": 460000000000.0,
+      "real_native_pct": 0.575,
+      "indic_gap": 160000000000.0,
+      "code_epochs": 0.967032967032967,
+      "code_gap": 0.0,
+      "total_real_pct": 0.89,
+      "floor_ok": true,
+      "syn_to_real_native": 0.6956521739130435
+    },
+    {
+      "name": "Verified native -33% (audit finds more MT)",
+      "vn_epochs": 2.0,
+      "vn_gap": 59400000000.0,
+      "real_native": 400600000000.0,
+      "real_native_pct": 0.50075,
+      "indic_gap": 219400000000.0,
+      "code_epochs": 0.967032967032967,
+      "code_gap": 0.0,
+      "total_real_pct": 0.87515,
+      "floor_ok": true,
+      "syn_to_real_native": 0.9470793809286071
+    },
+    {
+      "name": "Verified native -50% (worst credible)",
+      "vn_epochs": 2.0,
+      "vn_gap": 90000000000.0,
+      "real_native": 370000000000.0,
+      "real_native_pct": 0.4625,
+      "indic_gap": 250000000000.0,
+      "code_epochs": 0.967032967032967,
+      "code_gap": 0.0,
+      "total_real_pct": 0.8674999999999999,
+      "floor_ok": true,
+      "syn_to_real_native": 1.1081081081081081
+    },
+    {
+      "name": "Code -30% after license filter",
+      "vn_epochs": 2.0,
+      "vn_gap": 0.0,
+      "real_native": 460000000000.0,
+      "real_native_pct": 0.575,
+      "indic_gap": 160000000000.0,
+      "code_epochs": 1.381475667189953,
+      "code_gap": 0.0,
+      "total_real_pct": 0.89,
+      "floor_ok": true,
+      "syn_to_real_native": 0.6956521739130435
+    },
+    {
+      "name": "Unverified Indic -40% (lang-ID mislabels)",
+      "vn_epochs": 2.0,
+      "vn_gap": 0.0,
+      "real_native": 460000000000.0,
+      "real_native_pct": 0.575,
+      "indic_gap": 160000000000.0,
+      "code_epochs": 0.967032967032967,
+      "code_gap": 0.0,
+      "total_real_pct": 0.89,
+      "floor_ok": true,
+      "syn_to_real_native": 0.6956521739130435
+    },
+    {
+      "name": "All Indic native -40% (systemic)",
+      "vn_epochs": 2.0,
+      "vn_gap": 72000000000.0,
+      "real_native": 388000000000.0,
+      "real_native_pct": 0.485,
+      "indic_gap": 232000000000.0,
+      "code_epochs": 0.967032967032967,
+      "code_gap": 0.0,
+      "total_real_pct": 0.872,
+      "floor_ok": true,
+      "syn_to_real_native": 1.0103092783505154
+    }
+  ],
+  "cleaning_plan": [
+    {
+      "lane": "english",
+      "yield_rate": 0.22,
+      "clean_needed": 1200000000000.0,
+      "collected_target": 2400000000000.0,
+      "raw_required": 10909090909090.908,
+      "generation_deficit": 0.0,
+      "starved": false
+    },
+    {
+      "lane": "code",
+      "yield_rate": 0.31,
+      "clean_needed": 880000000000.0,
+      "collected_target": 1760000000000.0,
+      "raw_required": 5677419354838.71,
+      "generation_deficit": 0.0,
+      "starved": false
+    },
+    {
+      "lane": "math",
+      "yield_rate": 0.18,
+      "clean_needed": 480000000000.0,
+      "collected_target": 960000000000.0,
+      "raw_required": 5333333333333.334,
+      "generation_deficit": 0.0,
+      "starved": false
+    },
+    {
+      "lane": "indic_verified",
+      "yield_rate": 0.09,
+      "clean_needed": 180000000000.0,
+      "collected_target": 360000000000.0,
+      "raw_required": 4000000000000.0,
+      "generation_deficit": 0.0,
+      "starved": false
+    },
+    {
+      "lane": "indic_unverified",
+      "yield_rate": 0.26,
+      "clean_needed": 280000000000.0,
+      "collected_target": 560000000000.0,
+      "raw_required": 2153846153846.1538,
+      "generation_deficit": 0.0,
+      "starved": false
+    },
+    {
+      "lane": "forums",
+      "yield_rate": 0.14,
+      "clean_needed": 120000000000.0,
+      "collected_target": 240000000000.0,
+      "raw_required": 1714285714285.714,
+      "generation_deficit": 0.0,
+      "starved": false
+    },
+    {
+      "lane": "multilingual",
+      "yield_rate": 0.24,
+      "clean_needed": 120000000000.0,
+      "collected_target": 240000000000.0,
+      "raw_required": 1000000000000.0,
+      "generation_deficit": 0.0,
+      "starved": false
+    },
+    {
+      "lane": "indic_translated",
+      "yield_rate": 0.55,
+      "clean_needed": 180000000000.0,
+      "collected_target": 360000000000.0,
+      "raw_required": 654545454545.4545,
+      "generation_deficit": 0.0,
+      "starved": false
+    },
+    {
+      "lane": "agentic",
+      "yield_rate": 0.42,
+      "clean_needed": 75000000000.0,
+      "collected_target": 150000000000.0,
+      "raw_required": 357142857142.8572,
+      "generation_deficit": 165000000000.0,
+      "starved": true
+    },
+    {
+      "lane": "reasoning",
+      "yield_rate": 0.35,
+      "clean_needed": 45000000000.0,
+      "collected_target": 90000000000.0,
+      "raw_required": 257142857142.85715,
+      "generation_deficit": 115000000000.0,
+      "starved": true
+    },
+    {
+      "lane": "indic_synthetic",
+      "yield_rate": 0.25,
+      "clean_needed": 0.0,
+      "collected_target": 0.0,
+      "raw_required": 0.0,
+      "generation_deficit": 160000000000.0,
+      "starved": true
+    }
+  ],
+  "cleaning_priority": [
+    {
+      "lane": "reasoning",
+      "score": 5.333333333333333,
+      "headroom": 0.1875,
+      "epochs": 1.5,
+      "floor_lane": false
+    },
+    {
+      "lane": "agentic",
+      "score": 4.8,
+      "headroom": 0.20833333333333334,
+      "epochs": 1.5,
+      "floor_lane": false
+    },
+    {
+      "lane": "indic_verified",
+      "score": 4.0,
+      "headroom": 0.5,
+      "epochs": 2.0,
+      "floor_lane": true
+    },
+    {
+      "lane": "math",
+      "score": 1.92,
+      "headroom": 0.5208333333333334,
+      "epochs": 1.92,
+      "floor_lane": false
+    },
+    {
+      "lane": "indic_unverified",
+      "score": 1.2444444444444445,
+      "headroom": 1.6071428571428572,
+      "epochs": 0.6222222222222222,
+      "floor_lane": true
+    },
+    {
+      "lane": "code",
+      "score": 0.9670329670329669,
+      "headroom": 1.0340909090909092,
+      "epochs": 0.967032967032967,
+      "floor_lane": false
+    },
+    {
+      "lane": "indic_translated",
+      "score": 0.8181818181818181,
+      "headroom": 1.2222222222222223,
+      "epochs": 0.8181818181818182,
+      "floor_lane": false
+    },
+    {
+      "lane": "forums",
+      "score": 0.34285714285714286,
+      "headroom": 2.9166666666666665,
+      "epochs": 0.34285714285714286,
+      "floor_lane": false
+    },
+    {
+      "lane": "english",
+      "score": 0.31746031746031744,
+      "headroom": 3.15,
+      "epochs": 0.31746031746031744,
+      "floor_lane": false
+    },
+    {
+      "lane": "multilingual",
+      "score": 0.08,
+      "headroom": 12.5,
+      "epochs": 0.08,
+      "floor_lane": false
+    }
+  ],
+  "validation": {
+    "total": 49,
+    "passed": 49,
+    "failed": [],
+    "all": [
+      {
+        "check": "Mixture shares sum to 1.0",
+        "pass": true,
+        "detail": "sum = 1.000000"
+      },
+      {
+        "check": "Stage fractions sum to 1.0",
+        "pass": true,
+        "detail": "sum = 1.000000"
+      },
+      {
+        "check": "Stage mix sums to 1.0 :: S0 Warmup",
+        "pass": true,
+        "detail": "sum = 1.000000"
+      },
+      {
+        "check": "Stage mix sums to 1.0 :: S1 Foundation",
+        "pass": true,
+        "detail": "sum = 1.000000"
+      },
+      {
+        "check": "Stage mix sums to 1.0 :: S2 Skill ramp",
+        "pass": true,
+        "detail": "sum = 1.000000"
+      },
+      {
+        "check": "Stage mix sums to 1.0 :: S3 Long context",
+        "pass": true,
+        "detail": "sum = 1.000000"
+      },
+      {
+        "check": "Stage mix sums to 1.0 :: S4 Anneal",
+        "pass": true,
+        "detail": "sum = 1.000000"
+      },
+      {
+        "check": "Stage schedule integrates to global mixture (<=0.5pp drift)",
+        "pass": true,
+        "detail": "worst lane 'math' drift = -0.00pp"
+      },
+      {
+        "check": "Epochs within cap :: english",
+        "pass": true,
+        "detail": "0.32x vs cap 1.0x"
+      },
+      {
+        "check": "Epochs within cap :: code",
+        "pass": true,
+        "detail": "0.97x vs cap 1.5x"
+      },
+      {
+        "check": "Epochs within cap :: math",
+        "pass": true,
+        "detail": "1.92x vs cap 2.0x"
+      },
+      {
+        "check": "Epochs within cap :: indic_unverified",
+        "pass": true,
+        "detail": "0.62x vs cap 1.5x"
+      },
+      {
+        "check": "Epochs within cap :: agentic",
+        "pass": true,
+        "detail": "1.50x vs cap 1.5x"
+      },
+      {
+        "check": "Epochs within cap :: indic_verified",
+        "pass": true,
+        "detail": "2.00x vs cap 2.0x"
+      },
+      {
+        "check": "Epochs within cap :: indic_translated",
+        "pass": true,
+        "detail": "0.82x vs cap 1.0x"
+      },
+      {
+        "check": "Epochs within cap :: reasoning",
+        "pass": true,
+        "detail": "1.50x vs cap 1.5x"
+      },
+      {
+        "check": "Epochs within cap :: forums",
+        "pass": true,
+        "detail": "0.34x vs cap 1.0x"
+      },
+      {
+        "check": "Epochs within cap :: multilingual",
+        "pass": true,
+        "detail": "0.08x vs cap 1.0x"
+      },
+      {
+        "check": "Epochs below free-repetition ceiling :: english",
+        "pass": true,
+        "detail": "0.32x (ceiling 4x)"
+      },
+      {
+        "check": "Epochs below free-repetition ceiling :: code",
+        "pass": true,
+        "detail": "0.97x (ceiling 4x)"
+      },
+      {
+        "check": "Epochs below free-repetition ceiling :: math",
+        "pass": true,
+        "detail": "1.92x (ceiling 4x)"
+      },
+      {
+        "check": "Epochs below free-repetition ceiling :: indic_unverified",
+        "pass": true,
+        "detail": "0.62x (ceiling 4x)"
+      },
+      {
+        "check": "Epochs below free-repetition ceiling :: agentic",
+        "pass": true,
+        "detail": "1.50x (ceiling 4x)"
+      },
+      {
+        "check": "Epochs below free-repetition ceiling :: indic_verified",
+        "pass": true,
+        "detail": "2.00x (ceiling 4x)"
+      },
+      {
+        "check": "Epochs below free-repetition ceiling :: indic_translated",
+        "pass": true,
+        "detail": "0.82x (ceiling 4x)"
+      },
+      {
+        "check": "Epochs below free-repetition ceiling :: indic_synthetic",
+        "pass": true,
+        "detail": "0.00x (ceiling 4x)"
+      },
+      {
+        "check": "Epochs below free-repetition ceiling :: reasoning",
+        "pass": true,
+        "detail": "1.50x (ceiling 4x)"
+      },
+      {
+        "check": "Epochs below free-repetition ceiling :: forums",
+        "pass": true,
+        "detail": "0.34x (ceiling 4x)"
+      },
+      {
+        "check": "Epochs below free-repetition ceiling :: multilingual",
+        "pass": true,
+        "detail": "0.08x (ceiling 4x)"
+      },
+      {
+        "check": "Synthetic gap is declared-generable :: agentic",
+        "pass": true,
+        "detail": "needs 165B generated (69% of lane)"
+      },
+      {
+        "check": "Synthetic gap is declared-generable :: indic_synthetic",
+        "pass": true,
+        "detail": "needs 160B generated (100% of lane)"
+      },
+      {
+        "check": "Synthetic gap is declared-generable :: reasoning",
+        "pass": true,
+        "detail": "needs 115B generated (72% of lane)"
+      },
+      {
+        "check": "Synthetic Indic <= parity with native",
+        "pass": true,
+        "detail": "synthetic/native = 0.35x (cap 1.0x)"
+      },
+      {
+        "check": "Indic lane is majority NATIVE",
+        "pass": true,
+        "detail": "native = 57.5% of Indic lane"
+      },
+      {
+        "check": "Verified-native anneal is a SUBSET of lane budget, not additive",
+        "pass": true,
+        "detail": "anneal 44B <= lane 180B"
+      },
+      {
+        "check": "Verified-native TOTAL exposure within cap",
+        "pass": true,
+        "detail": "2.00x vs cap 2.0x"
+      },
+      {
+        "check": "Protected floor satisfiable in every stage",
+        "pass": true,
+        "detail": "binding stage 'S0 Warmup' has 10.0% native vs floor 8%"
+      },
+      {
+        "check": "Anneal reserve shares sum to 1.0",
+        "pass": true,
+        "detail": "sum = 1.0000"
+      },
+      {
+        "check": "Reserve size == S4 stage size",
+        "pass": true,
+        "detail": "reserve 200B vs S4 200B"
+      },
+      {
+        "check": "Blend ramp within rate limit :: S0->S1",
+        "pass": true,
+        "detail": "-3.6pp on 'english' over 30B = 12.0pp/100B"
+      },
+      {
+        "check": "Ramp fits inside stages :: S0->S1",
+        "pass": true,
+        "detail": "head consumes 1% of incoming stage"
+      },
+      {
+        "check": "Blend ramp within rate limit :: S1->S2",
+        "pass": true,
+        "detail": "-15.4pp on 'english' over 128B = 12.0pp/100B"
+      },
+      {
+        "check": "Ramp fits inside stages :: S1->S2",
+        "pass": true,
+        "detail": "head consumes 7% of incoming stage"
+      },
+      {
+        "check": "Blend ramp within rate limit :: S2->S3",
+        "pass": true,
+        "detail": "+11.0pp on 'english' over 92B = 12.0pp/100B"
+      },
+      {
+        "check": "Ramp fits inside stages :: S2->S3",
+        "pass": true,
+        "detail": "head consumes 15% of incoming stage"
+      },
+      {
+        "check": "Blend ramp within rate limit :: S3->S4",
+        "pass": true,
+        "detail": "-17.0pp on 'code' over 142B = 12.0pp/100B"
+      },
+      {
+        "check": "Ramp fits inside stages :: S3->S4",
+        "pass": true,
+        "detail": "head consumes 35% of incoming stage"
+      },
+      {
+        "check": "Collection target exceeds train budget (selector has headroom)",
+        "pass": true,
+        "detail": "8.0T collected vs 4.0T trained (2.0x)"
+      },
+      {
+        "check": "Weighted Indic fertility <= 1.75 target",
+        "pass": true,
+        "detail": "weighted = 1.7199"
+      }
+    ]
+  }
+}

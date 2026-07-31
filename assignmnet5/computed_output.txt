@@ -1,0 +1,356 @@
+
+==============================================================================
+1 · COMPUTE ENVELOPE AND TOKEN BUDGET
+==============================================================================
+Flagship            : V5-Base  120B total / 15B active (sparsity 12.5%)
+Cluster             : 256 GPU x 90d @ 40% MFU  ->  7.875e+23 FLOPs
+Feasible tokens     : 8.750T  (C / 6N_active)
+PLANNED tokens      : 4.000T   [compute headroom 2.19x]
+Chinchilla floor    : 0.300T (20 tok/active-param) -> we overtrain 13.3x
+tok / active param  : 267
+tok / total param   : 33.3   <- the number that LOOKS small; MoE capacity is fed by diversity, not repeats
+vs ERA V4           : 1.150T -> 4.000T = 3.48x the data
+Collection target   : 8.000T cleaned = 2.0x the train budget (so the selector can REJECT, not repeat)
+
+  Model family:
+  name          kind      total   active  tok/act    tokens  role
+  V5-Proxy-1B   dense        1B       1B       20    0.020T  mixture ablation
+  V5-Proxy-3B   dense        3B       3B       20    0.060T  mixture ablation
+  V5-Seed-8B    dense        8B       8B      267    2.136T  growth seed / data gate
+  V5-Base       moe        120B      15B      267    4.005T  V4-parity flagship
+  V5-Max        moe        200B      20B      267    5.340T  stretch, if collection over-delivers
+
+==============================================================================
+2 · MIXTURE vs REAL SUPPLY  (the wishful-accounting audit)
+==============================================================================
+lane                  share   tokens   unique    ep     real    synth  syn%  loss%  sup.tok
+------------------------------------------------------------------------------
+english               30.0%   1.200T   3.780T 0.32x   1.200T   0.000T    0%   100%   1.200T
+code                  22.0%   0.880T   0.910T 0.97x   0.880T   0.000T    0%   100%   0.880T
+math                  12.0%   0.480T   0.250T 1.92x   0.480T   0.000T    0%   100%   0.480T
+indic_unverified       7.0%   0.280T   0.450T 0.62x   0.280T   0.000T    0%   100%   0.280T
+agentic                6.0%   0.240T   0.050T 1.50x   0.075T   0.165T   69%    35%   0.084T
+indic_verified         4.5%   0.180T   0.090T 2.00x   0.180T   0.000T    0%   100%   0.180T
+indic_translated       4.5%   0.180T   0.220T 0.82x   0.180T   0.000T    0%   100%   0.180T
+indic_synthetic        4.0%   0.160T   0.000T 0.00x   0.000T   0.160T  100%   100%   0.160T
+reasoning              4.0%   0.160T   0.030T 1.50x   0.045T   0.115T   72%   100%   0.160T
+forums                 3.0%   0.120T   0.350T 0.34x   0.120T   0.000T    0%   100%   0.120T
+multilingual           3.0%   0.120T   1.500T 0.08x   0.120T   0.000T    0%   100%   0.120T
+------------------------------------------------------------------------------
+TOTAL                100.0%   4.000T                  3.560T   0.440T   11%    96%   3.844T
+
+  Real tokens        : 3.560T (89.0%)
+  Generated tokens   : 0.440T (11.0%)
+  Loss-bearing tokens: 3.844T (96.1%)
+    ^ Session-5 loss mapping: tool observations are context-only. A lane's
+      token share overstates its training signal; this column is the honest one.
+
+  STARVED LANES (real supply < 50% of target) -> aim the cleaning here:
+    - agentic              real covers  31.2% | must generate 0.165T
+    - indic_synthetic      real covers   0.0% | must generate 0.160T
+    - reasoning            real covers  28.1% | must generate 0.115T
+
+==============================================================================
+3 · INDIC LANE — THE FOUR-TIER SPLIT
+==============================================================================
+Indic headline share: 20.0% = 0.800T
+
+tier                     tokens   unique  epochs  of budget  of Indic
+------------------------------------------------------------------------------
+indic_verified           0.180T   0.090T   2.00x       4.5%     22.5%
+indic_unverified         0.280T   0.450T   0.62x       7.0%     35.0%
+indic_translated         0.180T   0.220T   0.82x       4.5%     22.5%
+indic_synthetic          0.160T   0.000T   0.00x       4.0%     20.0%
+------------------------------------------------------------------------------
+  NATIVE (verified+unverified) : 0.460T  = 57.5% of the Indic lane
+  NON-NATIVE (trans+synthetic) : 0.340T  = 42.5%
+  synthetic / native ratio     : 0.35x  (cap 1.0x) -> OK
+
+  Why this beats the earlier 40B/15T draft: at a 4T budget the REAL native
+  supply covers a MAJORITY of the Indic lane. Inflating the budget to 15T is
+  what forced that draft to 60% non-native. Smaller budget = more honest Indic.
+
+==============================================================================
+4 · CURRICULUM — STAGES, CONTEXT, AND STAGE x LANE RECONCILIATION
+==============================================================================
+stage                frac   tokens    window              span  note
+S0 Warmup           3.75%   0.150T    8,192    0.000T->0.150T  embedding + router warmup; mixture held at S1 proportions
+S1 Foundation      61.25%   2.450T    8,192    0.150T->2.600T  web-heavy; language, world knowledge, basic syntax
+S2 Skill ramp      22.50%   0.900T   32,768    2.600T->3.500T  code/math/reasoning up; ctx 8K->32K
+S3 Long context     7.50%   0.300T  262,144    3.500T->3.800T  ctx 32K->256K on naturally-long docs only
+S4 Anneal           5.00%   0.200T  262,144    3.800T->4.000T  Tier-A reserve only; LR cooldown
+
+  Stage x lane integration (does the schedule reproduce the global mixture?)
+  lane                     S0     S1     S2     S3     S4  integr.  target   drift
+  english               38.0%  34.4%  19.0%  30.0%  20.0%   30.00%   30.0%  +0.00pp
+  code                  17.0%  19.0%  31.0%  29.0%  12.0%   22.00%   22.0%  +0.00pp
+  math                   9.0%   9.9%  18.0%  11.0%  15.0%   12.00%   12.0%  -0.00pp
+  indic_verified         3.0%   3.5%   4.0%   6.0%  18.0%    4.50%    4.5%  +0.00pp
+  indic_unverified       7.0%   6.7%   7.0%  10.0%   6.0%    7.00%    7.0%  +0.00pp
+  indic_translated       5.5%   5.6%   3.0%   1.5%   2.0%    4.50%    4.5%  -0.00pp
+  indic_synthetic        3.5%   4.4%   4.0%   2.0%   3.0%    4.00%    4.0%  +0.00pp
+  agentic                3.0%   4.6%   8.5%   7.0%  13.0%    6.00%    6.0%  +0.00pp
+  reasoning              2.0%   3.5%   4.5%   3.0%  11.0%    4.00%    4.0%  +0.00pp
+  forums                 6.0%   4.3%   0.5%   0.0%   0.0%    3.00%    3.0%  -0.00pp
+  multilingual           6.0%   4.3%   0.5%   0.5%   0.0%    3.00%    3.0%  -0.00pp
+
+  Gradient-safe blending bands (V4 saw a ~150x grad-norm spike on an
+  abrupt Hindi share change -- every transition is ramped, not stepped):
+  Rate limit: 12pp per 100B tokens.
+    S0 Warmup        -> S1 Foundation    worst 'english'  -3.6pp | ramp   30.3B straddling (15.1B tail + 15.1B head = 1% of next) | 12.0pp/100B [OK]
+    S1 Foundation    -> S2 Skill ramp    worst 'english' -15.4pp | ramp  128.1B straddling (64.0B tail + 64.0B head = 7% of next) | 12.0pp/100B [OK]
+    S2 Skill ramp    -> S3 Long context  worst 'english' +11.0pp | ramp   91.7B straddling (45.8B tail + 45.8B head = 15% of next) | 12.0pp/100B [OK]
+    S3 Long context  -> S4 Anneal        worst 'code' -17.0pp | ramp  141.7B straddling (70.8B tail + 70.8B head = 35% of next) | 12.0pp/100B [OK]
+
+  Long-context pool (selected from EXISTING lanes -- not a new token slot):
+    code                whole repos concatenated by import graph     cross-file dependency reasoning
+    indic_unverified    judgments, Hansard, gov reports              long-document Indic comprehension
+    indic_verified      OCR'd full-length books                      sustained native narrative
+    english             books, legal/technical long-form             RULER@256K parity
+    agentic             full multi-step trajectories, unsplit        long tool-history management
+
+==============================================================================
+5 · DIFFICULTY AND REASONING-LENGTH BANDS
+==============================================================================
+
+  Band 0 — Direct recall  (0 steps, <32 reasoning tokens)
+    example : Q: Odisha ki rajdhani kya hai? -> A: Bhubaneswar.
+    lanes   : english, indic, forums
+    schedule: S0-S1 dominant, never removed (keeps short answers short)
+
+  Band 1 — Short CoT  (1-3 steps, 32-256 reasoning tokens)
+    example : Sam has 3 apples, buys 2, gives 1 away. 3+2-1 = 4.
+    lanes   : math, reasoning, indic
+    schedule: S1 primary; carried through at reduced weight
+
+  Band 2 — Medium CoT  (4-8 steps, 256-1K reasoning tokens)
+    example : JEE-mains projectile: pick formula -> substitute -> carry units -> sanity-check magnitude -> state answer.
+    lanes   : math, code, reasoning
+    schedule: ramps in through S2
+
+  Band 3 — Long CoT / tool-augmented  (8-20 steps, 1K-8K reasoning tokens)
+    example : Agentic: 'Book an IRCTC ticket under Rs.800, verify the PNR, retry once on failure' -- plan, call, read error, replan.
+    lanes   : agentic, reasoning, code
+    schedule: S2 late + S3; concentrated in S4 anneal
+
+  Band 4 — Extended / cross-document  (20+ steps, 8K-64K reasoning tokens)
+    example : Read a 40-page judgment + a prior ruling + a Hansard excerpt; identify which precedent controls and why.
+    lanes   : long-context pool (indic + english + code)
+    schedule: S3 and S4 only -- requires 256K context to exist first
+
+  Effort dial (controllable reasoning depth objective):
+    low     <128 thinking tokens  B0:60%, B1:40%
+    medium  128-1K                B1:45%, B2:55%
+    high    1K-8K                 B2:35%, B3:65%
+    ultra   8K-64K                B3:40%, B4:60%
+
+==============================================================================
+6 · PROTECTED FLOOR AND ANNEAL RESERVE
+==============================================================================
+Floor: 8% of EVERY batch = 41 of 512 sequences, drawn from ['indic_verified', 'indic_unverified']
+  Tightened definition vs V4: translated/synthetic do NOT count. Otherwise the
+  selector satisfies the floor with cheap generated text and the scarce native
+  tiers are never touched -- the exact erasure the floor exists to prevent.
+  Per-stage native-Indic availability:
+    S0 Warmup           10.0%  <-- binding
+    S1 Foundation       10.2%  
+    S2 Skill ramp       11.0%  
+    S3 Long context     16.0%  
+    S4 Anneal           24.0%  
+  Satisfiable: True  (slack +2.0pp)
+
+Anneal reserve: 0.200T = 5.0% of budget, held BACK from the lane budgets
+  component                                         share   tokens
+  Instruction-dense general text                      28%   0.056T
+  Verified-native Indic (DEFERRED 2nd epoch)          22%   0.044T
+  Answer-verified math / worked solutions             18%   0.036T
+  Execution-verified agentic trajectories             16%   0.032T
+  Long-CoT Band 3-4 reasoning                         11%   0.022T
+  Safety + long-context refresh                        5%   0.010T
+  EXCLUDED from the reserve: benchmark test items, eval-adjacent paraphrases, canary strings, unverified synthetic CoT
+
+  Verified-native exposure check (the bug that sinks most drafts):
+    unique supply     0.090T
+    lane budget       0.180T  -> 2.00 epochs
+    anneal component  0.044T  = DEFERRED 2nd pass, carved OUT of the lane budget (not added)
+    cap 2.0x -> PASS
+
+==============================================================================
+7 · FERTILITY -> WHAT THE INDIC BUDGET ACTUALLY BUYS
+==============================================================================
+Vocabulary: 196,608 (3 x 2^16), frozen pre-training
+Weighted Indic fertility: 1.7199 tokens/word (target <= 1.75)
+
+  Same 0.800T Indic token budget, in WORDS learned:
+  tokenizer                  fertility     words  vs en-BPE
+  ERAV5 target                    1.72    0.465T      2.62x
+  english_centric_bpe             4.50    0.178T      1.00x
+  gemma4_262k                     2.20    0.364T      2.05x
+
+  Session-2 balance metric  Score = 1000/(Xmax-Xmin):
+    Xmax 2.15 (malayalam)  Xmin 1.40 (english)  spread 0.75  -> score 1333.3
+
+==============================================================================
+8 · PROXY EXPERIMENTS — THE PLAN AS A TESTABLE HYPOTHESIS
+==============================================================================
+
+  [P1] Indic synthetic parity cap  (3B, 0.060T/arm, 2 arms, ~1,517 GPU-h, ~$3,792)
+      H : Capping synthetic Indic at <=1.0x native beats a synthetic-heavy arm on native-quality metrics at matched compute.
+      A : plan mixture (synthetic at the computed synthetic/native ratio)
+      B : synthetic DOUBLED (2x the plan ratio), translated held constant
+      M : MILU per Tier-1 lang; FLORES chrF++; 200-sample native audit
+      -> Adopt the cap only if A beats B by >=2.0 pts mean MILU AND shows no chrF++ regression. If B wins, the cap RISES -- the plan was too conservative. If neither separates, drop the cap as unjustified machinery.
+
+  [P2] Protected floor necessity  (1B, 0.020T/arm, 2 arms, ~169 GPU-h, ~$421)
+      H : Without a native-only always-on floor, Indic capability drifts down during the code/math-heavy S2 phase.
+      A : 8% native-Indic floor enforced every batch
+      B : same global Indic share, no batch-level floor (selector free)
+      M : MILU (hi + one Dravidian) at 5 checkpoints -- the CURVE SHAPE is the evidence. Secondary: HumanEval/GSM-mini to confirm no tax on dominant lanes.
+      -> Keep the floor if B shows a mid-training MILU dip >=3 pts that A avoids. If both curves are flat, DROP the floor -- it is unnecessary complexity.
+
+  [P3] Agentic verification gate  (1B, 0.020T/arm, 2 arms, ~169 GPU-h, ~$421)
+      H : Execution-verified sandbox trajectories beat imitation-only public agent data at equal token count.
+      A : sandbox self-play, kept only on task success
+      B : public trajectories, no verification gate
+      M : BFCL function-call accuracy; tau2-bench task success
+      -> A must clear B by >=5 pts on BOTH. If not, the generation pipeline is the defect to fix before the 6% agentic share scales -- not a reason to cut the lane.
+
+  [P4] Mixture-transition gradient stability  (3B, 0.060T/arm, 3 arms, ~2,275 GPU-h, ~$5,688)
+      H : Ramping lane-share changes across a >=100B-token blending band prevents the ~150x gradient-norm spike V4 recorded on an abrupt Hindi share increase.
+      A : 100B-token linear ramp between stage mixes
+      B : abrupt step change at the stage boundary
+      C : 20B-token ramp (is the band over-specified?)
+      M : max gradient-norm multiplier over the transition; loss-spike count
+      -> Keep the 100B band only if the abrupt arm spikes >=5x AND the 20B arm also spikes. If 20B is sufficient, shorten the band and reclaim schedule.
+
+  [P5] Loss-masking on tool observations  (1B, 0.020T/arm, 2 arms, ~169 GPU-h, ~$421)
+      H : Zero-loss masking of tool outputs prevents observation hallucination without costing task success.
+      A : loss on model-generated tokens only (plans, code, JSON calls)
+      B : loss on the full trajectory including tool responses
+      M : rate of fabricated tool observations in held-out rollouts; BFCL
+      -> A must cut fabricated-observation rate by >=50% at no BFCL cost. This is the cheapest proxy in the set and should run FIRST.
+
+  Total proxy cost ~$10,743 (4,297 GPU-h) = 1.70% of the flagship run (~$631,951).
+  Every ratio in this plan is a hypothesis until one of these fires.
+
+==============================================================================
+9 · SENSITIVITY — WHAT BREAKS FIRST IF THE INVENTORY IS WRONG
+==============================================================================
+  Targets are fixed; what moves is how much of each is REAL. Gap = must generate.
+
+scenario                                    vn ep real nat   nat%  Indic gap  real%  floor
+------------------------------------------------------------------------------
+Baseline                                    2.00x   0.460T  57.5%     0.160T  89.0%     OK
+Verified native -33% (audit finds more MT)  2.00x   0.401T  50.1%     0.219T  87.5%     OK
+Verified native -50% (worst credible)       2.00x   0.370T  46.2%     0.250T  86.8%     OK
+Code -30% after license filter              2.00x   0.460T  57.5%     0.160T  89.0%     OK
+Unverified Indic -40% (lang-ID mislabels)   2.00x   0.460T  57.5%     0.160T  89.0%     OK
+All Indic native -40% (systemic)            2.00x   0.388T  48.5%     0.232T  87.2%     OK
+
+  Stated responses (the plan bends; it does not break):
+
+    IF indic_verified supply misses:
+      Hold total exposure at 2.0x (do NOT raise epochs). Backfill the Indic la
+      ne from unverified native -- it has 0.45T unique at only 0.62 epochs, i.
+      e. ~0.17T of unused headroom. Synthetic does NOT expand to fill the gap:
+       the parity cap is a RATIO to native, so if native shrinks the synthetic
+       ceiling shrinks with it automatically.
+
+    IF code supply misses:
+      Move code to 1.3-1.5x epochs before considering synthetic code. Repetiti
+      on is safer than generation in a lane where SWE-bench leakage is the dom
+      inant risk and where generated code has no independent correctness signa
+      l beyond the tests we also generated.
+
+    IF indic_unverified supply misses:
+      This is the lane with the most slack, so a 40% cut is absorbable at the 
+      current 0.62 epochs. If it and verified BOTH shrink, the Indic headline 
+      share drops from 20% to whatever native supports -- the share follows th
+      e supply, not the other way round.
+
+    IF agentic supply misses:
+      No change. The lane was designed around self-play from the start; P3 gat
+      es whether self-play works at all, which is the real risk here, not supp
+      ly.
+
+==============================================================================
+10 · CLEANING PRIORITY — AIMED AT THE STARVED SLOTS
+==============================================================================
+lane                  yield  clean need  collect tgt  RAW required  starved
+------------------------------------------------------------------------------
+english                 22%      1.200T       2.400T       10.909T         
+code                    31%      0.880T       1.760T        5.677T         
+math                    18%      0.480T       0.960T        5.333T         
+indic_verified           9%      0.180T       0.360T        4.000T         
+indic_unverified        26%      0.280T       0.560T        2.154T         
+forums                  14%      0.120T       0.240T        1.714T         
+multilingual            24%      0.120T       0.240T        1.000T         
+indic_translated        55%      0.180T       0.360T        0.655T         
+agentic                 42%      0.075T       0.150T        0.357T      YES
+reasoning               35%      0.045T       0.090T        0.257T      YES
+indic_synthetic         25%      0.000T       0.000T        0.000T      YES
+------------------------------------------------------------------------------
+TOTAL RAW INTAKE                 3.560T       7.120T       32.057T
+
+  Marginal value of one more cleaned token (where to point the cohort):
+    1. reasoning            score   5.33  (supply headroom 0.19x, 1.50 epochs)
+    2. agentic              score   4.80  (supply headroom 0.21x, 1.50 epochs)
+    3. indic_verified       score   4.00  (supply headroom 0.50x, 2.00 epochs) [floor lane -- counts double]
+    4. math                 score   1.92  (supply headroom 0.52x, 1.92 epochs)
+    5. indic_unverified     score   1.24  (supply headroom 1.61x, 0.62 epochs) [floor lane -- counts double]
+    6. code                 score   0.97  (supply headroom 1.03x, 0.97 epochs)
+
+==============================================================================
+11 · VALIDATION — INTERNAL CONSISTENCY
+==============================================================================
+  [PASS] Mixture shares sum to 1.0                                  sum = 1.000000
+  [PASS] Stage fractions sum to 1.0                                 sum = 1.000000
+  [PASS] Stage mix sums to 1.0 :: S0 Warmup                         sum = 1.000000
+  [PASS] Stage mix sums to 1.0 :: S1 Foundation                     sum = 1.000000
+  [PASS] Stage mix sums to 1.0 :: S2 Skill ramp                     sum = 1.000000
+  [PASS] Stage mix sums to 1.0 :: S3 Long context                   sum = 1.000000
+  [PASS] Stage mix sums to 1.0 :: S4 Anneal                         sum = 1.000000
+  [PASS] Stage schedule integrates to global mixture (<=0.5pp drift) worst lane 'math' drift = -0.00pp
+  [PASS] Epochs within cap :: english                               0.32x vs cap 1.0x
+  [PASS] Epochs within cap :: code                                  0.97x vs cap 1.5x
+  [PASS] Epochs within cap :: math                                  1.92x vs cap 2.0x
+  [PASS] Epochs within cap :: indic_unverified                      0.62x vs cap 1.5x
+  [PASS] Epochs within cap :: agentic                               1.50x vs cap 1.5x
+  [PASS] Epochs within cap :: indic_verified                        2.00x vs cap 2.0x
+  [PASS] Epochs within cap :: indic_translated                      0.82x vs cap 1.0x
+  [PASS] Epochs within cap :: reasoning                             1.50x vs cap 1.5x
+  [PASS] Epochs within cap :: forums                                0.34x vs cap 1.0x
+  [PASS] Epochs within cap :: multilingual                          0.08x vs cap 1.0x
+  [PASS] Epochs below free-repetition ceiling :: english            0.32x (ceiling 4x)
+  [PASS] Epochs below free-repetition ceiling :: code               0.97x (ceiling 4x)
+  [PASS] Epochs below free-repetition ceiling :: math               1.92x (ceiling 4x)
+  [PASS] Epochs below free-repetition ceiling :: indic_unverified   0.62x (ceiling 4x)
+  [PASS] Epochs below free-repetition ceiling :: agentic            1.50x (ceiling 4x)
+  [PASS] Epochs below free-repetition ceiling :: indic_verified     2.00x (ceiling 4x)
+  [PASS] Epochs below free-repetition ceiling :: indic_translated   0.82x (ceiling 4x)
+  [PASS] Epochs below free-repetition ceiling :: indic_synthetic    0.00x (ceiling 4x)
+  [PASS] Epochs below free-repetition ceiling :: reasoning          1.50x (ceiling 4x)
+  [PASS] Epochs below free-repetition ceiling :: forums             0.34x (ceiling 4x)
+  [PASS] Epochs below free-repetition ceiling :: multilingual       0.08x (ceiling 4x)
+  [PASS] Synthetic gap is declared-generable :: agentic             needs 165B generated (69% of lane)
+  [PASS] Synthetic gap is declared-generable :: indic_synthetic     needs 160B generated (100% of lane)
+  [PASS] Synthetic gap is declared-generable :: reasoning           needs 115B generated (72% of lane)
+  [PASS] Synthetic Indic <= parity with native                      synthetic/native = 0.35x (cap 1.0x)
+  [PASS] Indic lane is majority NATIVE                              native = 57.5% of Indic lane
+  [PASS] Verified-native anneal is a SUBSET of lane budget, not additive anneal 44B <= lane 180B
+  [PASS] Verified-native TOTAL exposure within cap                  2.00x vs cap 2.0x
+  [PASS] Protected floor satisfiable in every stage                 binding stage 'S0 Warmup' has 10.0% native vs floor 8%
+  [PASS] Anneal reserve shares sum to 1.0                           sum = 1.0000
+  [PASS] Reserve size == S4 stage size                              reserve 200B vs S4 200B
+  [PASS] Blend ramp within rate limit :: S0->S1                     -3.6pp on 'english' over 30B = 12.0pp/100B
+  [PASS] Ramp fits inside stages :: S0->S1                          head consumes 1% of incoming stage
+  [PASS] Blend ramp within rate limit :: S1->S2                     -15.4pp on 'english' over 128B = 12.0pp/100B
+  [PASS] Ramp fits inside stages :: S1->S2                          head consumes 7% of incoming stage
+  [PASS] Blend ramp within rate limit :: S2->S3                     +11.0pp on 'english' over 92B = 12.0pp/100B
+  [PASS] Ramp fits inside stages :: S2->S3                          head consumes 15% of incoming stage
+  [PASS] Blend ramp within rate limit :: S3->S4                     -17.0pp on 'code' over 142B = 12.0pp/100B
+  [PASS] Ramp fits inside stages :: S3->S4                          head consumes 35% of incoming stage
+  [PASS] Collection target exceeds train budget (selector has headroom) 8.0T collected vs 4.0T trained (2.0x)
+  [PASS] Weighted Indic fertility <= 1.75 target                    weighted = 1.7199
+
+  49/49 checks passed.

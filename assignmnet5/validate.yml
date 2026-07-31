@@ -1,0 +1,21 @@
+name: validate-plan
+
+# Proves the plan is internally consistent on every push.
+# A green badge on the README means all 49 assertions pass.
+
+on: [push, pull_request]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run plan and assert consistency
+        working-directory: src
+        run: python3 -m erav5.run_plan
+      - name: Export JSON
+        working-directory: src
+        run: python3 -m erav5.export > /dev/null
