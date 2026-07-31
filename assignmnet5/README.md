@@ -418,7 +418,7 @@ Every ratio here is a hypothesis until a cheap experiment tests it. Each proxy s
 - **Metric:** max gradient-norm multiplier over the transition; loss-spike count.
 - **Rule:** keep the 100B band only if B spikes **≥5×** *and* C also spikes. **If 20B suffices, shorten the band** and reclaim schedule — arm C exists specifically to catch us over-engineering.
 
-**What was actually run:** the 3B/60B-per-arm version above needs a cluster. What a single consumer GPU can do instead is test the same *mechanism* — does an abrupt lane-share change shock the gradient, and does ramping fix it — at a size that finishes in minutes: an 818K-param transformer on two synthetic Markov-chain "lanes," on an RTX 3050 Laptop GPU (4GB VRAM). Full setup, script, and raw traces: [`proxy_runs/p4_gradient_stability/`](proxy_runs/p4_gradient_stability/results.md).
+**What was actually run:** the 3B/60B-per-arm version above needs a cluster. What a single consumer GPU can do instead is test the same *mechanism* — does an abrupt lane-share change shock the gradient, and does ramping fix it — using an 818K-param transformer on two synthetic Markov-chain "lanes," on an RTX 3050 Laptop GPU (4GB VRAM). Full setup, script, and raw traces: [`proxy_runs/p4_gradient_stability/`](proxy_runs/p4_gradient_stability/results.md).
 
 | Arm | Ramp (steps) | Grad-norm multiplier | Loss spikes |
 |---|---:|---:|---:|
