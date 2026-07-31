@@ -36,6 +36,7 @@ No dependencies. Python 3 stdlib only.
 |---|---|---|
 | [1](#1-model-family-and-token-budget) | Model family & token budget | defended budget |
 | [2](#2-capability-mixture-vs-real-supply) | Mixture vs. real supply | **share for every lane, sized against real supply** |
+| [2.3](#23-named-datasets-and-the-benchmark-each-lane-defends) | Named datasets & benchmark map | **every lane tied to a real source and the benchmark it defends** |
 | [3](#3-indic-lane--the-four-tier-split) | Indic four-tier split | **verified / unverified / translated / synthetic** |
 | [4](#4-curriculum--five-stages) | Curriculum & stages | agentic, reasoning, long-context slots |
 | [5](#5-difficulty-and-reasoning-length-bands) | Difficulty bands | **concrete example at each level** |
@@ -126,6 +127,26 @@ Three lanes cannot be filled from real data. Each is named, and each is paired w
 | **Indic synthetic** | 0% | 0.160T | **COMET + round-trip + ~1% paid native audit** per batch |
 
 The principle: a majority-synthetic lane is defensible **only** when every generated token passes an independent pass/fail gate that was not itself generated. Answer-checking and execution are such gates. "It reads fluently" is not — which is precisely why the **English lane is 0% synthetic** despite synthetic prose being the cheapest thing on this list to produce.
+
+The agentic lane's 31.2% real coverage is **`Public agent trajectories (ToolBench/WebArena-class)`** — 0.050T unique, execution-unverified as collected, `[PUB]` in `config.py`'s inventory — topped up by **`Own sandbox self-play (terminal/browser/Indian-stack)`**, `[EST]`, which is where the execution-checking gate above actually applies. The reasoning lane's 28.1% is **`Public worked-solution / CoT corpora`** — 0.030T unique, `[PUB]` — topped up by **`RLVR-verified distilled long CoT`**, `[EST]`, gated by the answer-checking mechanism above. Full inventory with license and provenance tags: [`src/erav5/config.py`](src/erav5/config.py).
+
+### 2.3 Named datasets and the benchmark each lane defends
+
+Every lane's real inventory source(s) and the benchmark its share is sized to win — so a reviewer can trace *why* a number is what it is back to both a countable supply and a target, not just one or the other.
+
+| Lane | Real inventory source(s) | Target benchmark(s) |
+|---|---|---|
+| English web & knowledge | FineWeb-Edu/DCLM-grade web, `.in` news/gov/courts/Hansard, books/long-form, Wikipedia | MMLU, held-out perplexity |
+| Code | Stack-v2 permissive (deduped, lint/exec-gated), PRs/issues/commit histories, notebooks | HumanEval, MBPP, SWE-bench (leakage risk, §8) |
+| Math & science | FineMath-grade + OpenWebMath, arXiv/PMC full text, NCERT/JEE/UPSC prep | GSM8K, MATH, in-house JEE/UPSC-style eval (§5 Band-2 example) |
+| Indic — verified/unverified native | Sangraha-verified core, OCR'd books/news, legacy-font rescue, FineWeb2-Indic, Parliament/judgment records, ASR transcripts | MILU, IndicXTREME, IndicGLUE (per-language accuracy) |
+| Indic — translated | BPCC + Samanantar parallel corpus, Sangraha MT-flagged portion | FLORES-200 Indic pairs, IN22 |
+| Indic — synthetic | Generated (structure-preserving translation, transliteration doubles, distilled CoT) — backstops the tiers above | Same as verified/unverified — synthetic exists to cover where verified is thin, evaluated identically |
+| Agentic | `Public agent trajectories (ToolBench/WebArena-class)`, `Own sandbox self-play` | BFCL function-call accuracy, τ²-bench task success |
+| Reasoning | `Public worked-solution/CoT corpora`, `RLVR-verified distilled long CoT` | BBH, AIME-style held-out set (harder/longer chains than the math lane's GSM8K/MATH) |
+| Forums & code-mix | Forums / romanized social (Hinglish, Tanglish) | GLUECoS / LinCE (code-mixed evaluation) |
+| Other multilingual | CulturaX / CC multilingual (non-Indic) | FLORES-200 non-Indic pairs, held-out multilingual perplexity |
+| Long-context (curriculum property, §4.3) | Naturally-long documents drawn from the lanes above (repos, judgments, OCR books, long-form English, full trajectories) | RULER@256K, needle-in-a-haystack retrieval |
 
 ---
 
