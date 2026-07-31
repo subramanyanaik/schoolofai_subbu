@@ -193,6 +193,8 @@ Global shares are a *weighted average* of stage mixes. If the stages don't integ
 
 V4 recorded a **~150× gradient-norm spike** when the Hindi share was raised abruptly. Every transition is therefore **ramped, not stepped**, at a rate limit of **12pp per 100B tokens**. Ramps **straddle** the boundary (half in the outgoing tail, half in the incoming head) — otherwise the S3→S4 ramp alone would consume 70% of the anneal and destroy the cooldown.
 
+The ramp-vs-step mechanism itself is executed and confirmed at small scale (§10, P4) — real text on a real GPU reproduces the shock (6.04× at an abrupt transition) and shows it collapsing to ~1.5–1.8× with even a short ramp, with little further gain from lengthening it. The rate limit above (12pp/100B) is not yet the number that small-scale evidence sets — it stands pending the real 3B/60B P4 run, which the small-scale result now points toward testing a shorter band first.
+
 | Transition | Worst lane | Δ | Ramp | Split | Rate |
 |---|---|---|---|---|---|
 | S0 → S1 | english | −3.6pp | 30.2B | 15.1B + 15.1B (1% of S1) | 12.0pp/100B |
@@ -418,18 +420,33 @@ Every ratio here is a hypothesis until a cheap experiment tests it. Each proxy s
 - **Metric:** max gradient-norm multiplier over the transition; loss-spike count.
 - **Rule:** keep the 100B band only if B spikes **≥5×** *and* C also spikes. **If 20B suffices, shorten the band** and reclaim schedule — arm C exists specifically to catch us over-engineering.
 
-**What was actually run:** the 3B/60B-per-arm version above needs a cluster. What a single consumer GPU can do instead is test the same *mechanism* — does an abrupt lane-share change shock the gradient, and does ramping fix it — using an 818K-param transformer on two synthetic Markov-chain "lanes," on an RTX 3050 Laptop GPU (4GB VRAM). Full setup, script, and raw traces: [`proxy_runs/p4_gradient_stability/`](proxy_runs/p4_gradient_stability/results.md).
+**What was actually run:** the 3B/60B-per-arm version above needs a cluster. What a single consumer GPU can do instead is test the same *mechanism* — does an abrupt lane-share change shock the gradient, and does ramping fix it — at increasing rigor, in two passes. Full setup, scripts, and raw traces: [`proxy_runs/p4_gradient_stability/`](proxy_runs/p4_gradient_stability/).
+
+**Pass 1** (818K-param transformer, synthetic Markov-chain "lanes", single seed, 3 ramp lengths — [results.md](proxy_runs/p4_gradient_stability/results.md)):
 
 | Arm | Ramp (steps) | Grad-norm multiplier | Loss spikes |
 |---|---:|---:|---:|
-| B — abrupt step | 0 | **2.84×** | 11 |
-| C — short ramp (∝ 20B) | 60 | **1.29×** | 0 |
-| A — long ramp (∝ 100B) | 300 | **1.11×** | 0 |
+| B — abrupt step | 0 | 2.84× | 11 |
+| C — short ramp (∝ 20B) | 60 | 1.29× | 0 |
+| A — long ramp (∝ 100B) | 300 | 1.11× | 0 |
 
-Applying the rule above literally: B spiked 2.84×, under the 5× bar the plan itself set, and C didn't spike at all. At this scale the numbers point toward **shortening the band**, not confirming the 100B width — the exact outcome arm C exists to catch. The mechanism is real and reproduced under an actual run (shock shrinks monotonically as ramp length grows); the specific "100B vs 20B tokens" number is not something an 818K-parameter model on synthetic data can set — that still needs the real 3B/60B run. What this buys: concrete evidence the ramping mechanism is worth its schedule cost, and a specific reason to test the shorter band seriously before assuming the wider one by default.
+**Pass 2, deepened** (2.73M-param transformer — 3.3× larger; lane A/B are this repo's own real prose vs. real Python source, not synthetic chains; 8 ramp lengths swept from 0–300 steps; 3 seeds per point reported as mean ± std — [results_v2.md](proxy_runs/p4_gradient_stability/results_v2.md)):
+
+| Ramp (steps) | Mean grad-norm multiplier | Std | Mean loss spikes |
+|---:|---:|---:|---:|
+| 0 (abrupt) | **6.038×** | ±0.917 | 1.7 |
+| 20 | **1.692×** | ±0.085 | 0.0 |
+| 40 | **1.780×** | ±0.312 | 0.0 |
+| 60 | **1.741×** | ±0.051 | 0.0 |
+| 100 | **1.503×** | ±0.055 | 0.0 |
+| 150 | **1.457×** | ±0.017 | 0.0 |
+| 200 | **1.519×** | ±0.086 | 0.0 |
+| 300 | **1.472×** | ±0.027 | 0.0 |
+
+Real text produces a bigger, more realistic shock than the synthetic chains did (6.04× vs 2.84×), which strengthens confidence the mechanism itself is real. Applying the rule above literally: B clears the 5× bar convincingly; every non-zero ramp tested — down to 20 steps — spikes 0 loss-spikes and sits at 1.5–1.8× multiplier, well under any reasonable spike bar. The curve from 20 to 300 steps is flat and noisy (per-point std often comparable to the gaps between points), not a clean monotonic decline, so the honest read is narrower and sharper than "somewhere under 100B": **nearly all of ramping's protection is captured by a short ramp, and lengthening it well past that point buys little at this scale.** The specific "100B vs 20B tokens" number for a 15B-active MoE still needs the real 3B/60B run — two independent small-scale runs agreeing on the *shape* of the answer is evidence to prioritize testing a **shorter** band as the primary candidate there, not the 100B width by default.
 </details>
 
-**Status: P4 executed at small scale (results above); P1, P2, P3, P5 pre-registered, not yet executed.** This document is the hypothesis. Numbers in §1–§9 stand until a proxy fires — P4's small-scale run confirms the ramping mechanism itself but does not yet set the 100B-vs-20B width, so §4.2's band size stands pending the real-scale P4 run.
+**Status: P4 executed at small scale, in two passes of increasing rigor (results above); P1, P2, P3, P5 pre-registered, not yet executed.** This document is the hypothesis. Numbers in §1–§9 stand until a proxy fires — P4's small-scale runs confirm the ramping mechanism itself and now point specifically toward a shorter band, but do not set the exact 100B-vs-20B width, so §4.2's band size stands pending the real-scale P4 run.
 
 ---
 
@@ -486,7 +503,7 @@ Full output: [`results/computed_output.txt`](results/computed_output.txt) · Mac
 │   ├── computed_output.txt    11-section run output, 49/49 passing
 │   └── plan.json              machine-readable export of every number
 ├── proxy_runs/
-│   └── p4_gradient_stability/ P4 executed on GPU — script, raw traces, results.md
+│   └── p4_gradient_stability/ P4 executed on GPU, two passes — scripts, raw traces, results.md/results_v2.md
 └── src/erav5/
     ├── config.py              ALL input assumptions — change one number, plan re-derives
     ├── budget.py              compute → tokens (MoE-aware: C = 6·N_active·D)
