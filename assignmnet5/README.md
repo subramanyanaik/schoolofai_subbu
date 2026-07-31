@@ -34,7 +34,6 @@ No dependencies. Python 3 stdlib only.
 
 | § | Section | Rubric criterion it answers |
 |---|---|---|
-| [0](#0-the-correction-that-reframes-everything) | The MoE correction | *why the budget is what it is* |
 | [1](#1-model-family-and-token-budget) | Model family & token budget | defended budget |
 | [2](#2-capability-mixture-vs-real-supply) | Mixture vs. real supply | **share for every lane, sized against real supply** |
 | [3](#3-indic-lane--the-four-tier-split) | Indic four-tier split | **verified / unverified / translated / synthetic** |
@@ -49,22 +48,6 @@ No dependencies. Python 3 stdlib only.
 | [12](#12-one-page-defence) | One-page defence | — |
 
 **Prior work:** [Session 3 — data & tokenizer](https://tourmaline-longma-0a9e58.netlify.app/) · [Session 4 — cleaning pipeline](https://merry-banoffee-08ed4e.netlify.app/)
-
----
-
-## 0. The correction that reframes everything
-
-My Session-3 submission specified a **40B dense** model on 15T tokens. That was the wrong anchor. ERA V4's actual reference is a **120B Mixture-of-Experts** trained on 1.15T tokens, and MoE changes the arithmetic at the root:
-
-> **Training FLOPs scale with *active* parameters, not total.**
-> `C = 6 · N_active · D`
-
-A 120B MoE with 15B active costs the same per token as a 15B dense model. This is *why* V4 could train 120B on an 8-GPU node in 67 days. Two consequences drive this entire plan:
-
-1. **The token budget is set by `N_active`** — so it is far smaller than "120B model" suggests.
-2. **The data *diversity* requirement is set by `N_total`** — more experts means more distinct things to specialise in, so a repeated token is worth *less* to an MoE than to a dense model of equal active size. **Breadth beats epochs here.**
-
-That second point is the whole justification for the "collect more, clean harder, don't inflate the budget" strategy below.
 
 ---
 
