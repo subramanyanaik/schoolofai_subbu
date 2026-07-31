@@ -5,7 +5,7 @@
 ![python](https://img.shields.io/badge/python-3.12-blue)
 ![deps](https://img.shields.io/badge/dependencies-none-lightgrey)
 
-**Session-5 assignment.** A defended token budget for every capability lane, the Indic split across all four provenance tiers, a protected floor, an anneal reserve, difficulty bands, and five pre-registered proxy experiments.
+**Session-5 assignment.** A defended token budget for every capability lane, the Indic split across all four provenance tiers, a protected floor, an anneal reserve, difficulty bands, and five proxy experiments — one of them executed on real GPU hardware, not just specified (§10).
 
 **Every number below is computed by the code in this repo, not typed by hand.**
 
@@ -26,7 +26,7 @@ No dependencies. Python 3 stdlib only.
 | **Protected floor** | 8% of every batch, **native-Indic only** (§6) |
 | **Anneal reserve** | 0.200T held back (§6) |
 | **Validation** | **49/49 checks pass** (§11) · [`results/computed_output.txt`](results/computed_output.txt) |
-| **Proxy programme** | 5 experiments, $10,743 = **1.70%** of the flagship run (§10) |
+| **Proxy programme** | 5 experiments, $10,743 = **1.70%** of the flagship run · **P4 executed** at small scale (§10) |
 
 ---
 
@@ -363,16 +363,16 @@ English, forums, and multilingual are **deprioritised** — 3×, 3×, and 12× s
 
 Every ratio here is a hypothesis until a cheap experiment tests it. Each proxy states what would **refute** the plan, not only what would confirm it — a decision rule that can only fire one way is not a test.
 
-| ID | Scale | Tokens/arm | Arms | GPU-h | Cost | Question |
-|---|---|---|---|---|---|---|
-| **P5** | 1B | 20B | 2 | 169 | $421 | Loss-masking on tool observations |
-| **P2** | 1B | 20B | 2 | 169 | $421 | Protected floor necessity |
-| **P3** | 1B | 20B | 2 | 169 | $421 | Agentic verification gate |
-| **P1** | 3B | 60B | 2 | 1,517 | $3,792 | Indic synthetic parity cap |
-| **P4** | 3B | 60B | 3 | 2,275 | $5,688 | Mixture-transition gradient stability |
-| | | | | **4,297** | **$10,743** | **= 1.70% of the flagship run (~$632K)** |
+| ID | Scale | Tokens/arm | Arms | GPU-h | Cost | Question | Status |
+|---|---|---|---|---|---|---|---|
+| **P5** | 1B | 20B | 2 | 169 | $421 | Loss-masking on tool observations | pre-registered |
+| **P2** | 1B | 20B | 2 | 169 | $421 | Protected floor necessity | pre-registered |
+| **P3** | 1B | 20B | 2 | 169 | $421 | Agentic verification gate | pre-registered |
+| **P1** | 3B | 60B | 2 | 1,517 | $3,792 | Indic synthetic parity cap | pre-registered |
+| **P4** | 3B | 60B | 3 | 2,275 | $5,688 | Mixture-transition gradient stability | **executed at small scale — see below** |
+| | | | | **4,297** | **$10,743** | **= 1.70% of the flagship run (~$632K)** | |
 
-**Run order: P5 → P2 → P3 → P1 → P4.** P5 is cheapest and its result changes how every other agentic number is counted, so it goes first.
+**Run order: P5 → P2 → P3 → P1 → P4.** P5 is cheapest and its result changes how every other agentic number is counted, so it goes first — P4 was run out of order here because its mechanism (a scheduling question, not a language-quality one) is the one a small synthetic proxy can actually test without curated real-language data.
 
 <details>
 <summary><b>P5 · Loss-masking on tool observations</b> (1B, 20B/arm) — click to expand</summary>
@@ -411,15 +411,25 @@ Every ratio here is a hypothesis until a cheap experiment tests it. Each proxy s
 </details>
 
 <details>
-<summary><b>P4 · Mixture-transition gradient stability</b> (3B, 60B/arm, 3 arms)</summary>
+<summary><b>P4 · Mixture-transition gradient stability</b> (3B, 60B/arm, 3 arms) — <b>executed at small scale, numbers below</b></summary>
 
 - **H:** ramping lane-share changes across a ≥100B-token band prevents the ~150× gradient-norm spike V4 recorded.
 - **A:** 100B linear ramp · **B:** abrupt step at the boundary · **C:** 20B ramp (is the band over-specified?)
 - **Metric:** max gradient-norm multiplier over the transition; loss-spike count.
 - **Rule:** keep the 100B band only if B spikes **≥5×** *and* C also spikes. **If 20B suffices, shorten the band** and reclaim schedule — arm C exists specifically to catch us over-engineering.
+
+**What was actually run:** the 3B/60B-per-arm version above needs a cluster. What a single consumer GPU can do instead is test the same *mechanism* — does an abrupt lane-share change shock the gradient, and does ramping fix it — at a size that finishes in minutes: an 818K-param transformer on two synthetic Markov-chain "lanes," on an RTX 3050 Laptop GPU (4GB VRAM). Full setup, script, and raw traces: [`proxy_runs/p4_gradient_stability/`](proxy_runs/p4_gradient_stability/results.md).
+
+| Arm | Ramp (steps) | Grad-norm multiplier | Loss spikes |
+|---|---:|---:|---:|
+| B — abrupt step | 0 | **2.84×** | 11 |
+| C — short ramp (∝ 20B) | 60 | **1.29×** | 0 |
+| A — long ramp (∝ 100B) | 300 | **1.11×** | 0 |
+
+Applying the rule above literally: B spiked 2.84×, under the 5× bar the plan itself set, and C didn't spike at all. At this scale the numbers point toward **shortening the band**, not confirming the 100B width — the exact outcome arm C exists to catch. The mechanism is real and reproduced under an actual run (shock shrinks monotonically as ramp length grows); the specific "100B vs 20B tokens" number is not something an 818K-parameter model on synthetic data can set — that still needs the real 3B/60B run. What this buys: concrete evidence the ramping mechanism is worth its schedule cost, and a specific reason to test the shorter band seriously before assuming the wider one by default.
 </details>
 
-**Status: pre-registered, not yet executed.** This document is the hypothesis. Numbers in §1–§9 stand until a proxy fires.
+**Status: P4 executed at small scale (results above); P1, P2, P3, P5 pre-registered, not yet executed.** This document is the hypothesis. Numbers in §1–§9 stand until a proxy fires — P4's small-scale run confirms the ramping mechanism itself but does not yet set the 100B-vs-20B width, so §4.2's band size stands pending the real-scale P4 run.
 
 ---
 
@@ -475,6 +485,8 @@ Full output: [`results/computed_output.txt`](results/computed_output.txt) · Mac
 ├── results/
 │   ├── computed_output.txt    11-section run output, 49/49 passing
 │   └── plan.json              machine-readable export of every number
+├── proxy_runs/
+│   └── p4_gradient_stability/ P4 executed on GPU — script, raw traces, results.md
 └── src/erav5/
     ├── config.py              ALL input assumptions — change one number, plan re-derives
     ├── budget.py              compute → tokens (MoE-aware: C = 6·N_active·D)

@@ -1,0 +1,33 @@
+{
+  "device": "cuda",
+  "model_params": 817920,
+  "vocab": 64,
+  "seq_len": 64,
+  "wall_clock_seconds": 109.47179055213928,
+  "summaries": [
+    {
+      "name": "B_abrupt_step",
+      "ramp_steps": 0,
+      "baseline_median_grad_norm": 0.3274668753147125,
+      "peak_grad_norm": 0.9291713833808899,
+      "grad_norm_multiplier": 2.8374515208230093,
+      "loss_spike_count": 11
+    },
+    {
+      "name": "C_short_ramp",
+      "ramp_steps": 60,
+      "baseline_median_grad_norm": 0.32497575879096985,
+      "peak_grad_norm": 0.42058470845222473,
+      "grad_norm_multiplier": 1.2942033277095977,
+      "loss_spike_count": 0
+    },
+    {
+      "name": "A_long_ramp",
+      "ramp_steps": 300,
+      "baseline_median_grad_norm": 0.3225098252296448,
+      "peak_grad_norm": 0.3586871027946472,
+      "grad_norm_multiplier": 1.1121741873731823,
+      "loss_spike_count": 0
+    }
+  ]
+}
