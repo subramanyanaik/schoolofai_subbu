@@ -21,6 +21,7 @@ v2 asks a sharper question with a stronger setup:
 """
 import json
 import statistics
+import sys
 import time
 from pathlib import Path
 
@@ -32,14 +33,39 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 # ---- real text corpora -------------------------------------------------------
 HERE = Path(__file__).resolve().parent
-REPO = HERE.parent.parent  # assignmnet5/
+REPO = HERE.parent.parent  # assignment5/
 
-PROSE_FILES = ["README.md", "SPECIFICATION.md", "SETUP.md"]
-CODE_FILES = ["config.py", "budget.py", "mixture.py", "curriculum.py", "floors.py",
-              "proxy.py", "sensitivity.py", "validate.py", "export.py", "run_plan.py"]
+PROSE_FILES = ["README.md", "docs/SPECIFICATION.md"]
+CODE_FILES = [f"src/erav5/{m}.py" for m in
+              ("config", "budget", "mixture", "curriculum", "floors",
+               "proxy", "sensitivity", "validate", "export", "run_plan")]
 
-PROSE_TEXT = "".join((REPO / f).read_text(encoding="utf-8") for f in PROSE_FILES)
-CODE_TEXT = "".join((REPO / f).read_text(encoding="utf-8") for f in CODE_FILES)
+# The corpus is FROZEN into corpus_prose.txt / corpus_code.txt alongside this
+# script, and those snapshots are what the run reads. This matters for more than
+# tidiness: README.md is itself part of the prose corpus AND is where this
+# experiment's results are written up, so rebuilding the corpus from the live
+# repo on every run would make the input depend on the previous run's output.
+# Freezing the snapshot breaks that loop and makes the numbers below
+# reproducible from a clean clone indefinitely. Pass --refresh-corpus to
+# regenerate the snapshots from the current repo (which changes the inputs, and
+# therefore legitimately changes the numbers).
+PROSE_SNAPSHOT = HERE / "corpus_prose.txt"
+CODE_SNAPSHOT = HERE / "corpus_code.txt"
+
+
+def _build_corpus():
+    prose = "".join((REPO / f).read_text(encoding="utf-8") for f in PROSE_FILES)
+    code = "".join((REPO / f).read_text(encoding="utf-8") for f in CODE_FILES)
+    return prose, code
+
+
+if "--refresh-corpus" in sys.argv or not (PROSE_SNAPSHOT.exists() and CODE_SNAPSHOT.exists()):
+    PROSE_TEXT, CODE_TEXT = _build_corpus()
+    PROSE_SNAPSHOT.write_text(PROSE_TEXT, encoding="utf-8")
+    CODE_SNAPSHOT.write_text(CODE_TEXT, encoding="utf-8")
+else:
+    PROSE_TEXT = PROSE_SNAPSHOT.read_text(encoding="utf-8")
+    CODE_TEXT = CODE_SNAPSHOT.read_text(encoding="utf-8")
 
 VOCAB_CHARS = sorted(set(PROSE_TEXT + CODE_TEXT))
 VOCAB = len(VOCAB_CHARS)

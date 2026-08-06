@@ -1,0 +1,1428 @@
+"""
+ERA V5 — Mixture & Curriculum Plan
+config.py — every input assumption in one place, so a reviewer can change
+one number and re-run the whole plan.
+
+Provenance of each figure is tagged:
+  [V4]     measured on the ERA V4 run
+  [SESS]   stated in session material
+  [PUB]    published external figure (Sangraha, Stack-v2, FineWeb, etc.)
+  [EST]    our estimate — the numbers a reviewer should push hardest on
+"""
+
+# ---------------------------------------------------------------------------
+# 1. MODEL FAMILY
+# ---------------------------------------------------------------------------
+# V4 reference: 1.15T tokens, 120B MoE, + 9B / 5B / 2B dense variants. [V4]
+V4 = {
+    "tokens": 1.15e12,
+    "total_params": 120e9,
+    "shards": 33_353,
+    "gpu_days": 67 * 8,          # 67 days on an 8-GPU node [V4]
+    "usd": 100_000,
+}
+
+MODELS = {
+    # name          total     active   role
+    "V5-Proxy-1B":  dict(total=1.0e9,   active=1.0e9,   kind="dense", role="mixture ablation"),
+    "V5-Proxy-3B":  dict(total=3.0e9,   active=3.0e9,   kind="dense", role="mixture ablation"),
+    "V5-Seed-8B":   dict(total=8.0e9,   active=8.0e9,   kind="dense", role="growth seed / data gate"),
+    "V5-Base":      dict(total=120e9,   active=15e9,    kind="moe",   role="V4-parity flagship"),
+    "V5-Max":       dict(total=200e9,   active=20e9,    kind="moe",   role="stretch, if collection over-delivers"),
+}
+FLAGSHIP = "V5-Base"
+
+# ---------------------------------------------------------------------------
+# 2. COMPUTE ENVELOPE  (change these to match your actual cluster)
+# ---------------------------------------------------------------------------
+CLUSTER = {
+    "n_gpus":            256,      # [EST] target cluster for V5
+    "gpu_peak_tflops":   989.0,    # H100 BF16 dense peak
+    "mfu":               0.40,     # [EST] realistic MoE MFU
+    "days":              90,       # [EST] wall-clock training window
+    "precision_speedup": 1.0,      # 2.0 if FP8 training
+}
+
+# Scaling-law constants
+CHINCHILLA_TOK_PER_PARAM = 20.0        # [SESS] compute-optimal floor
+OVERTRAIN_TARGET         = 267.0       # [EST] tok/active-param — serving-optimised
+REPETITION_FREE_EPOCHS   = 4.0         # [SESS] repeats ~free to ~4 passes
+REPETITION_DEAD_EPOCHS   = 16.0        # [SESS] wasted compute by ~16 passes
+
+# ---------------------------------------------------------------------------
+# 3. TOKEN BUDGETS
+# ---------------------------------------------------------------------------
+# Collection target is deliberately ~2x the training budget so the OPUS-class
+# selector can be *selective* instead of being forced into repetition.
+COLLECTION_TARGET = 8.0e12    # [EST] cleaned, gated, provenance-stamped
+TRAIN_BUDGET      = 4.0e12    # [EST] tokens actually consumed by V5-Base
+ANNEAL_RESERVE    = 0.20e12   # held back from TRAIN_BUDGET for the cooldown
+
+# ---------------------------------------------------------------------------
+# 4. DATASET INVENTORY
+# ---------------------------------------------------------------------------
+# unique_tokens = post-clean, post-global-dedup, license-cleared UNIQUE supply.
+# loss_frac     = fraction of tokens that carry gradient (Session 5 loss-mapping).
+#                 Agentic trajectories are mostly tool OUTPUT = context-only.
+# tier          = A (scarce/precious, anneal-eligible) / B (bulk) / C (filler)
+INVENTORY = [
+    # ---- English -----------------------------------------------------------
+    dict(name="FineWeb-Edu / DCLM-grade web", lane="english", unique=3.20e12,
+         loss_frac=1.00, tier="B", license="permissive", src="[PUB]"),
+    dict(name=".in news / gov / courts / Hansard", lane="english", unique=0.18e12,
+         loss_frac=1.00, tier="A", license="mixed", src="[EST]"),
+    dict(name="Books / long-form English", lane="english", unique=0.35e12,
+         loss_frac=1.00, tier="A", license="mixed", src="[EST]"),
+    dict(name="Wikipedia + reference", lane="english", unique=0.05e12,
+         loss_frac=1.00, tier="A", license="share-alike", src="[PUB]"),
+
+    # ---- Code --------------------------------------------------------------
+    dict(name="Stack-v2 permissive (deduped, lint/exec-gated)", lane="code", unique=0.78e12,
+         loss_frac=1.00, tier="B", license="permissive", src="[PUB]"),
+    dict(name="PRs / issues / commit histories", lane="code", unique=0.09e12,
+         loss_frac=1.00, tier="A", license="permissive", src="[EST]"),
+    dict(name="Notebooks / competitive programming", lane="code", unique=0.04e12,
+         loss_frac=1.00, tier="A", license="mixed", src="[EST]"),
+
+    # ---- Math & science ----------------------------------------------------
+    dict(name="FineMath-grade + OpenWebMath", lane="math", unique=0.11e12,
+         loss_frac=1.00, tier="A", license="permissive", src="[PUB]"),
+    dict(name="arXiv / PMC full text", lane="math", unique=0.10e12,
+         loss_frac=1.00, tier="B", license="mixed", src="[PUB]"),
+    dict(name="NCERT / JEE / UPSC prep (en+hi+regional)", lane="math", unique=0.04e12,
+         loss_frac=1.00, tier="A", license="unknown", src="[EST]"),
+
+    # ---- Indic: VERIFIED NATIVE  (the scarcest thing we own) ---------------
+    # Sangraha headline 251B is ~65% MT; verified public native < 100B. [PUB]
+    dict(name="Sangraha-verified native core", lane="indic_verified", unique=0.042e12,
+         loss_frac=1.00, tier="A", license="mixed", src="[PUB]"),
+    dict(name="OCR'd books/news, conf-gated + native audit", lane="indic_verified", unique=0.030e12,
+         loss_frac=1.00, tier="A", license="mixed", src="[EST]"),
+    dict(name="Legacy-font rescue (KrutiDev/Shree-Lipi/Bamini)", lane="indic_verified", unique=0.018e12,
+         loss_frac=1.00, tier="A", license="mixed", src="[EST]"),
+
+    # ---- Indic: UNVERIFIED NATIVE -----------------------------------------
+    dict(name="FineWeb2-Indic + broader Sangraha pool", lane="indic_unverified", unique=0.28e12,
+         loss_frac=1.00, tier="B", license="permissive", src="[PUB]"),
+    dict(name="Parliament / judgments / gov records", lane="indic_unverified", unique=0.09e12,
+         loss_frac=1.00, tier="A", license="gov-open", src="[EST]"),
+    dict(name="ASR-mined speech transcripts", lane="indic_unverified", unique=0.08e12,
+         loss_frac=1.00, tier="B", license="mixed", src="[EST]"),
+
+    # ---- Indic: TRANSLATED -------------------------------------------------
+    dict(name="BPCC + Samanantar parallel corpus", lane="indic_translated", unique=0.06e12,
+         loss_frac=1.00, tier="B", license="permissive", src="[PUB]"),
+    dict(name="Sangraha MT-flagged portion", lane="indic_translated", unique=0.16e12,
+         loss_frac=1.00, tier="C", license="permissive", src="[PUB]"),
+
+    # ---- Indic: SYNTHETIC (generated on demand, QC-gated) ------------------
+    dict(name="Structure-preserving translation (14 langs)", lane="indic_synthetic", unique=None,
+         loss_frac=1.00, tier="B", license="own", src="[EST]"),
+    dict(name="Transliteration doubles (script<->roman)", lane="indic_synthetic", unique=None,
+         loss_frac=1.00, tier="B", license="own", src="[EST]"),
+    dict(name="Distilled CoT re-rendered in Indic", lane="indic_synthetic", unique=None,
+         loss_frac=1.00, tier="A", license="own", src="[EST]"),
+
+    # ---- Agentic  (loss_frac is the headline trap) -------------------------
+    dict(name="Public agent trajectories (ToolBench/WebArena-class)", lane="agentic",
+         unique=0.050e12, loss_frac=0.35, tier="B", license="mixed", src="[PUB]"),
+    dict(name="Own sandbox self-play (terminal/browser/Indian-stack)", lane="agentic",
+         unique=None, loss_frac=0.38, tier="A", license="own", src="[EST]"),
+
+    # ---- Reasoning ---------------------------------------------------------
+    dict(name="Public worked-solution / CoT corpora", lane="reasoning", unique=0.030e12,
+         loss_frac=1.00, tier="A", license="mixed", src="[PUB]"),
+    dict(name="RLVR-verified distilled long CoT", lane="reasoning", unique=None,
+         loss_frac=1.00, tier="A", license="own", src="[EST]"),
+
+    # ---- Forums & code-mix -------------------------------------------------
+    dict(name="Forums / romanized social (Hinglish, Tanglish)", lane="forums", unique=0.35e12,
+         loss_frac=1.00, tier="B", license="mixed", src="[EST]"),
+
+    # ---- Other multilingual ------------------------------------------------
+    dict(name="CulturaX / CC multilingual (non-Indic)", lane="multilingual", unique=1.50e12,
+         loss_frac=1.00, tier="C", license="permissive", src="[PUB]"),
+]
+
+# ---------------------------------------------------------------------------
+# 5. TARGET MIXTURE (global shares of TRAIN_BUDGET)
+# ---------------------------------------------------------------------------
+MIXTURE = {
+    "english":            0.30,
+    "code":               0.22,
+    "math":               0.12,
+    "indic_verified":     0.045,
+    "indic_unverified":   0.070,
+    "indic_translated":   0.045,
+    "indic_synthetic":    0.040,
+    "agentic":            0.060,
+    "reasoning":          0.040,
+    "forums":             0.030,
+    "multilingual":       0.030,
+}
+
+INDIC_LANES = ["indic_verified", "indic_unverified", "indic_translated", "indic_synthetic"]
+NATIVE_INDIC_LANES = ["indic_verified", "indic_unverified"]
+
+# Max epochs we are willing to run per lane (repetition discipline)
+MAX_EPOCHS = {
+    "english": 1.0, "code": 1.5, "math": 2.0,
+    "indic_verified": 2.0,      # scarce + eval-adjacent -> hard cap
+    "indic_unverified": 1.5,
+    "indic_translated": 1.0,
+    "indic_synthetic": 1.0,
+    "agentic": 1.5, "reasoning": 1.5,
+    "forums": 1.0, "multilingual": 1.0,
+}
+
+# Protected always-on floor. V4 used 8% Indic. [V4/SESS]
+# We tighten the DEFINITION: only NATIVE Indic counts toward the floor.
+FLOOR = dict(pct=0.08, lanes=NATIVE_INDIC_LANES, batch_seqs=512)
+
+# Synthetic discipline: synthetic Indic must not exceed native Indic. [SESS 30-50% band]
+SYNTHETIC_PARITY_CAP = 1.0
+
+# ---------------------------------------------------------------------------
+# 6. FERTILITY (from the Session-3 assignment, carried forward unchanged)
+# ---------------------------------------------------------------------------
+VOCAB_SIZE = 196_608
+FERTILITY_TARGETS = {
+    "english": 1.40, "hinglish": 1.45, "hindi": 1.55, "punjabi": 1.65,
+    "gujarati": 1.70, "urdu": 1.70, "bengali": 1.75, "marathi": 1.80,
+    "odia": 1.80, "assamese": 1.80, "telugu": 1.95, "kannada": 1.95,
+    "tamil": 2.05, "malayalam": 2.15,
+}
+# Approximate share of Indian-language internet users. [EST]
+LANG_WEIGHTS = {
+    "hindi": 0.335, "bengali": 0.092, "marathi": 0.083, "telugu": 0.077,
+    "tamil": 0.070, "gujarati": 0.056, "urdu": 0.050, "kannada": 0.046,
+    "odia": 0.036, "malayalam": 0.035, "punjabi": 0.035, "assamese": 0.016,
+    "hinglish": 0.069,
+}
+BASELINE_FERTILITY = {"english_centric_bpe": 4.5, "gemma4_262k": 2.2}
+"""
+budget.py — Derive the token budget from compute instead of asserting it.
+
+The single most important correction from the earlier 40B draft:
+for a Mixture-of-Experts model the training FLOPs scale with ACTIVE
+parameters, not total parameters.
+
+    C  =  6 * N_active * D          (fwd+bwd, dense-equivalent)
+
+A 120B MoE with 15B active costs the same per token as a 15B dense model,
+but carries the knowledge capacity of something far larger. That is exactly
+why V4 could train 120B on a small node -- and it is why the token budget
+must be computed from N_active, while the DATA DIVERSITY requirement is
+driven by N_total (more experts = more distinct things to specialise in).
+"""
+from . import config as C
+
+
+def cluster_flops(cl=None):
+    """Total training FLOPs available from the cluster."""
+    cl = cl or C.CLUSTER
+    per_gpu = cl["gpu_peak_tflops"] * 1e12 * cl["mfu"] * cl["precision_speedup"]
+    seconds = cl["days"] * 24 * 3600
+    return per_gpu * cl["n_gpus"] * seconds
+
+
+def tokens_from_flops(flops, n_active):
+    """Invert C = 6*N*D."""
+    return flops / (6.0 * n_active)
+
+
+def flops_for_run(n_active, tokens):
+    return 6.0 * n_active * tokens
+
+
+def chinchilla_floor(n_active):
+    return C.CHINCHILLA_TOK_PER_PARAM * n_active
+
+
+def overtrain_ratio(n_active, tokens):
+    return tokens / n_active
+
+
+def budget_report():
+    m = C.MODELS[C.FLAGSHIP]
+    n_act, n_tot = m["active"], m["total"]
+    avail = cluster_flops()
+    feasible = tokens_from_flops(avail, n_act)
+    planned = C.TRAIN_BUDGET
+    needed = flops_for_run(n_act, planned)
+
+    # V4 back-reference: what did V4 actually cost?
+    v4_flops_if_15b_active = flops_for_run(15e9, C.V4["tokens"])
+
+    return {
+        "model": C.FLAGSHIP,
+        "total_params": n_tot,
+        "active_params": n_act,
+        "sparsity": n_act / n_tot,
+        "cluster_flops": avail,
+        "feasible_tokens": feasible,
+        "planned_tokens": planned,
+        "flops_needed": needed,
+        "compute_headroom": avail / needed,
+        "chinchilla_floor": chinchilla_floor(n_act),
+        "overtrain_x_chinchilla": planned / chinchilla_floor(n_act),
+        "tok_per_active_param": overtrain_ratio(n_act, planned),
+        "tok_per_total_param": planned / n_tot,
+        "v4_tokens": C.V4["tokens"],
+        "v5_over_v4_tokens": planned / C.V4["tokens"],
+        "v4_flops_ref": v4_flops_if_15b_active,
+        "flops_vs_v4": needed / v4_flops_if_15b_active,
+        "collection_target": C.COLLECTION_TARGET,
+        "selection_headroom": C.COLLECTION_TARGET / planned,
+    }
+
+
+def variant_table():
+    """Token budget each family member would need at the same overtrain ratio."""
+    rows = []
+    for name, m in C.MODELS.items():
+        na = m["active"]
+        # proxies run at Chinchilla floor (cheap); production models overtrain
+        ratio = C.CHINCHILLA_TOK_PER_PARAM if "Proxy" in name else C.OVERTRAIN_TARGET
+        toks = ratio * na
+        rows.append(dict(
+            name=name, kind=m["kind"], total=m["total"], active=na,
+            role=m["role"], tok_per_active=ratio, tokens=toks,
+            flops=flops_for_run(na, toks),
+        ))
+    return rows
+"""
+mixture.py — Turn shares into tokens, then check every lane against REAL supply.
+
+This is the module that catches wishful accounting. For each lane it answers
+three questions a reviewer will ask:
+
+  1. How many unique real tokens exist?
+  2. How many epochs does the plan run over them?
+  3. If that still doesn't fill the share, how much must be GENERATED --
+     and is that generation verifiable?
+
+It also implements the Session-5 loss-mapping correction: in agentic
+trajectories, tool observations are context-only (zero loss). A lane's
+"token share" therefore overstates its real training signal, and the
+supervised-token column is the honest one.
+"""
+from collections import defaultdict
+from . import config as C
+
+
+def lane_supply():
+    """Aggregate unique real supply and loss fraction per lane."""
+    sup = defaultdict(float)
+    loss_w = defaultdict(float)
+    generated = defaultdict(bool)
+    for d in C.INVENTORY:
+        lane = d["lane"]
+        if d["unique"] is None:
+            generated[lane] = True
+            continue
+        sup[lane] += d["unique"]
+        loss_w[lane] += d["unique"] * d["loss_frac"]
+    lf = {k: (loss_w[k] / sup[k] if sup[k] else 1.0) for k in sup}
+    # lanes that are purely generated still need a loss fraction
+    for d in C.INVENTORY:
+        if d["unique"] is None and d["lane"] not in lf:
+            lf[d["lane"]] = d["loss_frac"]
+    return dict(sup), lf, dict(generated)
+
+
+def solve(budget=None, mixture=None):
+    budget = budget or C.TRAIN_BUDGET
+    mixture = mixture or C.MIXTURE
+    sup, lossfrac, gen = lane_supply()
+
+    rows = []
+    for lane, share in mixture.items():
+        target = share * budget
+        unique = sup.get(lane, 0.0)
+        cap = C.MAX_EPOCHS.get(lane, 1.0)
+
+        # How much can real data cover, respecting the epoch cap?
+        real_capacity = unique * cap
+        real_used = min(target, real_capacity)
+        epochs = (real_used / unique) if unique else 0.0
+        synth = target - real_used
+
+        # loss-bearing tokens (Session-5 loss mapping)
+        lf = lossfrac.get(lane, 1.0)
+        supervised = target * lf
+
+        rows.append(dict(
+            lane=lane, share=share, target=target,
+            unique=unique, epochs=epochs, real=real_used,
+            synthetic=synth, synth_pct=(synth / target if target else 0.0),
+            loss_frac=lf, supervised=supervised,
+            headroom=(unique / target if target else float("inf")),
+            can_generate=gen.get(lane, False),
+        ))
+    rows.sort(key=lambda r: -r["target"])
+    return rows
+
+
+def totals(rows):
+    t = sum(r["target"] for r in rows)
+    return dict(
+        tokens=t,
+        share=sum(r["share"] for r in rows),
+        real=sum(r["real"] for r in rows),
+        synthetic=sum(r["synthetic"] for r in rows),
+        supervised=sum(r["supervised"] for r in rows),
+        synth_pct=sum(r["synthetic"] for r in rows) / t,
+        supervised_pct=sum(r["supervised"] for r in rows) / t,
+    )
+
+
+def indic_rollup(rows):
+    """The four-tier Indic breakdown the assignment demands explicitly."""
+    by = {r["lane"]: r for r in rows}
+    tiers = {}
+    for lane in C.INDIC_LANES:
+        r = by[lane]
+        tiers[lane] = dict(tokens=r["target"], unique=r["unique"],
+                           epochs=r["epochs"], share_of_budget=r["share"])
+    total = sum(v["tokens"] for v in tiers.values())
+    native = sum(tiers[l]["tokens"] for l in C.NATIVE_INDIC_LANES)
+    synth = tiers["indic_synthetic"]["tokens"]
+    trans = tiers["indic_translated"]["tokens"]
+    for lane, v in tiers.items():
+        v["share_of_indic"] = v["tokens"] / total
+    return dict(
+        tiers=tiers, total=total, native=native,
+        non_native=trans + synth,
+        native_pct=native / total,
+        non_native_pct=(trans + synth) / total,
+        synthetic_to_native=synth / native,
+        parity_cap=C.SYNTHETIC_PARITY_CAP,
+        parity_ok=(synth / native) <= C.SYNTHETIC_PARITY_CAP,
+        headline_share=total / C.TRAIN_BUDGET,
+    )
+
+
+def starved_lanes(rows, threshold=0.5):
+    """Lanes where real supply covers less than `threshold` of the target.
+    These are where the cleaning effort must now be aimed."""
+    return [r for r in rows if r["target"] and (r["real"] / r["target"]) < threshold]
+"""
+curriculum.py — ordering and timing, not just proportions.
+
+Three things this encodes that a flat mixture table cannot:
+
+  1. STAGE x LANE reconciliation. Global shares are a weighted average of
+     stage mixes. If the stages don't integrate back to the global shares,
+     the plan is internally inconsistent -- so we compute the integral and
+     assert on it rather than eyeballing it.
+
+  2. GRADIENT-SAFE BLENDING BANDS. V4 recorded a ~150x gradient-norm spike
+     when the Hindi share was raised abruptly. Any lane share change is
+     therefore ramped linearly across a multi-billion-token band, and we
+     compute the max per-100B-token delta so it can be bounded.
+
+  3. DIFFICULTY / REASONING-LENGTH BANDS with a concrete example each,
+     scheduled so early training is Band 0-1 and the anneal is Band 3-4.
+"""
+from . import config as C
+
+# ---------------------------------------------------------------------------
+# Stage schedule. Fractions are of TRAIN_BUDGET.
+# ---------------------------------------------------------------------------
+STAGES = [
+    dict(name="S0 Warmup",      frac=0.0375, ctx=8_192,   lr="warmup->peak",
+         note="embedding + router warmup; mixture held at S1 proportions"),
+    dict(name="S1 Foundation",  frac=0.6125, ctx=8_192,   lr="peak, cosine",
+         note="web-heavy; language, world knowledge, basic syntax"),
+    dict(name="S2 Skill ramp",  frac=0.2250, ctx=32_768,  lr="cosine decay",
+         note="code/math/reasoning up; ctx 8K->32K"),
+    dict(name="S3 Long context",frac=0.0750, ctx=262_144, lr="low, flat",
+         note="ctx 32K->256K on naturally-long docs only"),
+    dict(name="S4 Anneal",      frac=0.0500, ctx=262_144, lr="->0",
+         note="Tier-A reserve only; LR cooldown"),
+]
+
+# Per-stage lane mixes. Each stage's dict must sum to 1.0.
+STAGE_MIX = {
+    "S0 Warmup": dict(english=.38, code=.17, math=.09, indic_verified=.030,
+                      indic_unverified=.070, indic_translated=.055,
+                      indic_synthetic=.035, agentic=.030, reasoning=.020,
+                      forums=.060, multilingual=.060),
+    # S1 is a PLACEHOLDER -- it is overwritten at import time by solve_s1() so
+    # the schedule integrates EXACTLY to the global mixture. Edit any other
+    # stage freely; S1 absorbs the residual automatically.
+    "S1 Foundation": {lane: 0.0 for lane in C.MIXTURE},
+    "S2 Skill ramp": dict(english=.190, code=.310, math=.180, indic_verified=.040,
+                          indic_unverified=.070, indic_translated=.030,
+                          indic_synthetic=.040, agentic=.085, reasoning=.045,
+                          forums=.005, multilingual=.005),
+    "S3 Long context": dict(english=.300, code=.290, math=.110, indic_verified=.060,
+                            indic_unverified=.100, indic_translated=.015,
+                            indic_synthetic=.020, agentic=.070, reasoning=.030,
+                            forums=.000, multilingual=.005),
+    "S4 Anneal": dict(english=.200, code=.120, math=.150, indic_verified=.180,
+                      indic_unverified=.060, indic_translated=.020,
+                      indic_synthetic=.030, agentic=.130, reasoning=.110,
+                      forums=.000, multilingual=.000),
+}
+
+
+def stage_tokens(budget=None):
+    budget = budget or C.TRAIN_BUDGET
+    out = []
+    cum = 0.0
+    for s in STAGES:
+        t = s["frac"] * budget
+        out.append(dict(**s, tokens=t, start=cum, end=cum + t))
+        cum += t
+    return out
+
+
+def integrate(budget=None):
+    """Compute the global share implied by the stage schedule, per lane."""
+    budget = budget or C.TRAIN_BUDGET
+    st = stage_tokens(budget)
+    acc = {lane: 0.0 for lane in C.MIXTURE}
+    for s in st:
+        mix = STAGE_MIX[s["name"]]
+        for lane, sh in mix.items():
+            acc[lane] += sh * s["tokens"]
+    return {lane: dict(tokens=v, share=v / budget,
+                       target_share=C.MIXTURE[lane],
+                       delta=v / budget - C.MIXTURE[lane])
+            for lane, v in acc.items()}
+
+
+# Bound on how fast any lane share may move. Derived from V4's incident:
+# an abrupt Hindi share increase produced a ~150x gradient-norm spike.
+MAX_PP_PER_100B = 12.0
+
+
+def solve_s1():
+    """Solve the S1 mix so the stage schedule integrates EXACTLY to MIXTURE.
+    S1 is the largest stage, so it absorbs the residual with least distortion.
+    Re-run this whenever another stage mix is edited."""
+    w = {s["name"]: s["frac"] for s in STAGES}
+    s1 = "S1 Foundation"
+    sol = {}
+    for lane, tgt in C.MIXTURE.items():
+        other = sum(w[s] * STAGE_MIX[s].get(lane, 0) for s in w if s != s1)
+        sol[lane] = (tgt - other) / w[s1]
+    return sol
+
+
+# Solve S1 at import time so the schedule is always exactly consistent.
+STAGE_MIX["S1 Foundation"] = solve_s1()
+
+
+def blend_bands(band_tokens=150e9):
+    """Max lane-share change per band between consecutive stages.
+    V4's 150x gradient spike came from an abrupt share change; we bound it.
+    Ramp length is chosen so no lane moves faster than MAX_PP_PER_100B."""
+    st = stage_tokens()
+    out = []
+    for a, b in zip(st, st[1:]):
+        ma, mb = STAGE_MIX[a["name"]], STAGE_MIX[b["name"]]
+        deltas = {l: mb.get(l, 0) - ma.get(l, 0) for l in set(ma) | set(mb)}
+        worst = max(deltas.items(), key=lambda kv: abs(kv[1]))
+        # required ramp to stay under the rate limit
+        required = abs(worst[1]) * 100 / MAX_PP_PER_100B * 100e9
+        # The ramp STRADDLES the boundary: half in the tail of the outgoing
+        # stage, half in the head of the incoming one. Otherwise a long ramp
+        # would eat the whole anneal, which defeats the point of a cooldown.
+        half = required / 2.0
+        avail = min(a["tokens"], b["tokens"])          # each side can give this much
+        ramp = min(required, 2.0 * avail, band_tokens)
+        rate = abs(worst[1]) * 100 / (ramp / 100e9) if ramp else float("inf")
+        out.append(dict(
+            frm=a["name"], to=b["name"], worst_lane=worst[0],
+            worst_delta=worst[1], ramp_tokens=ramp, required_ramp=required,
+            tail_of_prev=ramp / 2.0, head_of_next=ramp / 2.0,
+            pct_of_next=(ramp / 2.0) / b["tokens"],
+            pp_per_100B=rate, within_limit=rate <= MAX_PP_PER_100B + 1e-6,
+            lr_protected=b["name"].startswith("S4"),
+        ))
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Difficulty / reasoning-length bands
+# ---------------------------------------------------------------------------
+BANDS = [
+    dict(band=0, name="Direct recall", steps="0", tokens="<32",
+         example="Q: Odisha ki rajdhani kya hai? -> A: Bhubaneswar.",
+         lanes="english, indic, forums",
+         sched="S0-S1 dominant, never removed (keeps short answers short)"),
+    dict(band=1, name="Short CoT", steps="1-3", tokens="32-256",
+         example="Sam has 3 apples, buys 2, gives 1 away. 3+2-1 = 4.",
+         lanes="math, reasoning, indic",
+         sched="S1 primary; carried through at reduced weight"),
+    dict(band=2, name="Medium CoT", steps="4-8", tokens="256-1K",
+         example=("JEE-mains projectile: pick formula -> substitute -> carry "
+                  "units -> sanity-check magnitude -> state answer."),
+         lanes="math, code, reasoning",
+         sched="ramps in through S2"),
+    dict(band=3, name="Long CoT / tool-augmented", steps="8-20", tokens="1K-8K",
+         example=("Agentic: 'Book an IRCTC ticket under Rs.800, verify the PNR, "
+                  "retry once on failure' -- plan, call, read error, replan."),
+         lanes="agentic, reasoning, code",
+         sched="S2 late + S3; concentrated in S4 anneal"),
+    dict(band=4, name="Extended / cross-document", steps="20+", tokens="8K-64K",
+         example=("Read a 40-page judgment + a prior ruling + a Hansard excerpt; "
+                  "identify which precedent controls and why."),
+         lanes="long-context pool (indic + english + code)",
+         sched="S3 and S4 only -- requires 256K context to exist first"),
+]
+
+# Effort-dial control tokens (the 'controllable reasoning depth' objective)
+EFFORT_LEVELS = {
+    "low":    dict(band_mix={0: .60, 1: .40}, budget="<128 thinking tokens"),
+    "medium": dict(band_mix={1: .45, 2: .55}, budget="128-1K"),
+    "high":   dict(band_mix={2: .35, 3: .65}, budget="1K-8K"),
+    "ultra":  dict(band_mix={3: .40, 4: .60}, budget="8K-64K"),
+}
+
+# Long-context sources: selected from EXISTING lanes, not a new token slot.
+LONG_CTX_POOL = [
+    dict(lane="code", doc="whole repos concatenated by import graph",
+         why="cross-file dependency reasoning"),
+    dict(lane="indic_unverified", doc="judgments, Hansard, gov reports",
+         why="long-document Indic comprehension"),
+    dict(lane="indic_verified", doc="OCR'd full-length books",
+         why="sustained native narrative"),
+    dict(lane="english", doc="books, legal/technical long-form",
+         why="RULER@256K parity"),
+    dict(lane="agentic", doc="full multi-step trajectories, unsplit",
+         why="long tool-history management"),
+]
+"""
+floors.py — the protected always-on floor, the anneal reserve, and fertility.
+
+FLOOR
+  V4 ran an 8% always-on Indic channel. We keep 8% but tighten the DEFINITION:
+  only NATIVE Indic (verified + unverified) counts. If translated and synthetic
+  counted, an OPUS-class selector could satisfy "8% Indic every batch" entirely
+  with cheap generated text and never touch the scarce native tiers -- which is
+  precisely the language erasure the floor exists to prevent.
+
+RESERVE
+  The anneal reserve is HELD BACK from the lane budgets, not added on top.
+  Critically, the verified-native component of the anneal is the SECOND EPOCH
+  of verified native, deferred -- not extra exposure. Getting this wrong
+  silently pushes the scarcest tier to 3x epochs.
+"""
+from . import config as C
+
+
+def floor_report(rows):
+    by = {r["lane"]: r for r in rows}
+    seqs = round(C.FLOOR["pct"] * C.FLOOR["batch_seqs"])
+    native_tokens = sum(by[l]["target"] for l in C.FLOOR["lanes"])
+    native_share = native_tokens / C.TRAIN_BUDGET
+    # the floor must be satisfiable in EVERY stage, so compare against the
+    # stage with the LOWEST native-Indic share
+    from .curriculum import STAGE_MIX
+    per_stage = {s: sum(m.get(l, 0) for l in C.FLOOR["lanes"])
+                 for s, m in STAGE_MIX.items()}
+    binding = min(per_stage.items(), key=lambda kv: kv[1])
+    return dict(
+        pct=C.FLOOR["pct"], seqs_per_batch=seqs, batch_seqs=C.FLOOR["batch_seqs"],
+        lanes=C.FLOOR["lanes"], native_global_share=native_share,
+        per_stage=per_stage, binding_stage=binding[0], binding_share=binding[1],
+        satisfiable=binding[1] >= C.FLOOR["pct"],
+        slack=binding[1] - C.FLOOR["pct"],
+    )
+
+
+# Anneal reserve composition. Shares sum to 1.0 of ANNEAL_RESERVE.
+RESERVE = [
+    dict(name="Instruction-dense general text", share=.28,
+         why="matches downstream SFT distribution; sharpens instruction-following late"),
+    dict(name="Verified-native Indic (DEFERRED 2nd epoch)", share=.22,
+         why="the 2nd pass over verified native is SPENT here, not added; "
+             "total exposure stays at 2.0x"),
+    dict(name="Answer-verified math / worked solutions", share=.18,
+         why="OLMo 2 precedent: small late reserve moved GSM-style 24%->67%"),
+    dict(name="Execution-verified agentic trajectories", share=.16,
+         why="only sandbox-successful traces; loss on model tokens only"),
+    dict(name="Long-CoT Band 3-4 reasoning", share=.11,
+         why="effort-dial supervision lands where LR is lowest"),
+    dict(name="Safety + long-context refresh", share=.05,
+         why="12+ lang refusals incl. romanized attacks; one 256K pass so "
+             "long-context survives the cooldown"),
+]
+# Canary strings live ONLY in private eval suites -- never in the anneal.
+RESERVE_EXCLUSIONS = ["benchmark test items", "eval-adjacent paraphrases",
+                      "canary strings", "unverified synthetic CoT"]
+
+
+def reserve_report():
+    tot = C.ANNEAL_RESERVE
+    rows = [dict(**r, tokens=r["share"] * tot) for r in RESERVE]
+    return dict(total=tot, pct_of_budget=tot / C.TRAIN_BUDGET,
+                rows=rows, share_sum=sum(r["share"] for r in RESERVE),
+                exclusions=RESERVE_EXCLUSIONS)
+
+
+def verified_native_exposure(rows):
+    """The bug-check: total epochs on the scarcest tier, INCLUDING the anneal."""
+    by = {r["lane"]: r for r in rows}
+    unique = by["indic_verified"]["unique"]
+    bulk = by["indic_verified"]["target"]
+    anneal_vn = next(r["share"] for r in RESERVE if r["name"].startswith("Verified-native"))
+    anneal_tokens = anneal_vn * C.ANNEAL_RESERVE
+    return dict(
+        unique=unique, bulk_tokens=bulk, anneal_tokens=anneal_tokens,
+        # the anneal portion is CARVED OUT of the lane budget, not added
+        total_exposure=bulk, epochs=bulk / unique,
+        anneal_is_subset=anneal_tokens <= bulk,
+        cap=C.MAX_EPOCHS["indic_verified"],
+        ok=(bulk / unique) <= C.MAX_EPOCHS["indic_verified"] + 1e-9,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Fertility
+# ---------------------------------------------------------------------------
+def weighted_indic_fertility():
+    w = C.LANG_WEIGHTS
+    tot = sum(w.values())
+    num = sum(w[l] * C.FERTILITY_TARGETS[l] for l in w)
+    return num / tot
+
+
+def effective_words(indic_tokens):
+    """What the same Indic token budget BUYS in words, vs baselines.
+    Fertility = tokens/word, so words = tokens / fertility."""
+    ours = weighted_indic_fertility()
+    out = {"ERAV5 target": dict(fertility=ours, words=indic_tokens / ours)}
+    for name, f in C.BASELINE_FERTILITY.items():
+        out[name] = dict(fertility=f, words=indic_tokens / f)
+    base = out["english_centric_bpe"]["words"]
+    for v in out.values():
+        v["vs_english_bpe"] = v["words"] / base
+    return out
+
+
+def session2_balance_score():
+    """The Session-2 assignment metric: Score = 1000 / (Xmax - Xmin).
+    Rewards BALANCED cross-lingual tokenization, not just low average."""
+    xs = list(C.FERTILITY_TARGETS.values())
+    spread = max(xs) - min(xs)
+    return dict(x_max=max(xs), x_min=min(xs), spread=spread,
+                score=1000.0 / spread if spread else float("inf"))
+"""
+proxy.py — the mixture as a testable hypothesis.
+
+Every proxy is specified as: hypothesis -> arms -> metric -> decision rule,
+with the cost computed so a reviewer can see it is actually affordable.
+A decision rule that cannot fire in the negative direction is not a test,
+so each rule states what would REFUTE the plan, not only what confirms it.
+"""
+from . import config as C
+from .budget import flops_for_run
+
+GPU_HOUR_USD = 2.50   # [EST] spot H100
+
+
+def _cost(n_active, tokens, arms=2):
+    fl = flops_for_run(n_active, tokens) * arms
+    per_gpu = C.CLUSTER["gpu_peak_tflops"] * 1e12 * C.CLUSTER["mfu"]
+    gpu_hours = fl / per_gpu / 3600
+    return dict(flops=fl, gpu_hours=gpu_hours, usd=gpu_hours * GPU_HOUR_USD)
+
+
+PROXIES = [
+    dict(
+        id="P1", scale="3B", n_active=3e9, tokens=60e9, arms=2,
+        title="Indic synthetic parity cap",
+        hypothesis=("Capping synthetic Indic at <=1.0x native beats a "
+                    "synthetic-heavy arm on native-quality metrics at matched compute."),
+        arm_a="plan mixture (synthetic at the computed synthetic/native ratio)",
+        arm_b="synthetic DOUBLED (2x the plan ratio), translated held constant",
+        metric="MILU per Tier-1 lang; FLORES chrF++; 200-sample native audit",
+        rule=("Adopt the cap only if A beats B by >=2.0 pts mean MILU AND shows no "
+              "chrF++ regression. If B wins, the cap RISES -- the plan was too "
+              "conservative. If neither separates, drop the cap as unjustified machinery."),
+    ),
+    dict(
+        id="P2", scale="1B", n_active=1e9, tokens=20e9, arms=2,
+        title="Protected floor necessity",
+        hypothesis=("Without a native-only always-on floor, Indic capability drifts "
+                    "down during the code/math-heavy S2 phase."),
+        arm_a="8% native-Indic floor enforced every batch",
+        arm_b="same global Indic share, no batch-level floor (selector free)",
+        metric=("MILU (hi + one Dravidian) at 5 checkpoints -- the CURVE SHAPE is the "
+                "evidence. Secondary: HumanEval/GSM-mini to confirm no tax on dominant lanes."),
+        rule=("Keep the floor if B shows a mid-training MILU dip >=3 pts that A avoids. "
+              "If both curves are flat, DROP the floor -- it is unnecessary complexity."),
+    ),
+    dict(
+        id="P3", scale="1B", n_active=1e9, tokens=20e9, arms=2,
+        title="Agentic verification gate",
+        hypothesis=("Execution-verified sandbox trajectories beat imitation-only public "
+                    "agent data at equal token count."),
+        arm_a="sandbox self-play, kept only on task success",
+        arm_b="public trajectories, no verification gate",
+        metric="BFCL function-call accuracy; tau2-bench task success",
+        rule=("A must clear B by >=5 pts on BOTH. If not, the generation pipeline is the "
+              "defect to fix before the 6% agentic share scales -- not a reason to cut the lane."),
+    ),
+    dict(
+        id="P4", scale="3B", n_active=3e9, tokens=60e9, arms=3,
+        title="Mixture-transition gradient stability",
+        hypothesis=("Ramping lane-share changes across a >=100B-token blending band "
+                    "prevents the ~150x gradient-norm spike V4 recorded on an abrupt "
+                    "Hindi share increase."),
+        arm_a="100B-token linear ramp between stage mixes",
+        arm_b="abrupt step change at the stage boundary",
+        arm_c="20B-token ramp (is the band over-specified?)",
+        metric="max gradient-norm multiplier over the transition; loss-spike count",
+        rule=("Keep the 100B band only if the abrupt arm spikes >=5x AND the 20B arm "
+              "also spikes. If 20B is sufficient, shorten the band and reclaim schedule."),
+    ),
+    dict(
+        id="P5", scale="1B", n_active=1e9, tokens=20e9, arms=2,
+        title="Loss-masking on tool observations",
+        hypothesis=("Zero-loss masking of tool outputs prevents observation "
+                    "hallucination without costing task success."),
+        arm_a="loss on model-generated tokens only (plans, code, JSON calls)",
+        arm_b="loss on the full trajectory including tool responses",
+        metric="rate of fabricated tool observations in held-out rollouts; BFCL",
+        rule=("A must cut fabricated-observation rate by >=50% at no BFCL cost. This is "
+              "the cheapest proxy in the set and should run FIRST."),
+    ),
+]
+
+
+def proxy_table():
+    rows = []
+    for p in PROXIES:
+        c = _cost(p["n_active"], p["tokens"], p["arms"])
+        rows.append(dict(**p, **c))
+    return rows
+
+
+def proxy_total():
+    rows = proxy_table()
+    tot_usd = sum(r["usd"] for r in rows)
+    flag_flops = flops_for_run(C.MODELS[C.FLAGSHIP]["active"], C.TRAIN_BUDGET)
+    per_gpu = C.CLUSTER["gpu_peak_tflops"] * 1e12 * C.CLUSTER["mfu"]
+    flag_usd = flag_flops / per_gpu / 3600 * GPU_HOUR_USD
+    return dict(total_usd=tot_usd, flagship_usd=flag_usd,
+                pct_of_flagship=tot_usd / flag_usd,
+                total_gpu_hours=sum(r["gpu_hours"] for r in rows))
+"""
+sensitivity.py — what breaks first if the inventory estimate is wrong,
+and where the remaining cleaning effort should therefore be aimed.
+
+Two jobs:
+  A) SENSITIVITY. The plan rests on estimates. The 90B verified-native figure
+     is the most fragile input in the whole document -- every other lane has
+     slack. We re-solve the mixture under pessimistic supply and report what
+     bends.
+  B) CLEANING PRIORITY. The assignment says cleaning now targets the slots the
+     mixture shows to be starved. We compute, per lane, how many RAW tokens
+     must enter the Session-4 pipeline to yield the clean tokens the plan needs.
+"""
+import copy
+from . import config as C
+from . import mixture as M
+from . import floors as F
+
+
+# ---------------------------------------------------------------------------
+# A. SENSITIVITY
+# ---------------------------------------------------------------------------
+SCENARIOS = [
+    dict(name="Baseline", mult={}),
+    dict(name="Verified native -33% (audit finds more MT)",
+         mult={"indic_verified": 0.67}),
+    dict(name="Verified native -50% (worst credible)",
+         mult={"indic_verified": 0.50}),
+    dict(name="Code -30% after license filter",
+         mult={"code": 0.70}),
+    dict(name="Unverified Indic -40% (lang-ID mislabels)",
+         mult={"indic_unverified": 0.60}),
+    dict(name="All Indic native -40% (systemic)",
+         mult={"indic_verified": 0.60, "indic_unverified": 0.60}),
+]
+
+
+def _solve_with(mult):
+    inv = copy.deepcopy(C.INVENTORY)
+    for d in inv:
+        if d["unique"] is not None and d["lane"] in mult:
+            d["unique"] *= mult[d["lane"]]
+    orig = C.INVENTORY
+    C.INVENTORY = inv
+    try:
+        rows = M.solve()
+        ind = M.indic_rollup(rows)
+        fl = F.floor_report(rows)
+        t = M.totals(rows)
+        vn = F.verified_native_exposure(rows)
+    finally:
+        C.INVENTORY = orig
+    return rows, ind, fl, t, vn
+
+
+def sensitivity_table():
+    out = []
+    for sc in SCENARIOS:
+        rows, ind, fl, t, vn = _solve_with(sc["mult"])
+        by = {r["lane"]: r for r in rows}
+        # The TARGET shares are fixed by the mixture; what moves under a supply
+        # shock is how much of each target is backed by REAL tokens. Reporting
+        # target-based percentages would hide the whole effect.
+        real_native = sum(by[l]["real"] for l in C.NATIVE_INDIC_LANES)
+        indic_total = ind["total"]
+        gap = sum(by[l]["synthetic"] for l in C.INDIC_LANES)
+        out.append(dict(
+            name=sc["name"],
+            vn_epochs=by["indic_verified"]["epochs"],
+            vn_gap=by["indic_verified"]["synthetic"],
+            real_native=real_native,
+            real_native_pct=real_native / indic_total,
+            indic_gap=gap,
+            code_epochs=by["code"]["epochs"],
+            code_gap=by["code"]["synthetic"],
+            total_real_pct=1.0 - t["synth_pct"],
+            floor_ok=fl["satisfiable"],
+            # parity is measured against REAL native, which is the honest test
+            syn_to_real_native=(ind["tiers"]["indic_synthetic"]["tokens"] + gap) / real_native
+                                if real_native else float("inf"),
+        ))
+    return out
+
+
+RESPONSES = {
+    "indic_verified": (
+        "Hold total exposure at 2.0x (do NOT raise epochs). Backfill the Indic lane "
+        "from unverified native -- it has 0.45T unique at only 0.62 epochs, i.e. "
+        "~0.17T of unused headroom. Synthetic does NOT expand to fill the gap: the "
+        "parity cap is a RATIO to native, so if native shrinks the synthetic ceiling "
+        "shrinks with it automatically."),
+    "code": (
+        "Move code to 1.3-1.5x epochs before considering synthetic code. Repetition "
+        "is safer than generation in a lane where SWE-bench leakage is the dominant "
+        "risk and where generated code has no independent correctness signal beyond "
+        "the tests we also generated."),
+    "indic_unverified": (
+        "This is the lane with the most slack, so a 40% cut is absorbable at the "
+        "current 0.62 epochs. If it and verified BOTH shrink, the Indic headline "
+        "share drops from 20% to whatever native supports -- the share follows the "
+        "supply, not the other way round."),
+    "agentic": (
+        "No change. The lane was designed around self-play from the start; P3 gates "
+        "whether self-play works at all, which is the real risk here, not supply."),
+}
+
+
+# ---------------------------------------------------------------------------
+# B. CLEANING PRIORITY  (Session-4 pipeline yields)
+# ---------------------------------------------------------------------------
+# Survival rate through the Session-4 pipeline, per lane. These are the
+# cumulative multipliers across: extraction -> normalization -> quality
+# filter -> dedup -> lang-ID -> PII -> decontamination.
+PIPELINE_YIELD = {
+    "english":          0.22,   # aggressive edu-classifier filtering
+    "code":             0.31,   # license + secret + autogen + near-clone dedup
+    "math":             0.18,   # classifier-mined from general web
+    "indic_verified":   0.09,   # OCR gates + native audit reject hard
+    "indic_unverified": 0.26,   # script-aware thresholds, code-mix kept
+    "indic_translated": 0.55,   # already-clean parallel corpora
+    "forums":           0.14,   # spam/boilerplate heavy
+    "multilingual":     0.24,
+    "agentic":          0.42,   # trajectory success gate
+    "reasoning":        0.35,   # answer-verification gate
+}
+
+
+def cleaning_plan(rows):
+    """How many RAW tokens must enter the pipeline per lane, and which lanes
+    the remaining cleaning effort should prioritise."""
+    out = []
+    for r in rows:
+        lane = r["lane"]
+        y = PIPELINE_YIELD.get(lane, 0.25)
+        # only real (non-generated) tokens need to be cleaned from raw crawl
+        need_clean = r["real"]
+        # plus the selector headroom: we collect 2x what we train on
+        need_collected = need_clean * (C.COLLECTION_TARGET / C.TRAIN_BUDGET)
+        raw = need_collected / y
+        deficit = max(0.0, r["target"] - r["real"])
+        out.append(dict(
+            lane=lane, yield_rate=y, clean_needed=need_clean,
+            collected_target=need_collected, raw_required=raw,
+            generation_deficit=deficit,
+            starved=(r["real"] / r["target"] < 0.5) if r["target"] else False,
+        ))
+    out.sort(key=lambda d: -d["raw_required"])
+    return out
+
+
+def priority_queue(rows):
+    """Rank lanes by marginal value of one more cleaned token.
+    Scarcity (1/headroom) x strategic weight (floor-eligible lanes count double)."""
+    ranked = []
+    for r in rows:
+        # Lanes with NO real corpus are generated by design -- more cleaning
+        # cannot help them, so they are out of scope for this queue entirely.
+        if r["target"] == 0 or r["unique"] == 0:
+            continue
+        headroom = max(r["headroom"], 1e-3)
+        scarcity = min(1.0 / headroom, 10.0)          # clamp: no divide-by-zero drama
+        weight = 2.0 if r["lane"] in C.FLOOR["lanes"] else 1.0
+        ranked.append(dict(lane=r["lane"], score=scarcity * weight,
+                           headroom=headroom, epochs=r["epochs"],
+                           floor_lane=r["lane"] in C.FLOOR["lanes"]))
+    ranked.sort(key=lambda d: -d["score"])
+    return ranked
+"""
+validate.py — assertions that catch the failure modes this assignment exists
+to prevent. Every check prints PASS/FAIL with the actual numbers, so the
+plan cannot silently drift out of consistency when someone edits config.py.
+"""
+from . import config as C
+from . import mixture as M
+from . import curriculum as CU
+from . import floors as F
+
+TOL = 1e-6
+
+
+class Check:
+    def __init__(self):
+        self.rows = []
+
+    def add(self, name, ok, detail):
+        self.rows.append((name, bool(ok), detail))
+        return ok
+
+    @property
+    def failed(self):
+        return [r for r in self.rows if not r[1]]
+
+
+def run_all(rows):
+    c = Check()
+    t = M.totals(rows)
+    ind = M.indic_rollup(rows)
+
+    # --- arithmetic integrity ------------------------------------------------
+    c.add("Mixture shares sum to 1.0", abs(t["share"] - 1.0) < 1e-9,
+          f"sum = {t['share']:.6f}")
+    c.add("Stage fractions sum to 1.0",
+          abs(sum(s['frac'] for s in CU.STAGES) - 1.0) < 1e-9,
+          f"sum = {sum(s['frac'] for s in CU.STAGES):.6f}")
+    for s, mix in CU.STAGE_MIX.items():
+        c.add(f"Stage mix sums to 1.0 :: {s}", abs(sum(mix.values()) - 1.0) < 1e-6,
+              f"sum = {sum(mix.values()):.6f}")
+
+    # --- stage x lane integrates back to global shares -----------------------
+    integ = CU.integrate()
+    worst = max(integ.items(), key=lambda kv: abs(kv[1]["delta"]))
+    c.add("Stage schedule integrates to global mixture (<=0.5pp drift)",
+          abs(worst[1]["delta"]) <= 0.005,
+          f"worst lane '{worst[0]}' drift = {worst[1]['delta']*100:+.2f}pp")
+
+    # --- supply discipline ---------------------------------------------------
+    for r in rows:
+        if r["unique"] > 0:
+            cap = C.MAX_EPOCHS[r["lane"]]
+            c.add(f"Epochs within cap :: {r['lane']}", r["epochs"] <= cap + TOL,
+                  f"{r['epochs']:.2f}x vs cap {cap:.1f}x")
+    for r in rows:
+        c.add(f"Epochs below free-repetition ceiling :: {r['lane']}",
+              r["epochs"] <= C.REPETITION_FREE_EPOCHS,
+              f"{r['epochs']:.2f}x (ceiling {C.REPETITION_FREE_EPOCHS:.0f}x)")
+
+    # --- no silent generation ------------------------------------------------
+    for r in rows:
+        if r["synthetic"] > 0:
+            c.add(f"Synthetic gap is declared-generable :: {r['lane']}",
+                  r["can_generate"],
+                  f"needs {r['synthetic']/1e9:.0f}B generated "
+                  f"({r['synth_pct']*100:.0f}% of lane)")
+
+    # --- Indic discipline ----------------------------------------------------
+    c.add("Synthetic Indic <= parity with native", ind["parity_ok"],
+          f"synthetic/native = {ind['synthetic_to_native']:.2f}x "
+          f"(cap {ind['parity_cap']:.1f}x)")
+    c.add("Indic lane is majority NATIVE", ind["native_pct"] > 0.50,
+          f"native = {ind['native_pct']*100:.1f}% of Indic lane")
+
+    # --- the epoch bug that killed the earlier draft -------------------------
+    vn = F.verified_native_exposure(rows)
+    c.add("Verified-native anneal is a SUBSET of lane budget, not additive",
+          vn["anneal_is_subset"],
+          f"anneal {vn['anneal_tokens']/1e9:.0f}B <= lane {vn['bulk_tokens']/1e9:.0f}B")
+    c.add("Verified-native TOTAL exposure within cap", vn["ok"],
+          f"{vn['epochs']:.2f}x vs cap {vn['cap']:.1f}x")
+
+    # --- floor ---------------------------------------------------------------
+    fl = F.floor_report(rows)
+    c.add("Protected floor satisfiable in every stage", fl["satisfiable"],
+          f"binding stage '{fl['binding_stage']}' has "
+          f"{fl['binding_share']*100:.1f}% native vs floor {fl['pct']*100:.0f}%")
+
+    # --- reserve -------------------------------------------------------------
+    rr = F.reserve_report()
+    c.add("Anneal reserve shares sum to 1.0", abs(rr["share_sum"] - 1.0) < 1e-9,
+          f"sum = {rr['share_sum']:.4f}")
+    anneal_stage = next(s for s in CU.stage_tokens() if s["name"] == "S4 Anneal")
+    c.add("Reserve size == S4 stage size", abs(rr["total"] - anneal_stage["tokens"]) < 1e6,
+          f"reserve {rr['total']/1e9:.0f}B vs S4 {anneal_stage['tokens']/1e9:.0f}B")
+
+    # --- gradient-safety of mixture transitions ------------------------------
+    for bd in CU.blend_bands():
+        c.add(f"Blend ramp within rate limit :: {bd['frm'][:2]}->{bd['to'][:2]}",
+              bd["within_limit"],
+              f"{bd['worst_delta']*100:+.1f}pp on '{bd['worst_lane']}' over "
+              f"{bd['ramp_tokens']/1e9:.0f}B = {bd['pp_per_100B']:.1f}pp/100B")
+        c.add(f"Ramp fits inside stages :: {bd['frm'][:2]}->{bd['to'][:2]}",
+              bd["pct_of_next"] <= 0.50,
+              f"head consumes {bd['pct_of_next']*100:.0f}% of incoming stage")
+
+    # --- collection gate -----------------------------------------------------
+    c.add("Collection target exceeds train budget (selector has headroom)",
+          C.COLLECTION_TARGET > C.TRAIN_BUDGET,
+          f"{C.COLLECTION_TARGET/1e12:.1f}T collected vs {C.TRAIN_BUDGET/1e12:.1f}T trained "
+          f"({C.COLLECTION_TARGET/C.TRAIN_BUDGET:.1f}x)")
+
+    # --- fertility -----------------------------------------------------------
+    wf = F.weighted_indic_fertility()
+    c.add("Weighted Indic fertility <= 1.75 target", wf <= 1.75,
+          f"weighted = {wf:.4f}")
+
+    return c
+"""
+export.py — dump every computed number as JSON.
+
+Purpose: a reviewer should be able to check a claim in the README against
+machine-readable output without reading the code or trusting a table that
+was typed by hand. Run:
+
+    python3 -m erav5.export > ../results/plan.json
+"""
+import json
+from . import config as C
+from . import budget as B
+from . import mixture as M
+from . import curriculum as CU
+from . import floors as F
+from . import proxy as P
+from . import sensitivity as S
+from . import validate as V
+
+
+def build():
+    rows = M.solve()
+    checks = V.run_all(rows)
+    return {
+        "meta": {
+            "flagship": C.FLAGSHIP,
+            "train_budget_tokens": C.TRAIN_BUDGET,
+            "collection_target_tokens": C.COLLECTION_TARGET,
+            "vocab_size": C.VOCAB_SIZE,
+        },
+        "budget": B.budget_report(),
+        "model_family": B.variant_table(),
+        "mixture": rows,
+        "totals": M.totals(rows),
+        "indic": M.indic_rollup(rows),
+        "starved": [r["lane"] for r in M.starved_lanes(rows)],
+        "stages": CU.stage_tokens(),
+        "stage_mix": CU.STAGE_MIX,
+        "integration": CU.integrate(),
+        "blend_bands": CU.blend_bands(),
+        "bands": CU.BANDS,
+        "effort_levels": CU.EFFORT_LEVELS,
+        "long_context_pool": CU.LONG_CTX_POOL,
+        "floor": F.floor_report(rows),
+        "reserve": F.reserve_report(),
+        "verified_native_exposure": F.verified_native_exposure(rows),
+        "fertility": {
+            "weighted_indic": F.weighted_indic_fertility(),
+            "effective_words": F.effective_words(M.indic_rollup(rows)["total"]),
+            "session2_balance": F.session2_balance_score(),
+        },
+        "proxies": P.proxy_table(),
+        "proxy_total": P.proxy_total(),
+        "sensitivity": S.sensitivity_table(),
+        "cleaning_plan": S.cleaning_plan(rows),
+        "cleaning_priority": S.priority_queue(rows),
+        "validation": {
+            "total": len(checks.rows),
+            "passed": len(checks.rows) - len(checks.failed),
+            "failed": [{"check": n, "detail": d} for n, ok, d in checks.rows if not ok],
+            "all": [{"check": n, "pass": ok, "detail": d} for n, ok, d in checks.rows],
+        },
+    }
+
+
+if __name__ == "__main__":
+    print(json.dumps(build(), indent=2, default=str))
+"""
+run_plan.py — execute the whole plan and print every number.
+
+  python3 -m erav5.run_plan
+"""
+import sys
+from . import config as C
+from . import budget as B
+from . import mixture as M
+from . import curriculum as CU
+from . import floors as F
+from . import proxy as P
+from . import validate as V
+from . import sensitivity as S
+
+T = lambda x: f"{x/1e12:.3f}T"
+G = lambda x: f"{x/1e9:.1f}B"
+
+
+def hdr(s):
+    print("\n" + "=" * 78)
+    print(s)
+    print("=" * 78)
+
+
+def main():
+    # ---------------------------------------------------------------- 1
+    hdr("1 · COMPUTE ENVELOPE AND TOKEN BUDGET")
+    b = B.budget_report()
+    print(f"Flagship            : {b['model']}  "
+          f"{b['total_params']/1e9:.0f}B total / {b['active_params']/1e9:.0f}B active "
+          f"(sparsity {b['sparsity']*100:.1f}%)")
+    print(f"Cluster             : {C.CLUSTER['n_gpus']} GPU x {C.CLUSTER['days']}d "
+          f"@ {C.CLUSTER['mfu']*100:.0f}% MFU  ->  {b['cluster_flops']:.3e} FLOPs")
+    print(f"Feasible tokens     : {T(b['feasible_tokens'])}  (C / 6N_active)")
+    print(f"PLANNED tokens      : {T(b['planned_tokens'])}   "
+          f"[compute headroom {b['compute_headroom']:.2f}x]")
+    print(f"Chinchilla floor    : {T(b['chinchilla_floor'])} "
+          f"(20 tok/active-param) -> we overtrain {b['overtrain_x_chinchilla']:.1f}x")
+    print(f"tok / active param  : {b['tok_per_active_param']:.0f}")
+    print(f"tok / total param   : {b['tok_per_total_param']:.1f}   "
+          f"<- the number that LOOKS small; MoE capacity is fed by diversity, not repeats")
+    print(f"vs ERA V4           : {T(b['v4_tokens'])} -> {T(b['planned_tokens'])} "
+          f"= {b['v5_over_v4_tokens']:.2f}x the data")
+    print(f"Collection target   : {T(b['collection_target'])} cleaned "
+          f"= {b['selection_headroom']:.1f}x the train budget "
+          f"(so the selector can REJECT, not repeat)")
+
+    print("\n  Model family:")
+    print(f"  {'name':<14}{'kind':<7}{'total':>8}{'active':>9}{'tok/act':>9}{'tokens':>10}  role")
+    for r in B.variant_table():
+        print(f"  {r['name']:<14}{r['kind']:<7}{r['total']/1e9:>7.0f}B"
+              f"{r['active']/1e9:>8.0f}B{r['tok_per_active']:>9.0f}"
+              f"{T(r['tokens']):>10}  {r['role']}")
+
+    # ---------------------------------------------------------------- 2
+    hdr("2 · MIXTURE vs REAL SUPPLY  (the wishful-accounting audit)")
+    rows = M.solve()
+    print(f"{'lane':<20}{'share':>7}{'tokens':>9}{'unique':>9}{'ep':>6}"
+          f"{'real':>9}{'synth':>9}{'syn%':>6}{'loss%':>7}{'sup.tok':>9}")
+    print("-" * 78)
+    for r in rows:
+        print(f"{r['lane']:<20}{r['share']*100:>6.1f}%{T(r['target']):>9}"
+              f"{T(r['unique']):>9}{r['epochs']:>5.2f}x{T(r['real']):>9}"
+              f"{T(r['synthetic']):>9}{r['synth_pct']*100:>5.0f}%"
+              f"{r['loss_frac']*100:>6.0f}%{T(r['supervised']):>9}")
+    t = M.totals(rows)
+    print("-" * 78)
+    print(f"{'TOTAL':<20}{t['share']*100:>6.1f}%{T(t['tokens']):>9}{'':>9}{'':>6}"
+          f"{T(t['real']):>9}{T(t['synthetic']):>9}{t['synth_pct']*100:>5.0f}%"
+          f"{t['supervised_pct']*100:>6.0f}%{T(t['supervised']):>9}")
+    print(f"\n  Real tokens        : {T(t['real'])} ({(1-t['synth_pct'])*100:.1f}%)")
+    print(f"  Generated tokens   : {T(t['synthetic'])} ({t['synth_pct']*100:.1f}%)")
+    print(f"  Loss-bearing tokens: {T(t['supervised'])} ({t['supervised_pct']*100:.1f}%)")
+    print("    ^ Session-5 loss mapping: tool observations are context-only. A lane's")
+    print("      token share overstates its training signal; this column is the honest one.")
+
+    st = M.starved_lanes(rows, 0.5)
+    print(f"\n  STARVED LANES (real supply < 50% of target) -> aim the cleaning here:")
+    for r in st:
+        print(f"    - {r['lane']:<20} real covers {r['real']/r['target']*100:>5.1f}% "
+              f"| must generate {T(r['synthetic'])}")
+
+    # ---------------------------------------------------------------- 3
+    hdr("3 · INDIC LANE — THE FOUR-TIER SPLIT")
+    ind = M.indic_rollup(rows)
+    print(f"Indic headline share: {ind['headline_share']*100:.1f}% = {T(ind['total'])}\n")
+    print(f"{'tier':<22}{'tokens':>9}{'unique':>9}{'epochs':>8}{'of budget':>11}{'of Indic':>10}")
+    print("-" * 78)
+    for lane, v in ind["tiers"].items():
+        print(f"{lane:<22}{T(v['tokens']):>9}{T(v['unique']):>9}"
+              f"{v['epochs']:>7.2f}x{v['share_of_budget']*100:>10.1f}%"
+              f"{v['share_of_indic']*100:>9.1f}%")
+    print("-" * 78)
+    print(f"  NATIVE (verified+unverified) : {T(ind['native'])}  "
+          f"= {ind['native_pct']*100:.1f}% of the Indic lane")
+    print(f"  NON-NATIVE (trans+synthetic) : {T(ind['non_native'])}  "
+          f"= {ind['non_native_pct']*100:.1f}%")
+    print(f"  synthetic / native ratio     : {ind['synthetic_to_native']:.2f}x  "
+          f"(cap {ind['parity_cap']:.1f}x) -> {'OK' if ind['parity_ok'] else 'VIOLATION'}")
+    print("\n  Why this beats the earlier 40B/15T draft: at a 4T budget the REAL native")
+    print("  supply covers a MAJORITY of the Indic lane. Inflating the budget to 15T is")
+    print("  what forced that draft to 60% non-native. Smaller budget = more honest Indic.")
+
+    # ---------------------------------------------------------------- 4
+    hdr("4 · CURRICULUM — STAGES, CONTEXT, AND STAGE x LANE RECONCILIATION")
+    stg = CU.stage_tokens()
+    print(f"{'stage':<18}{'frac':>7}{'tokens':>9}{'window':>10}{'span':>18}  note")
+    for s in stg:
+        print(f"{s['name']:<18}{s['frac']*100:>6.2f}%{T(s['tokens']):>9}"
+              f"{s['ctx']:>9,}{T(s['start'])+'->'+T(s['end']):>18}  {s['note']}")
+
+    print("\n  Stage x lane integration (does the schedule reproduce the global mixture?)")
+    integ = CU.integrate()
+    print(f"  {'lane':<20}{'S0':>7}{'S1':>7}{'S2':>7}{'S3':>7}{'S4':>7}"
+          f"{'integr.':>9}{'target':>8}{'drift':>8}")
+    for lane in C.MIXTURE:
+        cells = "".join(f"{CU.STAGE_MIX[s['name']].get(lane,0)*100:>6.1f}%" for s in stg)
+        v = integ[lane]
+        print(f"  {lane:<20}{cells}{v['share']*100:>8.2f}%{v['target_share']*100:>7.1f}%"
+              f"{v['delta']*100:>+7.2f}pp")
+
+    print("\n  Gradient-safe blending bands (V4 saw a ~150x grad-norm spike on an")
+    print("  abrupt Hindi share change -- every transition is ramped, not stepped):")
+    print(f"  Rate limit: {CU.MAX_PP_PER_100B:.0f}pp per 100B tokens.")
+    for bd in CU.blend_bands():
+        flag = "OK" if bd["within_limit"] else (
+            "steep, but LR->0 here" if bd["lr_protected"] else "*** EXCEEDS LIMIT ***")
+        print(f"    {bd['frm']:<16} -> {bd['to']:<16} worst '{bd['worst_lane']}' "
+              f"{bd['worst_delta']*100:+5.1f}pp | ramp {G(bd['ramp_tokens']):>7} straddling "
+              f"({G(bd['tail_of_prev'])} tail + {G(bd['head_of_next'])} head "
+              f"= {bd['pct_of_next']*100:.0f}% of next) | {bd['pp_per_100B']:>4.1f}pp/100B [{flag}]")
+
+    print("\n  Long-context pool (selected from EXISTING lanes -- not a new token slot):")
+    for d in CU.LONG_CTX_POOL:
+        print(f"    {d['lane']:<20}{d['doc']:<45}{d['why']}")
+
+    # ---------------------------------------------------------------- 5
+    hdr("5 · DIFFICULTY AND REASONING-LENGTH BANDS")
+    for bd in CU.BANDS:
+        print(f"\n  Band {bd['band']} — {bd['name']}  ({bd['steps']} steps, "
+              f"{bd['tokens']} reasoning tokens)")
+        print(f"    example : {bd['example']}")
+        print(f"    lanes   : {bd['lanes']}")
+        print(f"    schedule: {bd['sched']}")
+    print("\n  Effort dial (controllable reasoning depth objective):")
+    for k, v in CU.EFFORT_LEVELS.items():
+        mix = ", ".join(f"B{b}:{p*100:.0f}%" for b, p in v["band_mix"].items())
+        print(f"    {k:<8}{v['budget']:<22}{mix}")
+
+    # ---------------------------------------------------------------- 6
+    hdr("6 · PROTECTED FLOOR AND ANNEAL RESERVE")
+    fl = F.floor_report(rows)
+    print(f"Floor: {fl['pct']*100:.0f}% of EVERY batch = "
+          f"{fl['seqs_per_batch']} of {fl['batch_seqs']} sequences, drawn from "
+          f"{fl['lanes']}")
+    print("  Tightened definition vs V4: translated/synthetic do NOT count. Otherwise the")
+    print("  selector satisfies the floor with cheap generated text and the scarce native")
+    print("  tiers are never touched -- the exact erasure the floor exists to prevent.")
+    print(f"  Per-stage native-Indic availability:")
+    for s, v in fl["per_stage"].items():
+        mark = "<-- binding" if s == fl["binding_stage"] else ""
+        print(f"    {s:<18}{v*100:>6.1f}%  {mark}")
+    print(f"  Satisfiable: {fl['satisfiable']}  (slack {fl['slack']*100:+.1f}pp)")
+
+    rr = F.reserve_report()
+    print(f"\nAnneal reserve: {T(rr['total'])} = {rr['pct_of_budget']*100:.1f}% of budget, "
+          f"held BACK from the lane budgets")
+    print(f"  {'component':<48}{'share':>7}{'tokens':>9}")
+    for r in rr["rows"]:
+        print(f"  {r['name']:<48}{r['share']*100:>6.0f}%{T(r['tokens']):>9}")
+    print(f"  EXCLUDED from the reserve: {', '.join(rr['exclusions'])}")
+
+    vn = F.verified_native_exposure(rows)
+    print(f"\n  Verified-native exposure check (the bug that sinks most drafts):")
+    print(f"    unique supply     {T(vn['unique'])}")
+    print(f"    lane budget       {T(vn['bulk_tokens'])}  -> {vn['epochs']:.2f} epochs")
+    print(f"    anneal component  {T(vn['anneal_tokens'])}  "
+          f"= DEFERRED 2nd pass, carved OUT of the lane budget (not added)")
+    print(f"    cap {vn['cap']:.1f}x -> {'PASS' if vn['ok'] else 'FAIL'}")
+
+    # ---------------------------------------------------------------- 7
+    hdr("7 · FERTILITY -> WHAT THE INDIC BUDGET ACTUALLY BUYS")
+    print(f"Vocabulary: {C.VOCAB_SIZE:,} (3 x 2^16), frozen pre-training")
+    print(f"Weighted Indic fertility: {F.weighted_indic_fertility():.4f} tokens/word "
+          f"(target <= 1.75)")
+    ew = F.effective_words(ind["total"])
+    print(f"\n  Same {T(ind['total'])} Indic token budget, in WORDS learned:")
+    print(f"  {'tokenizer':<26}{'fertility':>10}{'words':>10}{'vs en-BPE':>11}")
+    for k, v in ew.items():
+        print(f"  {k:<26}{v['fertility']:>10.2f}{T(v['words']):>10}"
+              f"{v['vs_english_bpe']:>10.2f}x")
+    s2 = F.session2_balance_score()
+    print(f"\n  Session-2 balance metric  Score = 1000/(Xmax-Xmin):")
+    print(f"    Xmax {s2['x_max']:.2f} ({max(C.FERTILITY_TARGETS, key=C.FERTILITY_TARGETS.get)})  "
+          f"Xmin {s2['x_min']:.2f} ({min(C.FERTILITY_TARGETS, key=C.FERTILITY_TARGETS.get)})  "
+          f"spread {s2['spread']:.2f}  -> score {s2['score']:.1f}")
+
+    # ---------------------------------------------------------------- 8
+    hdr("8 · PROXY EXPERIMENTS — THE PLAN AS A TESTABLE HYPOTHESIS")
+    for p in P.proxy_table():
+        print(f"\n  [{p['id']}] {p['title']}  ({p['scale']}, {T(p['tokens'])}/arm, "
+              f"{p['arms']} arms, ~{p['gpu_hours']:,.0f} GPU-h, ~${p['usd']:,.0f})")
+        print(f"      H : {p['hypothesis']}")
+        print(f"      A : {p['arm_a']}")
+        print(f"      B : {p['arm_b']}")
+        if p.get("arm_c"):
+            print(f"      C : {p['arm_c']}")
+        print(f"      M : {p['metric']}")
+        print(f"      -> {p['rule']}")
+    pt = P.proxy_total()
+    print(f"\n  Total proxy cost ~${pt['total_usd']:,.0f} "
+          f"({pt['total_gpu_hours']:,.0f} GPU-h) = "
+          f"{pt['pct_of_flagship']*100:.2f}% of the flagship run (~${pt['flagship_usd']:,.0f}).")
+    print("  Every ratio in this plan is a hypothesis until one of these fires.")
+
+    # ---------------------------------------------------------------- 9
+    hdr("9 · SENSITIVITY — WHAT BREAKS FIRST IF THE INVENTORY IS WRONG")
+    print("  Targets are fixed; what moves is how much of each is REAL. Gap = must generate.")
+    print(f"\n{'scenario':<42}{'vn ep':>7}{'real nat':>9}{'nat%':>7}"
+          f"{'Indic gap':>11}{'real%':>7}{'floor':>7}")
+    print("-" * 78)
+    for sc in S.sensitivity_table():
+        print(f"{sc['name']:<42}{sc['vn_epochs']:>6.2f}x{T(sc['real_native']):>9}"
+              f"{sc['real_native_pct']*100:>6.1f}%{T(sc['indic_gap']):>11}"
+              f"{sc['total_real_pct']*100:>6.1f}%{'OK' if sc['floor_ok'] else 'FAIL':>7}")
+    print("\n  Stated responses (the plan bends; it does not break):")
+    for lane, txt in S.RESPONSES.items():
+        print(f"\n    IF {lane} supply misses:")
+        for line in [txt[i:i+72] for i in range(0, len(txt), 72)]:
+            print(f"      {line}")
+
+    hdr("10 · CLEANING PRIORITY — AIMED AT THE STARVED SLOTS")
+    cp = S.cleaning_plan(rows)
+    print(f"{'lane':<20}{'yield':>7}{'clean need':>12}{'collect tgt':>13}"
+          f"{'RAW required':>14}{'starved':>9}")
+    print("-" * 78)
+    for d in cp:
+        print(f"{d['lane']:<20}{d['yield_rate']*100:>6.0f}%{T(d['clean_needed']):>12}"
+              f"{T(d['collected_target']):>13}{T(d['raw_required']):>14}"
+              f"{'YES' if d['starved'] else '':>9}")
+    print("-" * 78)
+    print(f"{'TOTAL RAW INTAKE':<20}{'':>7}{T(sum(d['clean_needed'] for d in cp)):>12}"
+          f"{T(sum(d['collected_target'] for d in cp)):>13}"
+          f"{T(sum(d['raw_required'] for d in cp)):>14}")
+    print("\n  Marginal value of one more cleaned token (where to point the cohort):")
+    for i, d in enumerate(S.priority_queue(rows)[:6], 1):
+        tag = " [floor lane -- counts double]" if d["floor_lane"] else ""
+        print(f"    {i}. {d['lane']:<20} score {d['score']:>6.2f}  "
+              f"(supply headroom {d['headroom']:.2f}x, {d['epochs']:.2f} epochs){tag}")
+
+    hdr("11 · VALIDATION — INTERNAL CONSISTENCY")
+    c = V.run_all(rows)
+    for name, ok, detail in c.rows:
+        print(f"  [{'PASS' if ok else 'FAIL'}] {name:<58} {detail}")
+    print(f"\n  {len(c.rows)-len(c.failed)}/{len(c.rows)} checks passed.")
+    return 0 if not c.failed else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

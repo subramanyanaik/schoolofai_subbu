@@ -11,7 +11,7 @@
 
 ```bash
 git clone https://github.com/subramanyanaik/schoolofai_subbu.git
-cd schoolofai_subbu/assignmnet5/src
+cd schoolofai_subbu/assignment5/src
 python3 -m erav5.run_plan        # regenerates every figure in this README
 echo $?                          # 0 = all 49 validation assertions pass
 ```
@@ -555,10 +555,416 @@ Full output: [`results/computed_output.txt`](results/computed_output.txt) · Mac
 ### Reproduce
 
 ```bash
-cd assignmnet5/src
+cd assignment5/src
 python3 -m erav5.run_plan      # full plan, 11 sections
 python3 -m erav5.export        # JSON
 echo $?                        # non-zero if any assertion fails
 ```
 
 Verified: both commands exit 0 with **49/49 assertions passing**, and [`results/computed_output.txt`](results/computed_output.txt) is byte-for-byte identical to a fresh `run_plan` on this tree — the committed output is not stale. CI re-checks this on every push ([`.github/workflows/validate.yml`](../.github/workflows/validate.yml)).
+# ERA V5 — Mixture & Curriculum Specification
+
+**Session-5 assignment · every number in this document is computed by the accompanying code, not asserted.**
+Run `python3 -m erav5.run_plan` to regenerate. 49/49 internal consistency checks pass.
+
+Inherits from: Session-2 (tokenizer), Session-3 assignment (fertility targets, vocab 196,608), Session-4 assignment (9-stage cleaning pipeline).
+
+---
+
+## 1. Model family and token budget
+
+| Model | Kind | Total | Active | tok/active | Tokens | Role |
+|---|---|---|---|---|---|---|
+| V5-Proxy-1B | dense | 1B | 1B | 20 | 0.020T | mixture ablation |
+| V5-Proxy-3B | dense | 3B | 3B | 20 | 0.060T | mixture ablation |
+| V5-Seed-8B | dense | 8B | 8B | 267 | 2.14T | growth seed / data gate |
+| **V5-Base** | **MoE** | **120B** | **15B** | **267** | **4.00T** | **V4-parity flagship** |
+| V5-Max | MoE | 200B | 20B | 267 | 5.34T | stretch, if collection over-delivers |
+
+**Budget derivation (computed, not chosen):**
+
+| Quantity | Value |
+|---|---|
+| Cluster | 256 GPU × 90 d @ 40% MFU → 7.875×10²³ FLOPs |
+| Feasible tokens (`C / 6N_active`) | 8.75T |
+| **Planned tokens** | **4.00T** (compute headroom **2.19×**) |
+| Chinchilla floor (20 tok/active-param) | 0.30T → we overtrain **13.3×** |
+| tok / active param | 267 |
+| tok / total param | 33.3 |
+| vs ERA V4 (1.15T) | **3.48× the data** |
+| **Collection target** | **8.00T cleaned = 2.0× the train budget** |
+
+**Why 4.0T and not 15T.** Three defences, in order of strength:
+
+1. **It's what the compute buys, with margin.** 8.75T is feasible; planning to 4.0T leaves 2.19× headroom for restarts, failed runs, and the proxy programme. Planning to the ceiling is planning to fail.
+2. **It makes the Indic lane honest.** This is the important one. At 15T, a 20% Indic share needs 3.0T Indic tokens against ~0.54T of real native supply — forcing the lane to 60% translated/synthetic. At 4.0T, the same 20% needs 0.80T, and **real native supply covers 57.5% of it.** The earlier draft's uncomfortable 40/60 native/non-native split was not a data problem; it was an artefact of an inflated budget.
+3. **Collecting 8T to train on 4T means the selector can *reject*.** An OPUS-class selector delivered ~6× effective-token value in V4 by discarding. A selector with no surplus to discard is just a bottleneck. 2× collection headroom is what makes selection meaningful rather than decorative.
+
+---
+
+## 2. Capability mixture vs. real supply
+
+Every lane sized against countable supply. `ep` = epochs over unique tokens. `syn%` = share of the lane that must be **generated** because real supply cannot reach it.
+
+| Lane | Share | Tokens | Unique supply | ep | Real | Synthetic | syn% | loss% | Supervised |
+|---|---|---|---|---|---|---|---|---|---|
+| English web & knowledge | 30.0% | 1.200T | 3.780T | 0.32× | 1.200T | — | 0% | 100% | 1.200T |
+| Code | 22.0% | 0.880T | 0.910T | 0.97× | 0.880T | — | 0% | 100% | 0.880T |
+| Math & science | 12.0% | 0.480T | 0.250T | 1.92× | 0.480T | — | 0% | 100% | 0.480T |
+| Indic — unverified native | 7.0% | 0.280T | 0.450T | 0.62× | 0.280T | — | 0% | 100% | 0.280T |
+| Agentic | 6.0% | 0.240T | 0.050T | 1.50× | 0.075T | 0.165T | **69%** | **35%** | **0.084T** |
+| Indic — verified native | 4.5% | 0.180T | 0.090T | 2.00× | 0.180T | — | 0% | 100% | 0.180T |
+| Indic — translated | 4.5% | 0.180T | 0.220T | 0.82× | 0.180T | — | 0% | 100% | 0.180T |
+| Indic — synthetic | 4.0% | 0.160T | — | — | — | 0.160T | **100%** | 100% | 0.160T |
+| Reasoning (long CoT) | 4.0% | 0.160T | 0.030T | 1.50× | 0.045T | 0.115T | **72%** | 100% | 0.160T |
+| Forums & code-mix | 3.0% | 0.120T | 0.350T | 0.34× | 0.120T | — | 0% | 100% | 0.120T |
+| Other multilingual | 3.0% | 0.120T | 1.500T | 0.08× | 0.120T | — | 0% | 100% | 0.120T |
+| **Total** | **100%** | **4.000T** | | | **3.560T** | **0.440T** | **11.0%** | 96.1% | **3.844T** |
+
+**Real tokens: 3.560T (89.0%). Generated: 0.440T (11.0%).**
+
+### 2.1 The loss-mapping correction (Session 5)
+
+The `loss%` column is the one most plans omit, and it is where the sharpest reviewer question lands.
+
+In agentic trajectories, **tool observations are context-only — zero loss.** Only model-generated tokens (plans, code patches, JSON tool calls) receive gradient. Training on tool responses teaches the model to *hallucinate observations*, which is the single worst failure mode for an agent.
+
+So the agentic lane's honest size is not 0.240T. It is **0.084T of supervised tokens** — 35% of its nominal share. Any plan that quotes 6% agentic without this correction is overstating that lane's real training signal by nearly 3×. Across the whole budget, 4.000T of tokens carry **3.844T (96.1%)** of loss.
+
+### 2.2 Starved lanes — declared in the open
+
+Three lanes cannot be filled from real data. Each is named, and each is paired with a *verification mechanism* that makes generation defensible rather than wishful:
+
+| Lane | Real coverage | Must generate | Verification gate |
+|---|---|---|---|
+| **Agentic** | 31.2% | 0.165T | **Execution-checked** — sandbox reports task success or the trajectory is discarded |
+| **Reasoning** | 28.1% | 0.115T | **Answer-checked** — final answer must verify and the derivation must re-execute |
+| **Indic synthetic** | 0% | 0.160T | **COMET + round-trip + ~1% paid native audit** per batch |
+
+The principle: a majority-synthetic lane is defensible **only** when every generated token passes an independent pass/fail gate that was not itself generated. Answer-checking and execution are such gates. "It looks fluent" is not — which is exactly why the *English* lane is 0% synthetic despite synthetic prose being trivially cheap to produce.
+
+---
+
+## 3. Indic lane — the four-tier split
+
+**20.0% of budget = 0.800T tokens.** No single headline number; the tiers are stated separately as the assignment requires.
+
+| Tier | Tokens | Unique supply | Epochs | % of budget | % of Indic lane |
+|---|---|---|---|---|---|
+| **Verified native** | 0.180T | 0.090T | 2.00× | 4.5% | 22.5% |
+| **Unverified native** | 0.280T | 0.450T | 0.62× | 7.0% | 35.0% |
+| **Translated** | 0.180T | 0.220T | 0.82× | 4.5% | 22.5% |
+| **Synthetic** | 0.160T | — | — | 4.0% | 20.0% |
+
+| | |
+|---|---|
+| **NATIVE** (verified + unverified) | **0.460T = 57.5%** of the Indic lane |
+| **NON-NATIVE** (translated + synthetic) | 0.340T = 42.5% |
+| synthetic / native ratio | **0.35×** (cap 1.0×) — well inside the 30–50% safe band |
+
+**Tier definitions:**
+
+- **Verified native** — human-authored, script-native, passed the per-language edu classifier *and* ~1% paid native-speaker audit. Sources: Sangraha-verified core (42B), OCR'd books/news with confidence gates (30B), legacy-font rescue from KrutiDev/Shree-Lipi/Bamini (18B). The Sangraha "251B" headline is ~65% machine-translated and is **excluded** from this tier.
+- **Unverified native** — script-native but not individually audited: FineWeb2-Indic + broader Sangraha pool (280B), Parliament/judgments/gov records (90B), ASR-mined transcripts (80B).
+- **Translated** — BPCC + Samanantar parallel corpus (60B), Sangraha's MT-flagged portion (160B).
+- **Synthetic** — structure-preserving translation into 14 languages, transliteration doubles (script↔romanized), distilled CoT re-rendered in Indic.
+
+**Discipline:**
+- Synthetic is capped as a **ratio to native**, not a fixed number. If native supply comes in lower, the synthetic ceiling falls automatically (see §8).
+- Verified native runs **exactly 2.0 epochs, total, including the anneal** — the anneal's verified-native component is the *deferred second pass*, carved out of the lane budget, **not** additional exposure. Getting this wrong silently pushes the scarcest tier to ~3× epochs; the validator asserts on it.
+- Translated tokens carry breadth (script coverage, code-switch robustness), not depth — their share **falls** from 5.6% in S1 to 2.0% in S4, so translationese artefacts are diluted exactly where LR is lowest and learning is stickiest.
+
+---
+
+## 4. Curriculum — five stages
+
+| Stage | Frac | Tokens | Context | Span | Purpose |
+|---|---|---|---|---|---|
+| **S0 Warmup** | 3.75% | 0.150T | 8K | 0 → 0.150T | embedding + **router** warmup; mix held at S1 proportions |
+| **S1 Foundation** | 61.25% | 2.450T | 8K | 0.150 → 2.600T | web-heavy; language, world knowledge, syntax |
+| **S2 Skill ramp** | 22.50% | 0.900T | 32K | 2.600 → 3.500T | code/math/reasoning up; 8K→32K |
+| **S3 Long context** | 7.50% | 0.300T | 256K | 3.500 → 3.800T | 32K→256K on naturally-long docs only |
+| **S4 Anneal** | 5.00% | 0.200T | 256K | 3.800 → 4.000T | Tier-A reserve only; LR → 0 |
+
+### 4.1 Stage × lane reconciliation
+
+Global shares are a *weighted average* of stage mixes. If the stages don't integrate back to the global mixture, the plan is internally inconsistent. **S1 is not hand-tuned — it is solved** (`curriculum.solve_s1()`) so integration is exact by construction.
+
+| Lane | S0 | S1 | S2 | S3 | S4 | Integrates to | Target | Drift |
+|---|---|---|---|---|---|---|---|---|
+| english | 38.0% | 34.4% | 19.0% | 30.0% | 20.0% | 30.00% | 30.0% | 0.00pp |
+| code | 17.0% | 19.0% | 31.0% | 29.0% | 12.0% | 22.00% | 22.0% | 0.00pp |
+| math | 9.0% | 9.9% | 18.0% | 11.0% | 15.0% | 12.00% | 12.0% | 0.00pp |
+| indic_verified | 3.0% | 3.5% | 4.0% | 6.0% | **18.0%** | 4.50% | 4.5% | 0.00pp |
+| indic_unverified | 7.0% | 6.7% | 7.0% | 10.0% | 6.0% | 7.00% | 7.0% | 0.00pp |
+| indic_translated | 5.5% | 5.6% | 3.0% | 1.5% | 2.0% | 4.50% | 4.5% | 0.00pp |
+| indic_synthetic | 3.5% | 4.4% | 4.0% | 2.0% | 3.0% | 4.00% | 4.0% | 0.00pp |
+| agentic | 3.0% | 4.6% | 8.5% | 7.0% | **13.0%** | 6.00% | 6.0% | 0.00pp |
+| reasoning | 2.0% | 3.5% | 4.5% | 3.0% | **11.0%** | 4.00% | 4.0% | 0.00pp |
+| forums | 6.0% | 4.3% | 0.5% | 0.0% | 0.0% | 3.00% | 3.0% | 0.00pp |
+| multilingual | 6.0% | 4.3% | 0.5% | 0.5% | 0.0% | 3.00% | 3.0% | 0.00pp |
+
+### 4.2 Gradient-safe blending bands
+
+V4 recorded a **~150× gradient-norm spike** when the Hindi share was raised abruptly. Every transition is therefore **ramped, not stepped**, at a rate limit of **12pp per 100B tokens**. Ramps **straddle** the boundary (half in the outgoing tail, half in the incoming head) — otherwise the S3→S4 ramp alone would consume 70% of the anneal and destroy the cooldown.
+
+| Transition | Worst lane | Δ | Ramp | Split | Rate |
+|---|---|---|---|---|---|
+| S0 → S1 | english | −3.6pp | 30.2B | 15.1B + 15.1B (1% of S1) | 12.0pp/100B |
+| S1 → S2 | english | −15.4pp | 128.1B | 64.0B + 64.0B (7% of S2) | 12.0pp/100B |
+| S2 → S3 | english | +11.0pp | 91.7B | 45.8B + 45.8B (15% of S3) | 12.0pp/100B |
+| S3 → S4 | code | −17.0pp | 141.7B | 70.8B + 70.8B (35% of S4) | 12.0pp/100B |
+
+### 4.3 Long context — a curriculum property, not a token lane
+
+RULER@256K is targeted by **selecting naturally-long documents already inside existing lanes**. No separate budget slot, because concatenating unrelated short documents to fill 256K teaches the model the wrong thing.
+
+| Source lane | Document type | Trains |
+|---|---|---|
+| code | whole repos concatenated by import graph | cross-file dependency reasoning |
+| indic_unverified | judgments, Hansard, gov reports | long-document Indic comprehension |
+| indic_verified | OCR'd full-length books | sustained native narrative |
+| english | books, legal/technical long-form | RULER@256K parity |
+| agentic | full multi-step trajectories, unsplit | long tool-history management |
+
+Short-document lanes (forums 0.0%, multilingual 0.5% in S3) are excluded from the long-context stage **by construction**.
+
+---
+
+## 5. Difficulty and reasoning-length bands
+
+| Band | Steps | Reasoning tokens | Concrete example | Schedule |
+|---|---|---|---|---|
+| **0 — Direct recall** | 0 | <32 | *"Odisha ki rajdhani kya hai?" → "Bhubaneswar."* | S0–S1 dominant, **never removed** — keeps short answers short |
+| **1 — Short CoT** | 1–3 | 32–256 | *Sam has 3 apples, buys 2, gives 1 away. 3+2−1 = 4.* | S1 primary, carried at reduced weight |
+| **2 — Medium CoT** | 4–8 | 256–1K | *JEE-mains projectile: pick formula → substitute → carry units → sanity-check magnitude → state answer.* | ramps in through S2 |
+| **3 — Long CoT / tool-augmented** | 8–20 | 1K–8K | *Agentic: "Book an IRCTC ticket under ₹800, verify the PNR, retry once on failure" — plan, call, read error, replan.* | S2 late + S3; concentrated in S4 |
+| **4 — Extended / cross-document** | 20+ | 8K–64K | *Read a 40-page judgment + a prior ruling + a Hansard excerpt; identify which precedent controls and why.* | S3–S4 only — requires 256K context to exist first |
+
+**Effort dial** (the "controllable reasoning depth" objective — simple problems must stay cheap):
+
+| Level | Thinking budget | Band mix |
+|---|---|---|
+| low | <128 tokens | B0 60% / B1 40% |
+| medium | 128–1K | B1 45% / B2 55% |
+| high | 1K–8K | B2 35% / B3 65% |
+| ultra | 8K–64K | B3 40% / B4 60% |
+
+Band 0 is never dropped from the mixture. A model trained only on long traces loses the ability to answer briefly, which is a real regression, not a cosmetic one.
+
+---
+
+## 6. Protected floor and anneal reserve
+
+### 6.1 The floor
+
+> **8% of every batch — 41 of 512 sequences — drawn from NATIVE Indic only (verified + unverified).**
+
+V4 ran an 8% always-on Indic channel. We keep the percentage and **tighten the definition**: translated and synthetic tokens do **not** count.
+
+This matters because English-tuned quality proxies systematically reject Indic script, code-mixing, and local content — so an unprotected selector starves the lane. But a floor defined on the *whole* Indic lane is a fake floor: the selector satisfies "8% Indic" entirely with cheap generated text and never touches the scarce native tiers. That is the exact language erasure the floor exists to prevent.
+
+| Stage | Native Indic available | |
+|---|---|---|
+| S0 Warmup | 10.0% | ← **binding constraint** |
+| S1 Foundation | 10.2% | |
+| S2 Skill ramp | 11.0% | |
+| S3 Long context | 16.0% | |
+| S4 Anneal | 24.0% | |
+
+**Satisfiable in every stage, slack +2.0pp.** Floor sequences are exempt from selector rejection (individual documents still pass PII/toxicity screening), so no gradient step is ever taken without Indian-language signal.
+
+### 6.2 The anneal reserve
+
+**0.200T = 5.0% of budget, held BACK from the lane budgets — not added on top.**
+
+| Component | Share | Tokens | Rationale |
+|---|---|---|---|
+| Instruction-dense general text | 28% | 0.056T | matches downstream SFT distribution |
+| **Verified-native Indic (deferred 2nd epoch)** | 22% | 0.044T | the 2nd pass is *spent* here, not added; total exposure stays 2.0× |
+| Answer-verified math / worked solutions | 18% | 0.036T | OLMo 2 precedent: small late reserve moved grade-school math 24% → 67% |
+| Execution-verified agentic trajectories | 16% | 0.032T | sandbox-successful traces only; loss on model tokens only |
+| Long-CoT Band 3–4 reasoning | 11% | 0.022T | effort-dial supervision lands where LR is lowest |
+| Safety + long-context refresh | 5% | 0.010T | 12+ language refusals incl. romanized attacks; one 256K pass so long-context survives the cooldown |
+
+**Explicitly excluded from the reserve:** benchmark test items, eval-adjacent paraphrases, **canary strings**, unverified synthetic CoT.
+
+Canaries live *only* in the private eval suites. Placing them in the anneal would be deliberate contamination — it inverts their purpose, which is to *detect* leakage.
+
+---
+
+## 7. Fertility — what the Indic budget actually buys
+
+Carried forward unchanged from the Session-3 submission: **vocab 196,608 (3·2¹⁶)**, frozen before pretraining (the one irreversible decision).
+
+**Weighted Indic fertility: 1.7199 tokens/word** (target ≤ 1.75), weighted by internet-user share across 13 first-class languages.
+
+Same **0.800T Indic token budget**, in *words the model actually learns*:
+
+| Tokenizer | Fertility | Words | vs English-centric BPE |
+|---|---|---|---|
+| **ERAV5 target** | 1.72 | **0.465T** | **2.62×** |
+| Gemma 4 (262K) | 2.20 | 0.364T | 2.05× |
+| English-centric BPE | 4.50 | 0.178T | 1.00× |
+
+Tokens are the bill; words are what the model learns. The same budget buys **2.6× the language**.
+
+**Session-2 balance metric** — `Score = 1000 / (X_max − X_min)`:
+X_max = 2.15 (Malayalam), X_min = 1.40 (English), spread = 0.75 → **score 1333.3**. The metric rewards *balance*, not just a low average, which is why the Dravidian targets are relaxed per-word (agglutinative morphology packs more meaning into one word) while held per-byte.
+
+---
+
+## 8. Sensitivity — what breaks first if the inventory is wrong
+
+The **90B verified-native estimate is the most fragile input in this document.** Every other lane has slack. Targets are fixed by the mixture; what moves under a supply shock is *how much of each target is backed by real tokens*.
+
+| Scenario | vn epochs | Real native | % of Indic | Indic gap | Overall real% | Floor |
+|---|---|---|---|---|---|---|
+| Baseline | 2.00× | 0.460T | 57.5% | 0.160T | 89.0% | OK |
+| Verified native −33% | 2.00× | 0.401T | 50.1% | 0.219T | 87.5% | OK |
+| Verified native −50% (worst credible) | 2.00× | 0.370T | **46.2%** | 0.250T | 86.8% | OK |
+| Code −30% after license filter | 2.00× | 0.460T | 57.5% | 0.160T | 89.0% | OK |
+| Unverified Indic −40% (lang-ID mislabels) | 2.00× | 0.460T | 57.5% | 0.160T | 89.0% | OK |
+| All Indic native −40% (systemic) | 2.00× | 0.388T | 48.5% | 0.232T | 87.2% | OK |
+
+**Stated responses — the plan bends, it does not break:**
+
+- **Verified native misses:** hold exposure at 2.0× (do *not* raise epochs). Backfill from unverified native, which sits at 0.62 epochs with **~0.17T of unused headroom**. Synthetic does **not** expand to fill the gap — the parity cap is a *ratio* to native, so a shrinking native supply shrinks the synthetic ceiling automatically.
+- **Code misses:** move to 1.3–1.5× epochs before considering synthetic code. Repetition is safer than generation in a lane where SWE-bench leakage is the dominant risk and where generated code has no correctness signal independent of the tests we also generated.
+- **Unverified Indic misses:** most slack of any lane — a 40% cut is fully absorbed at 0.62 epochs. If verified *and* unverified both shrink, the Indic headline share drops below 20% to whatever native supports. **The share follows the supply, not the other way round.**
+- **Agentic misses:** no change. The lane was designed around self-play from the start; P3 gates whether self-play works at all, which is the real risk, not supply.
+
+Notably, the floor holds in **every** scenario — because it is defined as a share of the *batch*, not a share of a supply pool that can evaporate.
+
+---
+
+## 9. Cleaning priority — aimed at the starved slots
+
+Applying the Session-4 pipeline yields to the Session-5 mixture: how many **raw** tokens must enter the pipeline to produce the clean tokens each lane needs (including the 2× collection headroom).
+
+| Lane | Pipeline yield | Clean needed | Collection target | **Raw required** | Starved |
+|---|---|---|---|---|---|
+| english | 22% | 1.200T | 2.400T | 10.909T | |
+| code | 31% | 0.880T | 1.760T | 5.677T | |
+| math | 18% | 0.480T | 0.960T | 5.333T | |
+| **indic_verified** | **9%** | 0.180T | 0.360T | **4.000T** | |
+| indic_unverified | 26% | 0.280T | 0.560T | 2.154T | |
+| forums | 14% | 0.120T | 0.240T | 1.714T | |
+| multilingual | 24% | 0.120T | 0.240T | 1.000T | |
+| indic_translated | 55% | 0.180T | 0.360T | 0.655T | |
+| agentic | 42% | 0.075T | 0.150T | 0.357T | **YES** |
+| reasoning | 35% | 0.045T | 0.090T | 0.257T | **YES** |
+| indic_synthetic | — | — | — | — | **YES** (generated) |
+| **Total raw intake** | | **3.560T** | **7.120T** | **32.06T** | |
+
+Verified-native Indic has a **9% yield** — OCR confidence gates plus the native-speaker audit reject hard. It takes **4.0T of raw intake to land 0.18T of usable tokens**, which is the real reason this tier is scarce. It is not that the text doesn't exist; it is that verifying it is expensive.
+
+**Where to point the remaining cohort cleaning effort** (marginal value of one more cleaned token; floor-eligible lanes weighted 2×):
+
+| Rank | Lane | Score | Supply headroom | Epochs | |
+|---|---|---|---|---|---|
+| 1 | reasoning | 5.33 | 0.19× | 1.50 | |
+| 2 | agentic | 4.80 | 0.21× | 1.50 | |
+| 3 | **indic_verified** | 4.00 | 0.50× | 2.00 | floor lane — counts double |
+| 4 | math | 1.92 | 0.52× | 1.92 | |
+| 5 | indic_unverified | 1.24 | 1.61× | 0.62 | floor lane — counts double |
+| 6 | code | 0.97 | 1.03× | 0.97 | |
+
+English, forums, and multilingual are **deprioritised** — they have 3×, 3×, and 12× supply headroom respectively. Cleaning more English is effort spent where it changes nothing.
+
+---
+
+## 10. Proxy experiments — the plan as a testable hypothesis
+
+Every ratio here is a hypothesis until a cheap experiment tests it. Each proxy states what would **refute** the plan, not only what would confirm it — a decision rule that can only fire in one direction is not a test.
+
+| ID | Scale | Tokens/arm | Arms | GPU-h | Cost | Question |
+|---|---|---|---|---|---|---|
+| **P5** | 1B | 20B | 2 | 169 | $421 | Loss-masking on tool observations |
+| **P2** | 1B | 20B | 2 | 169 | $421 | Protected floor necessity |
+| **P3** | 1B | 20B | 2 | 169 | $421 | Agentic verification gate |
+| **P1** | 3B | 60B | 2 | 1,517 | $3,792 | Indic synthetic parity cap |
+| **P4** | 3B | 60B | 3 | 2,275 | $5,688 | Mixture-transition gradient stability |
+| | | | | **4,297** | **$10,743** | **= 1.70% of the flagship run (~$632K)** |
+
+**Run order: P5 → P2 → P3 → P1 → P4.** P5 is cheapest and its result changes how every other agentic number is counted, so it goes first.
+
+### P5 · Loss-masking on tool observations *(1B, 20B/arm)*
+- **H:** zero-loss masking of tool outputs prevents observation hallucination without costing task success.
+- **A:** loss on model-generated tokens only · **B:** loss on the full trajectory including tool responses.
+- **Metric:** rate of fabricated tool observations in held-out rollouts; BFCL.
+- **Rule:** A must cut fabricated-observation rate by **≥50% at no BFCL cost**. If masking costs task success, the 35% loss-fraction assumption in §2.1 is wrong and the agentic lane must be re-sized.
+
+### P2 · Protected floor necessity *(1B, 20B/arm)*
+- **H:** without a native-only always-on floor, Indic capability drifts down during the code/math-heavy S2 phase.
+- **A:** 8% native-Indic floor every batch · **B:** same global Indic share, no batch-level floor.
+- **Metric:** MILU (Hindi + one Dravidian) at **5 checkpoints — the curve shape is the evidence, not the endpoint.** Secondary: HumanEval/GSM-mini to confirm no tax on dominant lanes.
+- **Rule:** keep the floor if B shows a mid-training MILU dip **≥3 pts** that A avoids. **If both curves are flat, drop the floor** — it is unnecessary complexity and it costs selector flexibility.
+
+### P3 · Agentic verification gate *(1B, 20B/arm)*
+- **H:** execution-verified sandbox trajectories beat imitation-only public agent data at equal token count.
+- **A:** sandbox self-play, kept only on task success · **B:** public trajectories, no verification gate.
+- **Metric:** BFCL function-call accuracy; τ²-bench task success.
+- **Rule:** A must clear B by **≥5 pts on both**. If not, the generation pipeline is the defect to fix before the 6% agentic share scales — **not** a reason to cut the lane.
+
+### P1 · Indic synthetic parity cap *(3B, 60B/arm)*
+- **H:** capping synthetic Indic at ≤1.0× native beats a synthetic-heavy arm on native-quality metrics at matched compute.
+- **A:** plan mixture (0.35× ratio) · **B:** synthetic doubled (0.70×), translated held constant.
+- **Metric:** MILU per Tier-1 language; FLORES chrF++ (native vs synthetic-heavy runs diverge here first); 200-sample native-speaker audit for translationese.
+- **Rule:** adopt the cap only if A beats B by **≥2.0 pts mean MILU with no chrF++ regression**. **If B wins, the cap rises** — the plan was too conservative and we are leaving Indic capability on the table. If neither separates, drop the cap as unjustified machinery.
+
+### P4 · Mixture-transition gradient stability *(3B, 60B/arm, 3 arms)*
+- **H:** ramping lane-share changes across a ≥100B-token band prevents the ~150× gradient-norm spike V4 recorded.
+- **A:** 100B linear ramp · **B:** abrupt step at the boundary · **C:** 20B ramp (is the band over-specified?)
+- **Metric:** max gradient-norm multiplier over the transition; loss-spike count.
+- **Rule:** keep the 100B band only if B spikes **≥5×** *and* C also spikes. **If 20B suffices, shorten the band** and reclaim schedule — the arm C exists specifically to catch us over-engineering.
+
+**Status: P4 and P5 have since been executed at small scale on real GPU hardware; P1, P2, P3 remain pre-registered and not yet executed.** This document is the hypothesis. Numbers in §1–§9 stand until a proxy fires.
+
+Summary of the executed runs (full write-ups, scripts, and raw data in [`../proxy_runs/`](../proxy_runs/), and the results are reproduced in §10 of [the README](../README.md)):
+
+- **P4 — mixture-transition gradient stability**, two passes of increasing rigor. Pass 2 (2.73M-param transformer, real prose vs. real Python source, 8 ramp lengths × 3 seeds): an abrupt transition spikes the gradient norm **6.04×**, while *every* non-zero ramp tested — down to 20 steps — sits at 1.5–1.8× with zero loss-spikes. The curve is flat and noisy beyond ~20 steps, so nearly all of the protection is captured by a short ramp. Read against this document's own decision rule, that argues for testing a **shorter** blending band than the 100B width, not for confirming it.
+- **P5 — loss-masking on tool observations** (152,832-param transformer, synthetic tool-use trajectories, 2 arms × 3 seeds): masking the tool-output span cut fabrication of a withheld tool response from **73.3% to 0.0%** on never-seen inputs, unanimous across all 3 seeds, at **zero task-success cost** — a 100% reduction against this document's own ≥50% bar. This is direct support for the loss-mapping correction in §2.1.
+
+Both are small-scale mechanism tests, not the full 1B/3B-scale runs specified above: they establish that the mechanisms behave as claimed, but do not set the production-scale numbers (the blending-band width in tokens, or the exact supervised-token fraction on real agent trajectories). Those still require the runs as specified.
+
+---
+
+## 11. Validation — 49/49 checks pass
+
+The plan is machine-checked. `python3 -m erav5.validate` asserts:
+
+- **Arithmetic:** mixture shares sum to 1.0; all 5 stage mixes sum to 1.0; stage fractions sum to 1.0
+- **Integration:** stage schedule reproduces the global mixture (max drift 0.00pp, tolerance 0.5pp)
+- **Repetition:** every lane within its epoch cap *and* below the 4-epoch free-repetition ceiling
+- **No silent generation:** every synthetic gap is in a lane declared generable, with the volume named
+- **Indic:** synthetic ≤ parity with native (0.35× vs 1.0× cap); Indic lane is majority native (57.5%)
+- **The epoch trap:** verified-native anneal component is a *subset* of the lane budget (44B ≤ 180B), and total exposure is 2.00× vs a 2.0× cap
+- **Floor:** satisfiable in every stage (binding: S0 at 10.0% vs 8% floor)
+- **Reserve:** shares sum to 1.0; reserve size equals S4 stage size exactly
+- **Gradient safety:** all 4 transitions within 12pp/100B, all ramps fit inside their stages
+- **Fertility:** weighted Indic 1.7199 ≤ 1.75
+
+---
+
+## 12. One-page defence
+
+| Lane | Share | Real backing | Flag |
+|---|---|---|---|
+| English | 30.0% | 100% real, 0.32 ep, 3.2× headroom | none |
+| Code | 22.0% | 100% real, 0.97 ep | tight — 1.03× headroom |
+| Math & science | 12.0% | 100% real, 1.92 ep | at epoch cap |
+| Indic — verified native | 4.5% | 100% real, **2.00 ep (at cap)** | scarcest tier; 9% pipeline yield |
+| Indic — unverified native | 7.0% | 100% real, 0.62 ep | most slack in the plan |
+| Indic — translated | 4.5% | MT-derived, 0.82 ep | breadth only; falls to 2% by S4 |
+| Indic — synthetic | 4.0% | generated, 0.35× native | inside safe band; COMET + audit gated |
+| Agentic | 6.0% | 31% real / 69% generated | execution-verified; **only 0.084T supervised** |
+| Reasoning | 4.0% | 28% real / 72% generated | answer-verified |
+| Forums & code-mix | 3.0% | 100% real, 0.34 ep | none |
+| Other multilingual | 3.0% | 100% real, 0.08 ep | 12× headroom, sampled down |
+
+**The three claims this plan stakes itself on:**
+
+1. **The budget is set by MoE active parameters (15B), not total (120B)** — which is why 4.0T is the right number and 15T was never available.
+2. **A smaller budget makes the Indic lane more honest, not less** — 57.5% native at 4.0T versus 40% native at 15T, from the same real supply.
+3. **Every lane over 50% synthetic is gated by an independent verifier** — execution, answer-checking, or paid native audit. Where no such gate exists (English prose), the synthetic share is zero.
