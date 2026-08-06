@@ -1,0 +1,72 @@
+{
+  "access_log": [],
+  "benchmarks": [
+    "canary",
+    "humaneval-mini",
+    "indic-perplexity-holdout",
+    "milu-mini",
+    "perplexity-holdout"
+  ],
+  "entries": [
+    {
+      "benchmark": "milu-mini",
+      "content_hash": "8cd82a5c8cba69438b78e276a4140c67bc89703df59e9a672c7feaea6fb225df",
+      "doc_id": "test-bench-001",
+      "n_fingerprints": 25,
+      "never_train": true,
+      "split": "test",
+      "version": "v1.0"
+    },
+    {
+      "benchmark": "milu-mini",
+      "content_hash": "242a32c03c9ef25e677d47dbd47fe3f928c6e1781ea9031f6e35a82344bb5b7d",
+      "doc_id": "test-bench-002",
+      "n_fingerprints": 85,
+      "never_train": true,
+      "split": "test",
+      "version": "v1.0"
+    },
+    {
+      "benchmark": "humaneval-mini",
+      "content_hash": "fe6702e01e5cbfd80cfde8ffc6bff6f0e2133a30be9508a62ec1661eecbce19b",
+      "doc_id": "test-bench-003",
+      "n_fingerprints": 38,
+      "never_train": true,
+      "split": "test",
+      "version": "v1.0"
+    },
+    {
+      "benchmark": "canary",
+      "content_hash": "3d11c4326d8a93ee275d44dfd3a89571d36229a3fd3739275ccf44ac5e339364",
+      "doc_id": "test-canary-001",
+      "n_fingerprints": 33,
+      "never_train": true,
+      "split": "test",
+      "version": "v1.0"
+    },
+    {
+      "benchmark": "perplexity-holdout",
+      "content_hash": "9ce7d65530b1251afc889fe52d7af5ee7c76e1dab118be8deca79f5cc8f6f61a",
+      "doc_id": "val-holdout-01",
+      "n_fingerprints": 40,
+      "never_train": false,
+      "split": "validation",
+      "version": "v1.0"
+    },
+    {
+      "benchmark": "indic-perplexity-holdout",
+      "content_hash": "b776f45bfe6a9e7102e95947f56e72b89eaa4bd80e9dee4833030b972ac8d1c7",
+      "doc_id": "val-holdout-02",
+      "n_fingerprints": 45,
+      "never_train": false,
+      "split": "validation",
+      "version": "v1.0"
+    }
+  ],
+  "n_entries": 6,
+  "n_fingerprints": 266,
+  "never_train_shards": [
+    "shard-eval-test-000"
+  ],
+  "ngram": 24
+}

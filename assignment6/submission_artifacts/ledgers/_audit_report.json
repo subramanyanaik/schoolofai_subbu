@@ -1,0 +1,1389 @@
+{
+  "anneal_reserve": {
+    "anneal_steps": [
+      21,
+      22,
+      23
+    ],
+    "consumed_before_anneal": {
+      "shard-agentic-train-002": 0,
+      "shard-indic_verified-train-001": 0,
+      "shard-reasoning-train-002": 0
+    },
+    "consumed_during_anneal": {
+      "shard-agentic-train-002": 3,
+      "shard-indic_verified-train-001": 1,
+      "shard-reasoning-train-002": 0
+    },
+    "leaked_shards": [],
+    "n_reserved_used_in_anneal": 2,
+    "ok": true,
+    "reserved_shards": [
+      "shard-agentic-train-002",
+      "shard-indic_verified-train-001",
+      "shard-reasoning-train-002"
+    ]
+  },
+  "firewall": {
+    "blocked_shard_ids": [
+      "shard-english-train-005",
+      "shard-english-train-006",
+      "shard-eval-test-000",
+      "shard-eval-validation-000"
+    ],
+    "blocked_shards_consumed": [],
+    "denied_reads": [
+      {
+        "allowed": false,
+        "purpose": "training",
+        "reason": "gradient_bearing_purpose_denied",
+        "shard_id": "shard-eval-validation-000",
+        "step": -1
+      }
+    ],
+    "n_distinct_shards_consumed": 24,
+    "n_never_train_registered": 1,
+    "never_train_shards_consumed": [],
+    "non_training_split_shards_consumed": [],
+    "ok": true,
+    "validation_reads": [
+      {
+        "allowed": true,
+        "purpose": "held_out_perplexity",
+        "reason": "validation_read",
+        "shard_id": "shard-eval-validation-000",
+        "step": -1
+      }
+    ]
+  },
+  "floor_compliance": {
+    "floor_lanes": [
+      "indic_verified",
+      "indic_unverified"
+    ],
+    "floor_pct": 0.08,
+    "mean_delivered_share": 0.166667,
+    "min_delivered_share": 0.125,
+    "n_steps": 24,
+    "n_violations": 0,
+    "ok": true,
+    "per_step": [
+      {
+        "delivered": 1,
+        "ok": true,
+        "required": 1,
+        "share": 0.125,
+        "step": 0
+      },
+      {
+        "delivered": 1,
+        "ok": true,
+        "required": 1,
+        "share": 0.125,
+        "step": 1
+      },
+      {
+        "delivered": 1,
+        "ok": true,
+        "required": 1,
+        "share": 0.125,
+        "step": 2
+      },
+      {
+        "delivered": 1,
+        "ok": true,
+        "required": 1,
+        "share": 0.125,
+        "step": 3
+      },
+      {
+        "delivered": 1,
+        "ok": true,
+        "required": 1,
+        "share": 0.125,
+        "step": 4
+      },
+      {
+        "delivered": 1,
+        "ok": true,
+        "required": 1,
+        "share": 0.125,
+        "step": 5
+      },
+      {
+        "delivered": 1,
+        "ok": true,
+        "required": 1,
+        "share": 0.125,
+        "step": 6
+      },
+      {
+        "delivered": 1,
+        "ok": true,
+        "required": 1,
+        "share": 0.125,
+        "step": 7
+      },
+      {
+        "delivered": 1,
+        "ok": true,
+        "required": 1,
+        "share": 0.125,
+        "step": 8
+      },
+      {
+        "delivered": 1,
+        "ok": true,
+        "required": 1,
+        "share": 0.125,
+        "step": 9
+      },
+      {
+        "delivered": 1,
+        "ok": true,
+        "required": 1,
+        "share": 0.125,
+        "step": 10
+      },
+      {
+        "delivered": 1,
+        "ok": true,
+        "required": 1,
+        "share": 0.125,
+        "step": 11
+      },
+      {
+        "delivered": 3,
+        "ok": true,
+        "required": 1,
+        "share": 0.375,
+        "step": 12
+      },
+      {
+        "delivered": 1,
+        "ok": true,
+        "required": 1,
+        "share": 0.125,
+        "step": 13
+      },
+      {
+        "delivered": 1,
+        "ok": true,
+        "required": 1,
+        "share": 0.125,
+        "step": 14
+      },
+      {
+        "delivered": 1,
+        "ok": true,
+        "required": 1,
+        "share": 0.125,
+        "step": 15
+      },
+      {
+        "delivered": 1,
+        "ok": true,
+        "required": 1,
+        "share": 0.125,
+        "step": 16
+      },
+      {
+        "delivered": 3,
+        "ok": true,
+        "required": 1,
+        "share": 0.375,
+        "step": 17
+      },
+      {
+        "delivered": 1,
+        "ok": true,
+        "required": 1,
+        "share": 0.125,
+        "step": 18
+      },
+      {
+        "delivered": 1,
+        "ok": true,
+        "required": 1,
+        "share": 0.125,
+        "step": 19
+      },
+      {
+        "delivered": 1,
+        "ok": true,
+        "required": 1,
+        "share": 0.125,
+        "step": 20
+      },
+      {
+        "delivered": 2,
+        "ok": true,
+        "required": 1,
+        "share": 0.25,
+        "step": 21
+      },
+      {
+        "delivered": 2,
+        "ok": true,
+        "required": 1,
+        "share": 0.25,
+        "step": 22
+      },
+      {
+        "delivered": 3,
+        "ok": true,
+        "required": 1,
+        "share": 0.375,
+        "step": 23
+      }
+    ],
+    "violating_steps": []
+  },
+  "fork": {
+    "divergence_recorded": true,
+    "diverging_steps": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "fork_branch": "fork-anneal-early",
+    "n_diverging_steps": 4,
+    "n_shared_steps": 4,
+    "note": "a fork shares a checkpoint with its parent but not a data stream; identical hashes on shared steps would mean the fork silently replayed the parent instead of branching",
+    "ok": true,
+    "parent_branch": "main",
+    "parent_ledger_hash": "971035eb1905fe2cf467804acfb5799cbcffe37c37934e48a0371dd549e18ba2",
+    "parent_step": 6
+  },
+  "fork_ledger_chains": {
+    "ok": true,
+    "per_ledger": {
+      "consumption": {
+        "broken_at": null,
+        "head": "7b58bf72f09fff54413c5f77d27728715c3a312383ee51305b4c954c6b4de259",
+        "n_events": 30,
+        "ok": true,
+        "reason": null
+      },
+      "firewall": {
+        "broken_at": null,
+        "head": "0000000000000000000000000000000000000000000000000000000000000000",
+        "n_events": 0,
+        "ok": true,
+        "reason": null
+      },
+      "learning": {
+        "broken_at": null,
+        "head": "2ada821dff9956154f35a033c02b79c105c2084f1c69ae3ce3f1614cd075a1b1",
+        "n_events": 37,
+        "ok": true,
+        "reason": null
+      },
+      "opus": {
+        "broken_at": null,
+        "head": "51f5de33e83bf056cf7b346c68743ecd982567d7a783f17a6143025b6a60cfcc",
+        "n_events": 91,
+        "ok": true,
+        "reason": null
+      },
+      "token_trace": {
+        "broken_at": null,
+        "head": "815853ca3f8f66c0e1d9a146b5c3e4fce054114b464f760e56f05dab631f1b86",
+        "n_events": 1,
+        "ok": true,
+        "reason": null
+      }
+    }
+  },
+  "interval_query": {
+    "document_ids": [
+      "agt-002",
+      "agt-003",
+      "code-001",
+      "code-004",
+      "code-005",
+      "code-007",
+      "eng-000",
+      "eng-001",
+      "eng-002",
+      "eng-003",
+      "eng-004",
+      "eng-005",
+      "eng-006",
+      "eng-007",
+      "eng-008",
+      "eng-009",
+      "eng-011",
+      "eng-012",
+      "eng-013",
+      "eng-014",
+      "for-000",
+      "for-002",
+      "for-004",
+      "is-001",
+      "is-003",
+      "it-000",
+      "it-001",
+      "it-003",
+      "iu-001",
+      "iu-002",
+      "iu-004",
+      "iv-000",
+      "math-000",
+      "math-001",
+      "math-002",
+      "math-005",
+      "mul-000",
+      "mul-001",
+      "rsn-001"
+    ],
+    "loss_tokens_by_lane": {
+      "agentic": 212,
+      "code": 1887,
+      "english": 4111,
+      "forums": 508,
+      "indic_synthetic": 73,
+      "indic_translated": 258,
+      "indic_unverified": 743,
+      "indic_verified": 216,
+      "math": 891,
+      "multilingual": 67,
+      "reasoning": 188
+    },
+    "n_documents": 39,
+    "n_shards": 21,
+    "step_hi": 12,
+    "step_lo": 6,
+    "tokens_by_shard": {
+      "shard-agentic-train-000": 220,
+      "shard-agentic-train-001": 154,
+      "shard-code-train-000": 768,
+      "shard-code-train-001": 402,
+      "shard-code-train-002": 726,
+      "shard-english-train-000": 1079,
+      "shard-english-train-001": 1034,
+      "shard-english-train-002": 965,
+      "shard-english-train-003": 276,
+      "shard-english-train-004": 793,
+      "shard-forums-train-000": 379,
+      "shard-forums-train-001": 133,
+      "shard-indic_synthetic-train-000": 75,
+      "shard-indic_translated-train-000": 262,
+      "shard-indic_unverified-train-000": 594,
+      "shard-indic_unverified-train-001": 155,
+      "shard-indic_verified-train-000": 217,
+      "shard-math-train-000": 701,
+      "shard-math-train-001": 195,
+      "shard-multilingual-train-000": 69,
+      "shard-reasoning-train-000": 256
+    }
+  },
+  "ledger_chains": {
+    "ok": true,
+    "per_ledger": {
+      "consumption": {
+        "broken_at": null,
+        "head": "2bd4f19043ccfadecd4471122e90cdb8582747b3aa4a6763bd8d5daea3976ffd",
+        "n_events": 277,
+        "ok": true,
+        "reason": null
+      },
+      "firewall": {
+        "broken_at": null,
+        "head": "0000000000000000000000000000000000000000000000000000000000000000",
+        "n_events": 0,
+        "ok": true,
+        "reason": null
+      },
+      "learning": {
+        "broken_at": null,
+        "head": "72cf83ba1204ab1b21bc695c05bb94f396187c788a9146ec63247d442caf81fd",
+        "n_events": 212,
+        "ok": true,
+        "reason": null
+      },
+      "opus": {
+        "broken_at": null,
+        "head": "e87c6f02942dd60574e7d1b846ad121a1b801fad67cd4b157a99419f78078109",
+        "n_events": 649,
+        "ok": true,
+        "reason": null
+      },
+      "token_trace": {
+        "broken_at": null,
+        "head": "43926434d9c2eaac19482b78677971ce4a074ef5970e22ffad3422086567f936",
+        "n_events": 7,
+        "ok": true,
+        "reason": null
+      }
+    }
+  },
+  "loss_spikes": {
+    "mean_delta": -0.023566,
+    "n_spikes": 1,
+    "sd_delta": 0.266699,
+    "spikes": [
+      {
+        "delta": 0.857312,
+        "grad_norm": 1.097745,
+        "loss_after": 6.323448,
+        "loss_before": 5.466136,
+        "preceding_batch_hash": "04047e00b89eb5b06c38721ac2fba09d2006fb5ef0bbd0e605aa60dd5c750fdf",
+        "preceding_batch_id": "main/000011",
+        "preceding_lanes": {
+          "code": 2,
+          "english": 3,
+          "indic_synthetic": 1,
+          "indic_unverified": 1,
+          "math": 1
+        },
+        "spike_at_step": 12,
+        "stage": "S1 Foundation"
+      }
+    ],
+    "threshold": 0.376482
+  },
+  "mixture_compliance": {
+    "lanes": [
+      {
+        "actual_loss_token_share": 0.217718,
+        "actual_sequence_share": 0.177083,
+        "drift_vs_planned": -0.114583,
+        "drift_vs_session5": -0.122917,
+        "expected_after_substitutions": 34.0,
+        "lane": "english",
+        "loss_tokens": 7498,
+        "planned_sequences": 56.0,
+        "planned_share": 0.291667,
+        "sequences": 34,
+        "session5_target_share": 0.3,
+        "substituted_away": 22,
+        "substituted_in": 0,
+        "unexplained_drift": 0.0
+      },
+      {
+        "actual_loss_token_share": 0.240628,
+        "actual_sequence_share": 0.21875,
+        "drift_vs_planned": 0.0,
+        "drift_vs_session5": -0.00125,
+        "expected_after_substitutions": 42.0,
+        "lane": "code",
+        "loss_tokens": 8287,
+        "planned_sequences": 42.0,
+        "planned_share": 0.21875,
+        "sequences": 42,
+        "session5_target_share": 0.22,
+        "substituted_away": 0,
+        "substituted_in": 0,
+        "unexplained_drift": 0.0
+      },
+      {
+        "actual_loss_token_share": 0.147478,
+        "actual_sequence_share": 0.145833,
+        "drift_vs_planned": 0.026042,
+        "drift_vs_session5": 0.025833,
+        "expected_after_substitutions": 28.0,
+        "lane": "math",
+        "loss_tokens": 5079,
+        "planned_sequences": 23.0,
+        "planned_share": 0.119792,
+        "sequences": 28,
+        "session5_target_share": 0.12,
+        "substituted_away": 0,
+        "substituted_in": 5,
+        "unexplained_drift": 0.0
+      },
+      {
+        "actual_loss_token_share": 0.104562,
+        "actual_sequence_share": 0.078125,
+        "drift_vs_planned": 0.020833,
+        "drift_vs_session5": 0.033125,
+        "expected_after_substitutions": 15.0,
+        "lane": "indic_verified",
+        "loss_tokens": 3601,
+        "planned_sequences": 11.0,
+        "planned_share": 0.057292,
+        "sequences": 15,
+        "session5_target_share": 0.045,
+        "substituted_away": 0,
+        "substituted_in": 4,
+        "unexplained_drift": 0.0
+      },
+      {
+        "actual_loss_token_share": 0.081855,
+        "actual_sequence_share": 0.088542,
+        "drift_vs_planned": 0.015625,
+        "drift_vs_session5": 0.018542,
+        "expected_after_substitutions": 17.0,
+        "lane": "indic_unverified",
+        "loss_tokens": 2819,
+        "planned_sequences": 14.0,
+        "planned_share": 0.072917,
+        "sequences": 17,
+        "session5_target_share": 0.07,
+        "substituted_away": 0,
+        "substituted_in": 3,
+        "unexplained_drift": 0.0
+      },
+      {
+        "actual_loss_token_share": 0.018555,
+        "actual_sequence_share": 0.036458,
+        "drift_vs_planned": -0.005208,
+        "drift_vs_session5": -0.008542,
+        "expected_after_substitutions": 7.0,
+        "lane": "indic_translated",
+        "loss_tokens": 639,
+        "planned_sequences": 8.0,
+        "planned_share": 0.041667,
+        "sequences": 7,
+        "session5_target_share": 0.045,
+        "substituted_away": 1,
+        "substituted_in": 0,
+        "unexplained_drift": 0.0
+      },
+      {
+        "actual_loss_token_share": 0.006185,
+        "actual_sequence_share": 0.03125,
+        "drift_vs_planned": -0.005208,
+        "drift_vs_session5": -0.00875,
+        "expected_after_substitutions": 6.0,
+        "lane": "indic_synthetic",
+        "loss_tokens": 213,
+        "planned_sequences": 7.0,
+        "planned_share": 0.036458,
+        "sequences": 6,
+        "session5_target_share": 0.04,
+        "substituted_away": 1,
+        "substituted_in": 0,
+        "unexplained_drift": 0.0
+      },
+      {
+        "actual_loss_token_share": 0.055722,
+        "actual_sequence_share": 0.09375,
+        "drift_vs_planned": 0.026042,
+        "drift_vs_session5": 0.03375,
+        "expected_after_substitutions": 18.0,
+        "lane": "agentic",
+        "loss_tokens": 1919,
+        "planned_sequences": 13.0,
+        "planned_share": 0.067708,
+        "sequences": 18,
+        "session5_target_share": 0.06,
+        "substituted_away": 0,
+        "substituted_in": 5,
+        "unexplained_drift": 0.0
+      },
+      {
+        "actual_loss_token_share": 0.061297,
+        "actual_sequence_share": 0.057292,
+        "drift_vs_planned": 0.015625,
+        "drift_vs_session5": 0.017292,
+        "expected_after_substitutions": 11.0,
+        "lane": "reasoning",
+        "loss_tokens": 2111,
+        "planned_sequences": 8.0,
+        "planned_share": 0.041667,
+        "sequences": 11,
+        "session5_target_share": 0.04,
+        "substituted_away": 2,
+        "substituted_in": 5,
+        "unexplained_drift": 0.0
+      },
+      {
+        "actual_loss_token_share": 0.040013,
+        "actual_sequence_share": 0.036458,
+        "drift_vs_planned": 0.010417,
+        "drift_vs_session5": 0.006458,
+        "expected_after_substitutions": 7.0,
+        "lane": "forums",
+        "loss_tokens": 1378,
+        "planned_sequences": 5.0,
+        "planned_share": 0.026042,
+        "sequences": 7,
+        "session5_target_share": 0.03,
+        "substituted_away": 0,
+        "substituted_in": 2,
+        "unexplained_drift": 0.0
+      },
+      {
+        "actual_loss_token_share": 0.025988,
+        "actual_sequence_share": 0.036458,
+        "drift_vs_planned": 0.010417,
+        "drift_vs_session5": 0.006458,
+        "expected_after_substitutions": 7.0,
+        "lane": "multilingual",
+        "loss_tokens": 895,
+        "planned_sequences": 5.0,
+        "planned_share": 0.026042,
+        "sequences": 7,
+        "session5_target_share": 0.03,
+        "substituted_away": 0,
+        "substituted_in": 2,
+        "unexplained_drift": 0.0
+      }
+    ],
+    "max_abs_drift_vs_planned": 0.114583,
+    "max_abs_unexplained_drift": 0.0,
+    "n_substitution_events": 16,
+    "note": "drift_vs_planned includes deviations caused by declared scarcity fallbacks; unexplained_drift is the part no logged event accounts for and is the pass criterion",
+    "substitutions": [
+      {
+        "from_lane": "english",
+        "reason": "reduce_share",
+        "seqs": 2,
+        "step": 12,
+        "to_lane": "indic_verified"
+      },
+      {
+        "from_lane": "english",
+        "reason": "reduce_share",
+        "seqs": 2,
+        "step": 13,
+        "to_lane": "math"
+      },
+      {
+        "from_lane": "english",
+        "reason": "reduce_share",
+        "seqs": 1,
+        "step": 14,
+        "to_lane": "reasoning"
+      },
+      {
+        "from_lane": "english",
+        "reason": "reduce_share",
+        "seqs": 2,
+        "step": 15,
+        "to_lane": "agentic"
+      },
+      {
+        "from_lane": "english",
+        "reason": "reduce_share",
+        "seqs": 1,
+        "step": 16,
+        "to_lane": "reasoning"
+      },
+      {
+        "from_lane": "english",
+        "reason": "reduce_share",
+        "seqs": 2,
+        "step": 17,
+        "to_lane": "indic_verified"
+      },
+      {
+        "from_lane": "english",
+        "reason": "reduce_share",
+        "seqs": 2,
+        "step": 18,
+        "to_lane": "agentic"
+      },
+      {
+        "from_lane": "english",
+        "reason": "reduce_share",
+        "seqs": 2,
+        "step": 19,
+        "to_lane": "forums"
+      },
+      {
+        "from_lane": "english",
+        "reason": "reduce_share",
+        "seqs": 3,
+        "step": 20,
+        "to_lane": "reasoning"
+      },
+      {
+        "from_lane": "english",
+        "reason": "reduce_share",
+        "seqs": 2,
+        "step": 21,
+        "to_lane": "multilingual"
+      },
+      {
+        "from_lane": "reasoning",
+        "reason": "synthesize",
+        "seqs": 1,
+        "step": 21,
+        "to_lane": "indic_unverified"
+      },
+      {
+        "from_lane": "english",
+        "reason": "reduce_share",
+        "seqs": 1,
+        "step": 22,
+        "to_lane": "indic_unverified"
+      },
+      {
+        "from_lane": "indic_synthetic",
+        "reason": "synthesize",
+        "seqs": 1,
+        "step": 22,
+        "to_lane": "agentic"
+      },
+      {
+        "from_lane": "reasoning",
+        "reason": "synthesize",
+        "seqs": 1,
+        "step": 22,
+        "to_lane": "math"
+      },
+      {
+        "from_lane": "english",
+        "reason": "reduce_share",
+        "seqs": 2,
+        "step": 23,
+        "to_lane": "math"
+      },
+      {
+        "from_lane": "indic_translated",
+        "reason": "reduce_share",
+        "seqs": 1,
+        "step": 23,
+        "to_lane": "indic_unverified"
+      }
+    ],
+    "total_loss_tokens": 34439,
+    "total_sequences": 192,
+    "total_sequences_substituted": 26
+  },
+  "opus": {
+    "by_lane": {
+      "agentic": {
+        "accepted": 22,
+        "deferred": 19,
+        "rejected": 21
+      },
+      "code": {
+        "accepted": 51,
+        "deferred": 19,
+        "rejected": 51
+      },
+      "english": {
+        "accepted": 34,
+        "deferred": 8,
+        "rejected": 31
+      },
+      "forums": {
+        "accepted": 8,
+        "rejected": 12
+      },
+      "indic_synthetic": {
+        "accepted": 7,
+        "deferred": 7,
+        "rejected": 6
+      },
+      "indic_translated": {
+        "accepted": 8,
+        "deferred": 8,
+        "rejected": 7
+      },
+      "indic_unverified": {
+        "accepted": 20,
+        "deferred": 29,
+        "rejected": 21
+      },
+      "indic_verified": {
+        "accepted": 18,
+        "deferred": 34,
+        "rejected": 27
+      },
+      "math": {
+        "accepted": 35,
+        "deferred": 38,
+        "rejected": 45
+      },
+      "multilingual": {
+        "accepted": 7,
+        "deferred": 4,
+        "rejected": 7
+      },
+      "reasoning": {
+        "accepted": 14,
+        "deferred": 19,
+        "rejected": 12
+      }
+    },
+    "by_status": {
+      "accepted": 224,
+      "deferred": 185,
+      "rejected": 240
+    },
+    "deferred_returned": [
+      {
+        "candidate_id": "cand-00000-english-00006",
+        "deferred_at": 0,
+        "lane": "english",
+        "resolved_at": 1,
+        "status": "rejected"
+      },
+      {
+        "candidate_id": "cand-00000-english-00004",
+        "deferred_at": 0,
+        "lane": "english",
+        "resolved_at": 1,
+        "status": "rejected"
+      },
+      {
+        "candidate_id": "cand-00000-indic_unverified-00011",
+        "deferred_at": 0,
+        "lane": "indic_unverified",
+        "resolved_at": 1,
+        "status": "rejected"
+      },
+      {
+        "candidate_id": "cand-00001-code-00019",
+        "deferred_at": 1,
+        "lane": "code",
+        "resolved_at": 2,
+        "status": "rejected"
+      },
+      {
+        "candidate_id": "cand-00001-code-00017",
+        "deferred_at": 1,
+        "lane": "code",
+        "resolved_at": 2,
+        "status": "rejected"
+      },
+      {
+        "candidate_id": "cand-00000-math-00014",
+        "deferred_at": 0,
+        "lane": "math",
+        "resolved_at": 2,
+        "status": "accepted"
+      },
+      {
+        "candidate_id": "cand-00002-code-00036",
+        "deferred_at": 2,
+        "lane": "code",
+        "resolved_at": 3,
+        "status": "rejected"
+      },
+      {
+        "candidate_id": "cand-00001-indic_translated-00029",
+        "deferred_at": 1,
+        "lane": "indic_translated",
+        "resolved_at": 3,
+        "status": "rejected"
+      },
+      {
+        "candidate_id": "cand-00001-indic_unverified-00031",
+        "deferred_at": 1,
+        "lane": "indic_unverified",
+        "resolved_at": 3,
+        "status": "accepted"
+      },
+      {
+        "candidate_id": "cand-00002-math-00045",
+        "deferred_at": 2,
+        "lane": "math",
+        "resolved_at": 3,
+        "status": "accepted"
+      },
+      {
+        "candidate_id": "cand-00002-math-00046",
+        "deferred_at": 2,
+        "lane": "math",
+        "resolved_at": 3,
+        "status": "rejected"
+      },
+      {
+        "candidate_id": "cand-00002-agentic-00033",
+        "deferred_at": 2,
+        "lane": "agentic",
+        "resolved_at": 4,
+        "status": "accepted"
+      },
+      {
+        "candidate_id": "cand-00003-code-00049",
+        "deferred_at": 3,
+        "lane": "code",
+        "resolved_at": 4,
+        "status": "rejected"
+      },
+      {
+        "candidate_id": "cand-00001-indic_synthetic-00027",
+        "deferred_at": 1,
+        "lane": "indic_synthetic",
+        "resolved_at": 4,
+        "status": "rejected"
+      },
+      {
+        "candidate_id": "cand-00003-indic_unverified-00061",
+        "deferred_at": 3,
+        "lane": "indic_unverified",
+        "resolved_at": 4,
+        "status": "rejected"
+      },
+      {
+        "candidate_id": "cand-00003-indic_unverified-00062",
+        "deferred_at": 3,
+        "lane": "indic_unverified",
+        "resolved_at": 4,
+        "status": "rejected"
+      },
+      {
+        "candidate_id": "cand-00003-math-00064",
+        "deferred_at": 3,
+        "lane": "math",
+        "resolved_at": 4,
+        "status": "rejected"
+      },
+      {
+        "candidate_id": "cand-00003-math-00063",
+        "deferred_at": 3,
+        "lane": "math",
+        "resolved_at": 4,
+        "status": "rejected"
+      },
+      {
+        "candidate_id": "cand-00004-code-00067",
+        "deferred_at": 4,
+        "lane": "code",
+        "resolved_at": 5,
+        "status": "accepted"
+      },
+      {
+        "candidate_id": "cand-00003-indic_translated-00059",
+        "deferred_at": 3,
+        "lane": "indic_translated",
+        "resolved_at": 5,
+        "status": "rejected"
+      }
+    ],
+    "every_candidate_has_a_decision": true,
+    "floor_overrides": [],
+    "n_decisions": 649,
+    "n_deferred": 154,
+    "n_deferred_returned": 162,
+    "n_floor_overrides": 0,
+    "ok": true,
+    "rejected_data_retained": true,
+    "rejection_reasons": {
+      "defer_expired": 133,
+      "duplication": 103,
+      "low_proxy_utility": 2,
+      "quota_pressure": 86,
+      "stage_mismatch": 101
+    }
+  },
+  "protected_floor_drill": {
+    "biased_score_gap": {
+      "mean_native_indic": -5.389667,
+      "mean_other": -1.148439
+    },
+    "conclusion": "the unprotected selector starves the native-Indic lane under an English-tuned proxy; the floor restores it via explicit override records",
+    "floor_lanes": [
+      "indic_unverified",
+      "indic_verified"
+    ],
+    "floor_required": 1,
+    "floor_was_necessary": true,
+    "lane_bias": {
+      "forums": -4.0,
+      "indic_synthetic": -8.0,
+      "indic_translated": -8.0,
+      "indic_unverified": -8.0,
+      "indic_verified": -8.0,
+      "multilingual": -2.5
+    },
+    "n_candidates": 16,
+    "ok": true,
+    "protected": {
+      "floor_met": true,
+      "lanes": {
+        "code": 1,
+        "english": 3,
+        "forums": 1,
+        "indic_unverified": 1,
+        "math": 1,
+        "multilingual": 1
+      },
+      "n_floor_overrides": 1,
+      "native_indic_sequences": 1,
+      "native_indic_share": 0.125,
+      "overrides": [
+        {
+          "candidate_id": "cand-00006-indic_unverified-00012",
+          "curriculum_stage": "S1 Foundation",
+          "deferred_from_step": null,
+          "doc_ids": [
+            "iu-001"
+          ],
+          "effective_token_estimate": 0.0,
+          "headroom": 5.9436,
+          "lane": "indic_unverified",
+          "model_checkpoint": "drill",
+          "n_loss_tokens": 97,
+          "opus_score": -5.290243,
+          "protected_floor_override": true,
+          "proxy_version": "opus-proxy-1.0.0-lane-biased-drill",
+          "reason": "protected_floor_rescue",
+          "redundancy": 0.0,
+          "rejection_reason": null,
+          "shard_ids": [
+            "shard-indic_unverified-train-000"
+          ],
+          "span_ids": [
+            "shard-indic_unverified-train-000:300:98"
+          ],
+          "stage_fit": 0.195368,
+          "status": "floor_override",
+          "step": 6
+        }
+      ]
+    },
+    "proxy": "english_tuned_quality_proxy",
+    "proxy_version": "opus-proxy-1.0.0-lane-biased-drill",
+    "stage": "S1 Foundation",
+    "step": 6,
+    "unprotected": {
+      "floor_met": false,
+      "lanes": {
+        "english": 6,
+        "math": 2
+      },
+      "native_indic_sequences": 0,
+      "native_indic_share": 0.0
+    }
+  },
+  "replay": {
+    "interval": [
+      6,
+      12
+    ],
+    "mismatches": [],
+    "n_microbatches_replayed": 24,
+    "n_mismatches": 0,
+    "n_token_spans_verified": 72,
+    "ok": true,
+    "per_microbatch": [
+      {
+        "batch_id": "main/000006/r0/m0",
+        "match": true,
+        "microbatch_id": 0,
+        "n_sequences": 2,
+        "rank": 0,
+        "step": 6
+      },
+      {
+        "batch_id": "main/000006/r1/m0",
+        "match": true,
+        "microbatch_id": 0,
+        "n_sequences": 2,
+        "rank": 1,
+        "step": 6
+      },
+      {
+        "batch_id": "main/000006/r0/m1",
+        "match": true,
+        "microbatch_id": 1,
+        "n_sequences": 2,
+        "rank": 0,
+        "step": 6
+      },
+      {
+        "batch_id": "main/000006/r1/m1",
+        "match": true,
+        "microbatch_id": 1,
+        "n_sequences": 2,
+        "rank": 1,
+        "step": 6
+      },
+      {
+        "batch_id": "main/000007/r0/m0",
+        "match": true,
+        "microbatch_id": 0,
+        "n_sequences": 2,
+        "rank": 0,
+        "step": 7
+      },
+      {
+        "batch_id": "main/000007/r1/m0",
+        "match": true,
+        "microbatch_id": 0,
+        "n_sequences": 2,
+        "rank": 1,
+        "step": 7
+      },
+      {
+        "batch_id": "main/000007/r0/m1",
+        "match": true,
+        "microbatch_id": 1,
+        "n_sequences": 2,
+        "rank": 0,
+        "step": 7
+      },
+      {
+        "batch_id": "main/000007/r1/m1",
+        "match": true,
+        "microbatch_id": 1,
+        "n_sequences": 2,
+        "rank": 1,
+        "step": 7
+      },
+      {
+        "batch_id": "main/000008/r0/m0",
+        "match": true,
+        "microbatch_id": 0,
+        "n_sequences": 2,
+        "rank": 0,
+        "step": 8
+      },
+      {
+        "batch_id": "main/000008/r1/m0",
+        "match": true,
+        "microbatch_id": 0,
+        "n_sequences": 2,
+        "rank": 1,
+        "step": 8
+      },
+      {
+        "batch_id": "main/000008/r0/m1",
+        "match": true,
+        "microbatch_id": 1,
+        "n_sequences": 2,
+        "rank": 0,
+        "step": 8
+      },
+      {
+        "batch_id": "main/000008/r1/m1",
+        "match": true,
+        "microbatch_id": 1,
+        "n_sequences": 2,
+        "rank": 1,
+        "step": 8
+      },
+      {
+        "batch_id": "main/000009/r0/m0",
+        "match": true,
+        "microbatch_id": 0,
+        "n_sequences": 2,
+        "rank": 0,
+        "step": 9
+      },
+      {
+        "batch_id": "main/000009/r1/m0",
+        "match": true,
+        "microbatch_id": 0,
+        "n_sequences": 2,
+        "rank": 1,
+        "step": 9
+      },
+      {
+        "batch_id": "main/000009/r0/m1",
+        "match": true,
+        "microbatch_id": 1,
+        "n_sequences": 2,
+        "rank": 0,
+        "step": 9
+      },
+      {
+        "batch_id": "main/000009/r1/m1",
+        "match": true,
+        "microbatch_id": 1,
+        "n_sequences": 2,
+        "rank": 1,
+        "step": 9
+      },
+      {
+        "batch_id": "main/000010/r0/m0",
+        "match": true,
+        "microbatch_id": 0,
+        "n_sequences": 2,
+        "rank": 0,
+        "step": 10
+      },
+      {
+        "batch_id": "main/000010/r1/m0",
+        "match": true,
+        "microbatch_id": 0,
+        "n_sequences": 2,
+        "rank": 1,
+        "step": 10
+      },
+      {
+        "batch_id": "main/000010/r0/m1",
+        "match": true,
+        "microbatch_id": 1,
+        "n_sequences": 2,
+        "rank": 0,
+        "step": 10
+      },
+      {
+        "batch_id": "main/000010/r1/m1",
+        "match": true,
+        "microbatch_id": 1,
+        "n_sequences": 2,
+        "rank": 1,
+        "step": 10
+      },
+      {
+        "batch_id": "main/000011/r0/m0",
+        "match": true,
+        "microbatch_id": 0,
+        "n_sequences": 2,
+        "rank": 0,
+        "step": 11
+      },
+      {
+        "batch_id": "main/000011/r1/m0",
+        "match": true,
+        "microbatch_id": 0,
+        "n_sequences": 2,
+        "rank": 1,
+        "step": 11
+      },
+      {
+        "batch_id": "main/000011/r0/m1",
+        "match": true,
+        "microbatch_id": 1,
+        "n_sequences": 2,
+        "rank": 0,
+        "step": 11
+      },
+      {
+        "batch_id": "main/000011/r1/m1",
+        "match": true,
+        "microbatch_id": 1,
+        "n_sequences": 2,
+        "rank": 1,
+        "step": 11
+      }
+    ]
+  },
+  "resume": {
+    "actual_next_step": 12,
+    "comparisons": [
+      {
+        "match": true,
+        "original_hash": "fd87351b22f1137d88023628",
+        "resumed_hash": "fd87351b22f1137d88023628",
+        "step": 12
+      },
+      {
+        "match": true,
+        "original_hash": "d1aa4db46d633f6036ac73c0",
+        "resumed_hash": "d1aa4db46d633f6036ac73c0",
+        "step": 13
+      },
+      {
+        "match": true,
+        "original_hash": "61768c1bd3375abfed8dbfe7",
+        "resumed_hash": "61768c1bd3375abfed8dbfe7",
+        "step": 14
+      },
+      {
+        "match": true,
+        "original_hash": "f74b8529961017b6178fa363",
+        "resumed_hash": "f74b8529961017b6178fa363",
+        "step": 15
+      }
+    ],
+    "expected_next_step": 12,
+    "mismatches": [],
+    "n_hash_mismatches": 0,
+    "n_steps_compared": 4,
+    "next_batch_matched": true,
+    "ok": true,
+    "repeated_steps": [],
+    "skipped_steps": []
+  },
+  "token_range_query": {
+    "document_ids": [
+      "agt-001",
+      "agt-003",
+      "code-000",
+      "code-001",
+      "code-003",
+      "code-004",
+      "code-005",
+      "code-006",
+      "code-007",
+      "eng-000",
+      "eng-001",
+      "eng-003",
+      "eng-004",
+      "eng-005",
+      "eng-006",
+      "eng-007",
+      "eng-008",
+      "eng-009",
+      "eng-010",
+      "eng-011",
+      "eng-012",
+      "eng-013",
+      "eng-014",
+      "for-000",
+      "for-001",
+      "for-003",
+      "for-004",
+      "is-001",
+      "is-002",
+      "it-000",
+      "it-001",
+      "it-002",
+      "it-003",
+      "iu-000",
+      "iu-002",
+      "iu-003",
+      "iu-004",
+      "iv-000",
+      "iv-002",
+      "math-001",
+      "math-002",
+      "math-003",
+      "mul-001",
+      "mul-003",
+      "rsn-003"
+    ],
+    "loss_tokens_by_lane": {
+      "agentic": 197,
+      "code": 1738,
+      "english": 3387,
+      "forums": 508,
+      "indic_synthetic": 118,
+      "indic_translated": 286,
+      "indic_unverified": 563,
+      "indic_verified": 471,
+      "math": 686,
+      "multilingual": 67,
+      "reasoning": 193
+    },
+    "n_documents": 45,
+    "n_shards": 21,
+    "step_hi": 6,
+    "step_lo": 0,
+    "steps": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "token_hi": 10000,
+    "token_lo": 0,
+    "tokens_by_shard": {
+      "shard-agentic-train-000": 165,
+      "shard-agentic-train-001": 154,
+      "shard-code-train-000": 425,
+      "shard-code-train-001": 392,
+      "shard-code-train-002": 930,
+      "shard-english-train-000": 472,
+      "shard-english-train-001": 687,
+      "shard-english-train-002": 914,
+      "shard-english-train-003": 622,
+      "shard-english-train-004": 724,
+      "shard-forums-train-000": 371,
+      "shard-forums-train-001": 141,
+      "shard-indic_synthetic-train-000": 120,
+      "shard-indic_translated-train-000": 292,
+      "shard-indic_unverified-train-000": 240,
+      "shard-indic_unverified-train-001": 328,
+      "shard-indic_verified-train-000": 473,
+      "shard-math-train-000": 519,
+      "shard-math-train-001": 171,
+      "shard-multilingual-train-000": 69,
+      "shard-reasoning-train-001": 256
+    }
+  }
+}

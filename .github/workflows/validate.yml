@@ -1,12 +1,14 @@
-name: validate-plan
+name: validate
 
-# Proves the plan is internally consistent on every push.
-# A green badge on the README means all 49 assertions pass.
+# Session 5 proves the PLAN is internally consistent.
+# Session 6 proves the SYSTEM that executes it actually works: it regenerates
+# the whole evidence bundle from scratch, on a clean checkout, on CPU.
 
 on: [push, pull_request]
 
 jobs:
-  validate:
+  session5-plan:
+    name: Session 5 - plan consistency (49 assertions)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -14,8 +16,66 @@ jobs:
         with:
           python-version: '3.12'
       - name: Run plan and assert consistency
-        working-directory: assignmnet5/src
+        working-directory: assignment5/src
         run: python3 -m erav5.run_plan
       - name: Export JSON
-        working-directory: assignmnet5/src
+        working-directory: assignment5/src
         run: python3 -m erav5.export > /dev/null
+
+  session6-execution:
+    name: Session 6 - regenerate evidence and run invariants
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install torch (CPU)
+        run: pip install --quiet torch --index-url https://download.pytorch.org/whl/cpu
+
+      # The frozen inputs are committed. If either can be rebuilt to a
+      # different hash, the "frozen" claim is false and everything downstream
+      # that binds to those hashes is unverifiable -- so check it here.
+      - name: Frozen inputs are reproducible
+        working-directory: assignment6
+        run: |
+          cp tokenizer/tokenizer.json /tmp/tokenizer.committed.json
+          cp corpus/documents.jsonl /tmp/documents.committed.jsonl
+          python3 tools/build_corpus.py
+          python3 tools/build_tokenizer.py
+          diff -q /tmp/documents.committed.jsonl corpus/documents.jsonl
+          diff -q /tmp/tokenizer.committed.json tokenizer/tokenizer.json
+
+      # The graded command, run exactly as a grader would run it. It exits
+      # non-zero if any of the 11 requirements fails or any check emits [FAIL].
+      - name: Run the full demonstration
+        working-directory: assignment6
+        run: python3 run_demo.py
+
+      - name: Invariant tests (unit + end-to-end over the generated bundle)
+        working-directory: assignment6
+        run: python3 -m unittest discover -s tests -v
+
+      # Belt and braces: assert the bundle a grader reads actually says PASS,
+      # independently of run_demo.py's own exit code.
+      - name: Assert the evidence bundle reports 11/11
+        working-directory: assignment6
+        run: |
+          python3 - <<'PY'
+          import json, sys
+          b = json.load(open("submission_artifacts/evidence.json", encoding="utf-8"))
+          s = b["summary"]
+          print(f"{s['passed']}/{s['total']} requirements pass")
+          for r in b["requirements"]:
+              print(f"  {r['result']:4}  {r['key']}")
+          sys.exit(0 if s["all_passed"] else 1)
+          PY
+          grep -q "\[FAIL\]" submission_artifacts/run.log && exit 1 || exit 0
+
+      - name: Upload the generated bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: submission-artifacts
+          path: assignment6/submission_artifacts/

@@ -1,0 +1,1222 @@
+{
+  "feasibility": [
+    {
+      "demand_tokens": 14336,
+      "epoch_cap_scaled": 4.6,
+      "epoch_cap_session5": 1.0,
+      "epochs": 4.9163,
+      "fallback": "reduce_share",
+      "lane": "english",
+      "n_shards": 5,
+      "planned_seqs": 56,
+      "reserved_tokens": 0,
+      "status": "over_cap",
+      "supply_tokens": 2916
+    },
+    {
+      "demand_tokens": 10752,
+      "epoch_cap_scaled": 6.9,
+      "epoch_cap_session5": 1.5,
+      "epochs": 6.6535,
+      "fallback": null,
+      "lane": "code",
+      "n_shards": 3,
+      "planned_seqs": 42,
+      "reserved_tokens": 0,
+      "status": "ok",
+      "supply_tokens": 1616
+    },
+    {
+      "demand_tokens": 5888,
+      "epoch_cap_scaled": 9.2,
+      "epoch_cap_session5": 2.0,
+      "epochs": 5.387,
+      "fallback": null,
+      "lane": "math",
+      "n_shards": 2,
+      "planned_seqs": 23,
+      "reserved_tokens": 0,
+      "status": "ok",
+      "supply_tokens": 1093
+    },
+    {
+      "demand_tokens": 2816,
+      "epoch_cap_scaled": 9.2,
+      "epoch_cap_session5": 2.0,
+      "epochs": 2.5577,
+      "fallback": null,
+      "lane": "indic_verified",
+      "n_shards": 2,
+      "planned_seqs": 11,
+      "reserved_tokens": 374,
+      "status": "ok",
+      "supply_tokens": 1101
+    },
+    {
+      "demand_tokens": 3584,
+      "epoch_cap_scaled": 6.9,
+      "epoch_cap_session5": 1.5,
+      "epochs": 3.9515,
+      "fallback": null,
+      "lane": "indic_unverified",
+      "n_shards": 2,
+      "planned_seqs": 14,
+      "reserved_tokens": 0,
+      "status": "ok",
+      "supply_tokens": 907
+    },
+    {
+      "demand_tokens": 2048,
+      "epoch_cap_scaled": 4.6,
+      "epoch_cap_session5": 1.0,
+      "epochs": 5.8017,
+      "fallback": "reduce_share",
+      "lane": "indic_translated",
+      "n_shards": 1,
+      "planned_seqs": 8,
+      "reserved_tokens": 0,
+      "status": "over_cap",
+      "supply_tokens": 353
+    },
+    {
+      "demand_tokens": 1792,
+      "epoch_cap_scaled": 4.6,
+      "epoch_cap_session5": 1.0,
+      "epochs": 5.1054,
+      "fallback": "synthesize",
+      "lane": "indic_synthetic",
+      "n_shards": 1,
+      "planned_seqs": 7,
+      "reserved_tokens": 0,
+      "status": "over_cap",
+      "supply_tokens": 351
+    },
+    {
+      "demand_tokens": 3328,
+      "epoch_cap_scaled": 6.9,
+      "epoch_cap_session5": 1.5,
+      "epochs": 1.7999,
+      "fallback": null,
+      "lane": "agentic",
+      "n_shards": 3,
+      "planned_seqs": 13,
+      "reserved_tokens": 627,
+      "status": "ok",
+      "supply_tokens": 1849
+    },
+    {
+      "demand_tokens": 2048,
+      "epoch_cap_scaled": 6.9,
+      "epoch_cap_session5": 1.5,
+      "epochs": 0.928,
+      "fallback": null,
+      "lane": "reasoning",
+      "n_shards": 3,
+      "planned_seqs": 8,
+      "reserved_tokens": 716,
+      "status": "ok",
+      "supply_tokens": 2207
+    },
+    {
+      "demand_tokens": 1280,
+      "epoch_cap_scaled": 4.6,
+      "epoch_cap_session5": 1.0,
+      "epochs": 1.8312,
+      "fallback": null,
+      "lane": "forums",
+      "n_shards": 2,
+      "planned_seqs": 5,
+      "reserved_tokens": 0,
+      "status": "ok",
+      "supply_tokens": 699
+    },
+    {
+      "demand_tokens": 1280,
+      "epoch_cap_scaled": 4.6,
+      "epoch_cap_session5": 1.0,
+      "epochs": 2.2031,
+      "fallback": null,
+      "lane": "multilingual",
+      "n_shards": 1,
+      "planned_seqs": 5,
+      "reserved_tokens": 0,
+      "status": "ok",
+      "supply_tokens": 581
+    }
+  ],
+  "floor_lanes": [
+    "indic_verified",
+    "indic_unverified"
+  ],
+  "floor_pct": 0.08,
+  "planned_global_shares": {
+    "agentic": 0.067708,
+    "code": 0.21875,
+    "english": 0.291667,
+    "forums": 0.026042,
+    "indic_synthetic": 0.036458,
+    "indic_translated": 0.041667,
+    "indic_unverified": 0.072917,
+    "indic_verified": 0.057292,
+    "math": 0.119792,
+    "multilingual": 0.026042,
+    "reasoning": 0.041667
+  },
+  "quotas": [
+    {
+      "floor_delivered": 1,
+      "floor_promotions": [],
+      "floor_required": 1,
+      "n_seqs": 8,
+      "reserve_unlocked": false,
+      "seqs": {
+        "agentic": 0,
+        "code": 1,
+        "english": 3,
+        "forums": 1,
+        "indic_synthetic": 0,
+        "indic_translated": 0,
+        "indic_unverified": 1,
+        "indic_verified": 0,
+        "math": 1,
+        "multilingual": 1,
+        "reasoning": 0
+      },
+      "stage": "S0 Warmup",
+      "step": 0,
+      "target_mix": {
+        "agentic": 0.03,
+        "code": 0.17,
+        "english": 0.38,
+        "forums": 0.06,
+        "indic_synthetic": 0.035,
+        "indic_translated": 0.055,
+        "indic_unverified": 0.07,
+        "indic_verified": 0.03,
+        "math": 0.09,
+        "multilingual": 0.06,
+        "reasoning": 0.02
+      },
+      "unavailable_lanes": []
+    },
+    {
+      "floor_delivered": 1,
+      "floor_promotions": [
+        {
+          "donor": "agentic",
+          "receiver": "indic_unverified",
+          "seqs": 1
+        }
+      ],
+      "floor_required": 1,
+      "n_seqs": 8,
+      "reserve_unlocked": false,
+      "seqs": {
+        "agentic": 0,
+        "code": 2,
+        "english": 3,
+        "forums": 0,
+        "indic_synthetic": 1,
+        "indic_translated": 1,
+        "indic_unverified": 1,
+        "indic_verified": 0,
+        "math": 0,
+        "multilingual": 0,
+        "reasoning": 0
+      },
+      "stage": "S0 Warmup",
+      "step": 1,
+      "target_mix": {
+        "agentic": 0.033929,
+        "code": 0.174898,
+        "english": 0.370918,
+        "forums": 0.055867,
+        "indic_synthetic": 0.037143,
+        "indic_translated": 0.055153,
+        "indic_unverified": 0.069286,
+        "indic_verified": 0.031224,
+        "math": 0.092143,
+        "multilingual": 0.055714,
+        "reasoning": 0.023724
+      },
+      "unavailable_lanes": []
+    },
+    {
+      "floor_delivered": 1,
+      "floor_promotions": [],
+      "floor_required": 1,
+      "n_seqs": 8,
+      "reserve_unlocked": false,
+      "seqs": {
+        "agentic": 1,
+        "code": 1,
+        "english": 3,
+        "forums": 0,
+        "indic_synthetic": 0,
+        "indic_translated": 0,
+        "indic_unverified": 0,
+        "indic_verified": 1,
+        "math": 1,
+        "multilingual": 0,
+        "reasoning": 1
+      },
+      "stage": "S1 Foundation",
+      "step": 2,
+      "target_mix": {
+        "agentic": 0.041786,
+        "code": 0.184694,
+        "english": 0.352755,
+        "forums": 0.047602,
+        "indic_synthetic": 0.041429,
+        "indic_translated": 0.055459,
+        "indic_unverified": 0.067857,
+        "indic_verified": 0.033673,
+        "math": 0.096429,
+        "multilingual": 0.047143,
+        "reasoning": 0.031173
+      },
+      "unavailable_lanes": []
+    },
+    {
+      "floor_delivered": 1,
+      "floor_promotions": [
+        {
+          "donor": "multilingual",
+          "receiver": "indic_unverified",
+          "seqs": 1
+        }
+      ],
+      "floor_required": 1,
+      "n_seqs": 8,
+      "reserve_unlocked": false,
+      "seqs": {
+        "agentic": 0,
+        "code": 2,
+        "english": 2,
+        "forums": 1,
+        "indic_synthetic": 0,
+        "indic_translated": 1,
+        "indic_unverified": 1,
+        "indic_verified": 0,
+        "math": 1,
+        "multilingual": 0,
+        "reasoning": 0
+      },
+      "stage": "S1 Foundation",
+      "step": 3,
+      "target_mix": {
+        "agentic": 0.045714,
+        "code": 0.189592,
+        "english": 0.343673,
+        "forums": 0.043469,
+        "indic_synthetic": 0.043571,
+        "indic_translated": 0.055612,
+        "indic_unverified": 0.067143,
+        "indic_verified": 0.034898,
+        "math": 0.098571,
+        "multilingual": 0.042857,
+        "reasoning": 0.034898
+      },
+      "unavailable_lanes": []
+    },
+    {
+      "floor_delivered": 1,
+      "floor_promotions": [
+        {
+          "donor": "multilingual",
+          "receiver": "indic_unverified",
+          "seqs": 1
+        }
+      ],
+      "floor_required": 1,
+      "n_seqs": 8,
+      "reserve_unlocked": false,
+      "seqs": {
+        "agentic": 1,
+        "code": 1,
+        "english": 3,
+        "forums": 0,
+        "indic_synthetic": 1,
+        "indic_translated": 0,
+        "indic_unverified": 1,
+        "indic_verified": 0,
+        "math": 1,
+        "multilingual": 0,
+        "reasoning": 0
+      },
+      "stage": "S1 Foundation",
+      "step": 4,
+      "target_mix": {
+        "agentic": 0.045714,
+        "code": 0.189592,
+        "english": 0.343673,
+        "forums": 0.043469,
+        "indic_synthetic": 0.043571,
+        "indic_translated": 0.055612,
+        "indic_unverified": 0.067143,
+        "indic_verified": 0.034898,
+        "math": 0.098571,
+        "multilingual": 0.042857,
+        "reasoning": 0.034898
+      },
+      "unavailable_lanes": []
+    },
+    {
+      "floor_delivered": 1,
+      "floor_promotions": [],
+      "floor_required": 1,
+      "n_seqs": 8,
+      "reserve_unlocked": false,
+      "seqs": {
+        "agentic": 0,
+        "code": 2,
+        "english": 3,
+        "forums": 0,
+        "indic_synthetic": 0,
+        "indic_translated": 1,
+        "indic_unverified": 0,
+        "indic_verified": 1,
+        "math": 0,
+        "multilingual": 1,
+        "reasoning": 0
+      },
+      "stage": "S1 Foundation",
+      "step": 5,
+      "target_mix": {
+        "agentic": 0.045714,
+        "code": 0.189592,
+        "english": 0.343673,
+        "forums": 0.043469,
+        "indic_synthetic": 0.043571,
+        "indic_translated": 0.055612,
+        "indic_unverified": 0.067143,
+        "indic_verified": 0.034898,
+        "math": 0.098571,
+        "multilingual": 0.042857,
+        "reasoning": 0.034898
+      },
+      "unavailable_lanes": []
+    },
+    {
+      "floor_delivered": 1,
+      "floor_promotions": [
+        {
+          "donor": "reasoning",
+          "receiver": "indic_unverified",
+          "seqs": 1
+        }
+      ],
+      "floor_required": 1,
+      "n_seqs": 8,
+      "reserve_unlocked": false,
+      "seqs": {
+        "agentic": 0,
+        "code": 1,
+        "english": 3,
+        "forums": 1,
+        "indic_synthetic": 0,
+        "indic_translated": 0,
+        "indic_unverified": 1,
+        "indic_verified": 0,
+        "math": 1,
+        "multilingual": 1,
+        "reasoning": 0
+      },
+      "stage": "S1 Foundation",
+      "step": 6,
+      "target_mix": {
+        "agentic": 0.045714,
+        "code": 0.189592,
+        "english": 0.343673,
+        "forums": 0.043469,
+        "indic_synthetic": 0.043571,
+        "indic_translated": 0.055612,
+        "indic_unverified": 0.067143,
+        "indic_verified": 0.034898,
+        "math": 0.098571,
+        "multilingual": 0.042857,
+        "reasoning": 0.034898
+      },
+      "unavailable_lanes": []
+    },
+    {
+      "floor_delivered": 1,
+      "floor_promotions": [
+        {
+          "donor": "reasoning",
+          "receiver": "indic_unverified",
+          "seqs": 1
+        }
+      ],
+      "floor_required": 1,
+      "n_seqs": 8,
+      "reserve_unlocked": false,
+      "seqs": {
+        "agentic": 1,
+        "code": 2,
+        "english": 2,
+        "forums": 0,
+        "indic_synthetic": 1,
+        "indic_translated": 0,
+        "indic_unverified": 1,
+        "indic_verified": 0,
+        "math": 1,
+        "multilingual": 0,
+        "reasoning": 0
+      },
+      "stage": "S1 Foundation",
+      "step": 7,
+      "target_mix": {
+        "agentic": 0.045714,
+        "code": 0.189592,
+        "english": 0.343673,
+        "forums": 0.043469,
+        "indic_synthetic": 0.043571,
+        "indic_translated": 0.055612,
+        "indic_unverified": 0.067143,
+        "indic_verified": 0.034898,
+        "math": 0.098571,
+        "multilingual": 0.042857,
+        "reasoning": 0.034898
+      },
+      "unavailable_lanes": []
+    },
+    {
+      "floor_delivered": 1,
+      "floor_promotions": [],
+      "floor_required": 1,
+      "n_seqs": 8,
+      "reserve_unlocked": false,
+      "seqs": {
+        "agentic": 0,
+        "code": 1,
+        "english": 3,
+        "forums": 0,
+        "indic_synthetic": 0,
+        "indic_translated": 1,
+        "indic_unverified": 0,
+        "indic_verified": 1,
+        "math": 1,
+        "multilingual": 0,
+        "reasoning": 1
+      },
+      "stage": "S1 Foundation",
+      "step": 8,
+      "target_mix": {
+        "agentic": 0.045714,
+        "code": 0.189592,
+        "english": 0.343673,
+        "forums": 0.043469,
+        "indic_synthetic": 0.043571,
+        "indic_translated": 0.055612,
+        "indic_unverified": 0.067143,
+        "indic_verified": 0.034898,
+        "math": 0.098571,
+        "multilingual": 0.042857,
+        "reasoning": 0.034898
+      },
+      "unavailable_lanes": []
+    },
+    {
+      "floor_delivered": 1,
+      "floor_promotions": [
+        {
+          "donor": "multilingual",
+          "receiver": "indic_unverified",
+          "seqs": 1
+        }
+      ],
+      "floor_required": 1,
+      "n_seqs": 8,
+      "reserve_unlocked": false,
+      "seqs": {
+        "agentic": 0,
+        "code": 2,
+        "english": 3,
+        "forums": 1,
+        "indic_synthetic": 0,
+        "indic_translated": 0,
+        "indic_unverified": 1,
+        "indic_verified": 0,
+        "math": 1,
+        "multilingual": 0,
+        "reasoning": 0
+      },
+      "stage": "S1 Foundation",
+      "step": 9,
+      "target_mix": {
+        "agentic": 0.045714,
+        "code": 0.189592,
+        "english": 0.343673,
+        "forums": 0.043469,
+        "indic_synthetic": 0.043571,
+        "indic_translated": 0.055612,
+        "indic_unverified": 0.067143,
+        "indic_verified": 0.034898,
+        "math": 0.098571,
+        "multilingual": 0.042857,
+        "reasoning": 0.034898
+      },
+      "unavailable_lanes": []
+    },
+    {
+      "floor_delivered": 1,
+      "floor_promotions": [
+        {
+          "donor": "reasoning",
+          "receiver": "indic_unverified",
+          "seqs": 1
+        }
+      ],
+      "floor_required": 1,
+      "n_seqs": 8,
+      "reserve_unlocked": false,
+      "seqs": {
+        "agentic": 1,
+        "code": 1,
+        "english": 3,
+        "forums": 0,
+        "indic_synthetic": 0,
+        "indic_translated": 1,
+        "indic_unverified": 1,
+        "indic_verified": 0,
+        "math": 0,
+        "multilingual": 1,
+        "reasoning": 0
+      },
+      "stage": "S1 Foundation",
+      "step": 10,
+      "target_mix": {
+        "agentic": 0.045714,
+        "code": 0.189592,
+        "english": 0.343673,
+        "forums": 0.043469,
+        "indic_synthetic": 0.043571,
+        "indic_translated": 0.055612,
+        "indic_unverified": 0.067143,
+        "indic_verified": 0.034898,
+        "math": 0.098571,
+        "multilingual": 0.042857,
+        "reasoning": 0.034898
+      },
+      "unavailable_lanes": []
+    },
+    {
+      "floor_delivered": 1,
+      "floor_promotions": [
+        {
+          "donor": "reasoning",
+          "receiver": "indic_unverified",
+          "seqs": 1
+        }
+      ],
+      "floor_required": 1,
+      "n_seqs": 8,
+      "reserve_unlocked": false,
+      "seqs": {
+        "agentic": 0,
+        "code": 2,
+        "english": 3,
+        "forums": 0,
+        "indic_synthetic": 1,
+        "indic_translated": 0,
+        "indic_unverified": 1,
+        "indic_verified": 0,
+        "math": 1,
+        "multilingual": 0,
+        "reasoning": 0
+      },
+      "stage": "S1 Foundation",
+      "step": 11,
+      "target_mix": {
+        "agentic": 0.045714,
+        "code": 0.189592,
+        "english": 0.343673,
+        "forums": 0.043469,
+        "indic_synthetic": 0.043571,
+        "indic_translated": 0.055612,
+        "indic_unverified": 0.067143,
+        "indic_verified": 0.034898,
+        "math": 0.098571,
+        "multilingual": 0.042857,
+        "reasoning": 0.034898
+      },
+      "unavailable_lanes": []
+    },
+    {
+      "floor_delivered": 1,
+      "floor_promotions": [
+        {
+          "donor": "multilingual",
+          "receiver": "indic_unverified",
+          "seqs": 1
+        }
+      ],
+      "floor_required": 1,
+      "n_seqs": 8,
+      "reserve_unlocked": false,
+      "seqs": {
+        "agentic": 0,
+        "code": 1,
+        "english": 2,
+        "forums": 1,
+        "indic_synthetic": 0,
+        "indic_translated": 1,
+        "indic_unverified": 1,
+        "indic_verified": 0,
+        "math": 1,
+        "multilingual": 0,
+        "reasoning": 1
+      },
+      "stage": "S1 Foundation",
+      "step": 12,
+      "target_mix": {
+        "agentic": 0.055536,
+        "code": 0.219694,
+        "english": 0.305255,
+        "forums": 0.033852,
+        "indic_synthetic": 0.042679,
+        "indic_translated": 0.049209,
+        "indic_unverified": 0.067857,
+        "indic_verified": 0.036173,
+        "math": 0.118929,
+        "multilingual": 0.033393,
+        "reasoning": 0.037423
+      },
+      "unavailable_lanes": []
+    },
+    {
+      "floor_delivered": 1,
+      "floor_promotions": [],
+      "floor_required": 1,
+      "n_seqs": 8,
+      "reserve_unlocked": false,
+      "seqs": {
+        "agentic": 1,
+        "code": 3,
+        "english": 2,
+        "forums": 0,
+        "indic_synthetic": 0,
+        "indic_translated": 0,
+        "indic_unverified": 0,
+        "indic_verified": 1,
+        "math": 1,
+        "multilingual": 0,
+        "reasoning": 0
+      },
+      "stage": "S2 Skill ramp",
+      "step": 13,
+      "target_mix": {
+        "agentic": 0.075179,
+        "code": 0.279898,
+        "english": 0.228418,
+        "forums": 0.014617,
+        "indic_synthetic": 0.040893,
+        "indic_translated": 0.036403,
+        "indic_unverified": 0.069286,
+        "indic_verified": 0.038724,
+        "math": 0.159643,
+        "multilingual": 0.014464,
+        "reasoning": 0.042474
+      },
+      "unavailable_lanes": []
+    },
+    {
+      "floor_delivered": 1,
+      "floor_promotions": [
+        {
+          "donor": "indic_synthetic",
+          "receiver": "indic_unverified",
+          "seqs": 1
+        }
+      ],
+      "floor_required": 1,
+      "n_seqs": 8,
+      "reserve_unlocked": false,
+      "seqs": {
+        "agentic": 1,
+        "code": 2,
+        "english": 1,
+        "forums": 0,
+        "indic_synthetic": 0,
+        "indic_translated": 0,
+        "indic_unverified": 1,
+        "indic_verified": 0,
+        "math": 2,
+        "multilingual": 0,
+        "reasoning": 1
+      },
+      "stage": "S2 Skill ramp",
+      "step": 14,
+      "target_mix": {
+        "agentic": 0.085,
+        "code": 0.31,
+        "english": 0.19,
+        "forums": 0.005,
+        "indic_synthetic": 0.04,
+        "indic_translated": 0.03,
+        "indic_unverified": 0.07,
+        "indic_verified": 0.04,
+        "math": 0.18,
+        "multilingual": 0.005,
+        "reasoning": 0.045
+      },
+      "unavailable_lanes": []
+    },
+    {
+      "floor_delivered": 1,
+      "floor_promotions": [
+        {
+          "donor": "multilingual",
+          "receiver": "indic_unverified",
+          "seqs": 1
+        }
+      ],
+      "floor_required": 1,
+      "n_seqs": 8,
+      "reserve_unlocked": false,
+      "seqs": {
+        "agentic": 0,
+        "code": 3,
+        "english": 2,
+        "forums": 0,
+        "indic_synthetic": 1,
+        "indic_translated": 0,
+        "indic_unverified": 1,
+        "indic_verified": 0,
+        "math": 1,
+        "multilingual": 0,
+        "reasoning": 0
+      },
+      "stage": "S2 Skill ramp",
+      "step": 15,
+      "target_mix": {
+        "agentic": 0.085,
+        "code": 0.31,
+        "english": 0.19,
+        "forums": 0.005,
+        "indic_synthetic": 0.04,
+        "indic_translated": 0.03,
+        "indic_unverified": 0.07,
+        "indic_verified": 0.04,
+        "math": 0.18,
+        "multilingual": 0.005,
+        "reasoning": 0.045
+      },
+      "unavailable_lanes": []
+    },
+    {
+      "floor_delivered": 1,
+      "floor_promotions": [],
+      "floor_required": 1,
+      "n_seqs": 8,
+      "reserve_unlocked": false,
+      "seqs": {
+        "agentic": 1,
+        "code": 2,
+        "english": 1,
+        "forums": 0,
+        "indic_synthetic": 0,
+        "indic_translated": 0,
+        "indic_unverified": 0,
+        "indic_verified": 1,
+        "math": 2,
+        "multilingual": 1,
+        "reasoning": 0
+      },
+      "stage": "S2 Skill ramp",
+      "step": 16,
+      "target_mix": {
+        "agentic": 0.085,
+        "code": 0.31,
+        "english": 0.19,
+        "forums": 0.005,
+        "indic_synthetic": 0.04,
+        "indic_translated": 0.03,
+        "indic_unverified": 0.07,
+        "indic_verified": 0.04,
+        "math": 0.18,
+        "multilingual": 0.005,
+        "reasoning": 0.045
+      },
+      "unavailable_lanes": []
+    },
+    {
+      "floor_delivered": 1,
+      "floor_promotions": [
+        {
+          "donor": "indic_translated",
+          "receiver": "indic_unverified",
+          "seqs": 1
+        }
+      ],
+      "floor_required": 1,
+      "n_seqs": 8,
+      "reserve_unlocked": false,
+      "seqs": {
+        "agentic": 0,
+        "code": 2,
+        "english": 2,
+        "forums": 0,
+        "indic_synthetic": 1,
+        "indic_translated": 0,
+        "indic_unverified": 1,
+        "indic_verified": 0,
+        "math": 1,
+        "multilingual": 0,
+        "reasoning": 1
+      },
+      "stage": "S2 Skill ramp",
+      "step": 17,
+      "target_mix": {
+        "agentic": 0.08125,
+        "code": 0.305,
+        "english": 0.2175,
+        "forums": 0.00375,
+        "indic_synthetic": 0.035,
+        "indic_translated": 0.02625,
+        "indic_unverified": 0.0775,
+        "indic_verified": 0.045,
+        "math": 0.1625,
+        "multilingual": 0.005,
+        "reasoning": 0.04125
+      },
+      "unavailable_lanes": []
+    },
+    {
+      "floor_delivered": 1,
+      "floor_promotions": [
+        {
+          "donor": "indic_translated",
+          "receiver": "indic_unverified",
+          "seqs": 1
+        }
+      ],
+      "floor_required": 1,
+      "n_seqs": 8,
+      "reserve_unlocked": false,
+      "seqs": {
+        "agentic": 1,
+        "code": 3,
+        "english": 2,
+        "forums": 0,
+        "indic_synthetic": 0,
+        "indic_translated": 0,
+        "indic_unverified": 1,
+        "indic_verified": 0,
+        "math": 1,
+        "multilingual": 0,
+        "reasoning": 0
+      },
+      "stage": "S3 Long context",
+      "step": 18,
+      "target_mix": {
+        "agentic": 0.07375,
+        "code": 0.295,
+        "english": 0.2725,
+        "forums": 0.00125,
+        "indic_synthetic": 0.025,
+        "indic_translated": 0.01875,
+        "indic_unverified": 0.0925,
+        "indic_verified": 0.055,
+        "math": 0.1275,
+        "multilingual": 0.005,
+        "reasoning": 0.03375
+      },
+      "unavailable_lanes": []
+    },
+    {
+      "floor_delivered": 1,
+      "floor_promotions": [],
+      "floor_required": 1,
+      "n_seqs": 8,
+      "reserve_unlocked": false,
+      "seqs": {
+        "agentic": 1,
+        "code": 2,
+        "english": 2,
+        "forums": 0,
+        "indic_synthetic": 0,
+        "indic_translated": 1,
+        "indic_unverified": 0,
+        "indic_verified": 1,
+        "math": 1,
+        "multilingual": 0,
+        "reasoning": 0
+      },
+      "stage": "S3 Long context",
+      "step": 19,
+      "target_mix": {
+        "agentic": 0.07,
+        "code": 0.29,
+        "english": 0.3,
+        "forums": 0.0,
+        "indic_synthetic": 0.02,
+        "indic_translated": 0.015,
+        "indic_unverified": 0.1,
+        "indic_verified": 0.06,
+        "math": 0.11,
+        "multilingual": 0.005,
+        "reasoning": 0.03
+      },
+      "unavailable_lanes": []
+    },
+    {
+      "floor_delivered": 1,
+      "floor_promotions": [],
+      "floor_required": 1,
+      "n_seqs": 8,
+      "reserve_unlocked": false,
+      "seqs": {
+        "agentic": 0,
+        "code": 2,
+        "english": 3,
+        "forums": 0,
+        "indic_synthetic": 0,
+        "indic_translated": 0,
+        "indic_unverified": 0,
+        "indic_verified": 1,
+        "math": 1,
+        "multilingual": 0,
+        "reasoning": 1
+      },
+      "stage": "S3 Long context",
+      "step": 20,
+      "target_mix": {
+        "agentic": 0.085,
+        "code": 0.2475,
+        "english": 0.275,
+        "forums": 0.0,
+        "indic_synthetic": 0.0225,
+        "indic_translated": 0.01625,
+        "indic_unverified": 0.09,
+        "indic_verified": 0.09,
+        "math": 0.12,
+        "multilingual": 0.00375,
+        "reasoning": 0.05
+      },
+      "unavailable_lanes": []
+    },
+    {
+      "floor_delivered": 1,
+      "floor_promotions": [],
+      "floor_required": 1,
+      "n_seqs": 8,
+      "reserve_unlocked": true,
+      "seqs": {
+        "agentic": 1,
+        "code": 2,
+        "english": 2,
+        "forums": 0,
+        "indic_synthetic": 0,
+        "indic_translated": 0,
+        "indic_unverified": 0,
+        "indic_verified": 1,
+        "math": 1,
+        "multilingual": 0,
+        "reasoning": 1
+      },
+      "stage": "S4 Anneal",
+      "step": 21,
+      "target_mix": {
+        "agentic": 0.115,
+        "code": 0.1625,
+        "english": 0.225,
+        "forums": 0.0,
+        "indic_synthetic": 0.0275,
+        "indic_translated": 0.01875,
+        "indic_unverified": 0.07,
+        "indic_verified": 0.15,
+        "math": 0.14,
+        "multilingual": 0.00125,
+        "reasoning": 0.09
+      },
+      "unavailable_lanes": []
+    },
+    {
+      "floor_delivered": 1,
+      "floor_promotions": [],
+      "floor_required": 1,
+      "n_seqs": 8,
+      "reserve_unlocked": true,
+      "seqs": {
+        "agentic": 2,
+        "code": 1,
+        "english": 1,
+        "forums": 0,
+        "indic_synthetic": 1,
+        "indic_translated": 0,
+        "indic_unverified": 0,
+        "indic_verified": 1,
+        "math": 1,
+        "multilingual": 0,
+        "reasoning": 1
+      },
+      "stage": "S4 Anneal",
+      "step": 22,
+      "target_mix": {
+        "agentic": 0.13,
+        "code": 0.12,
+        "english": 0.2,
+        "forums": 0.0,
+        "indic_synthetic": 0.03,
+        "indic_translated": 0.02,
+        "indic_unverified": 0.06,
+        "indic_verified": 0.18,
+        "math": 0.15,
+        "multilingual": 0.0,
+        "reasoning": 0.11
+      },
+      "unavailable_lanes": []
+    },
+    {
+      "floor_delivered": 2,
+      "floor_promotions": [],
+      "floor_required": 1,
+      "n_seqs": 8,
+      "reserve_unlocked": true,
+      "seqs": {
+        "agentic": 1,
+        "code": 1,
+        "english": 2,
+        "forums": 0,
+        "indic_synthetic": 0,
+        "indic_translated": 1,
+        "indic_unverified": 0,
+        "indic_verified": 2,
+        "math": 1,
+        "multilingual": 0,
+        "reasoning": 0
+      },
+      "stage": "S4 Anneal",
+      "step": 23,
+      "target_mix": {
+        "agentic": 0.13,
+        "code": 0.12,
+        "english": 0.2,
+        "forums": 0.0,
+        "indic_synthetic": 0.03,
+        "indic_translated": 0.02,
+        "indic_unverified": 0.06,
+        "indic_verified": 0.18,
+        "math": 0.15,
+        "multilingual": 0.0,
+        "reasoning": 0.11
+      },
+      "unavailable_lanes": []
+    }
+  ],
+  "ramp_steps": 2,
+  "reserved_shards": {
+    "agentic": [
+      "shard-agentic-train-002"
+    ],
+    "indic_verified": [
+      "shard-indic_verified-train-001"
+    ],
+    "reasoning": [
+      "shard-reasoning-train-002"
+    ]
+  },
+  "seq_len": 256,
+  "seqs_per_step": 8,
+  "session5_target_shares": {
+    "agentic": 0.06,
+    "code": 0.22,
+    "english": 0.3,
+    "forums": 0.03,
+    "indic_synthetic": 0.04,
+    "indic_translated": 0.045,
+    "indic_unverified": 0.07,
+    "indic_verified": 0.045,
+    "math": 0.12,
+    "multilingual": 0.03,
+    "reasoning": 0.04
+  },
+  "session5_transitions": [
+    {
+      "frm": "S0 Warmup",
+      "pp_per_100B": 12.0,
+      "ramp_tokens": 30272108843.537453,
+      "to": "S1 Foundation",
+      "within_limit": true,
+      "worst_delta": -0.036327,
+      "worst_lane": "english"
+    },
+    {
+      "frm": "S1 Foundation",
+      "pp_per_100B": 12.0,
+      "ramp_tokens": 128061224489.79587,
+      "to": "S2 Skill ramp",
+      "within_limit": true,
+      "worst_delta": -0.153673,
+      "worst_lane": "english"
+    },
+    {
+      "frm": "S2 Skill ramp",
+      "pp_per_100B": 12.0,
+      "ramp_tokens": 91666666666.66666,
+      "to": "S3 Long context",
+      "within_limit": true,
+      "worst_delta": 0.11,
+      "worst_lane": "english"
+    },
+    {
+      "frm": "S3 Long context",
+      "pp_per_100B": 12.0,
+      "ramp_tokens": 141666666666.6667,
+      "to": "S4 Anneal",
+      "within_limit": true,
+      "worst_delta": -0.17,
+      "worst_lane": "code"
+    }
+  ],
+  "stage_alloc": [
+    {
+      "end_step": 2,
+      "note": "embedding + router warmup; mixture held at S1 proportions",
+      "plan_ctx": 8192,
+      "plan_frac": 0.0375,
+      "stage": "S0 Warmup",
+      "start_step": 0,
+      "steps": 2
+    },
+    {
+      "end_step": 13,
+      "note": "web-heavy; language, world knowledge, basic syntax",
+      "plan_ctx": 8192,
+      "plan_frac": 0.6125,
+      "stage": "S1 Foundation",
+      "start_step": 2,
+      "steps": 11
+    },
+    {
+      "end_step": 18,
+      "note": "code/math/reasoning up; ctx 8K->32K",
+      "plan_ctx": 32768,
+      "plan_frac": 0.225,
+      "stage": "S2 Skill ramp",
+      "start_step": 13,
+      "steps": 5
+    },
+    {
+      "end_step": 21,
+      "note": "ctx 32K->256K on naturally-long docs only",
+      "plan_ctx": 262144,
+      "plan_frac": 0.075,
+      "stage": "S3 Long context",
+      "start_step": 18,
+      "steps": 3
+    },
+    {
+      "end_step": 24,
+      "note": "Tier-A reserve only; LR cooldown",
+      "plan_ctx": 262144,
+      "plan_frac": 0.05,
+      "stage": "S4 Anneal",
+      "start_step": 21,
+      "steps": 3
+    }
+  ],
+  "total_steps": 24
+}

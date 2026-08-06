@@ -1,0 +1,357 @@
+{
+  "branch": "main",
+  "catalog_set_hash": "6ae65d55cd63f7c0226db8708a4fc90a55cc7be730850e567c503162f3a76124",
+  "checkpoint_id": "ckpt-main-000006",
+  "data_seed": 20260806,
+  "dataloader_version": "erav6-loader-1.0.0",
+  "global_step": 6,
+  "last_loss": 5.737673,
+  "ledger_head_hash": "971035eb1905fe2cf467804acfb5799cbcffe37c37934e48a0371dd549e18ba2",
+  "ledger_offset": 41,
+  "loader_state": {
+    "loader": {
+      "branch": "main",
+      "carry": {
+        "agentic": [],
+        "code": [],
+        "english": [],
+        "forums": [],
+        "indic_synthetic": [],
+        "indic_translated": [],
+        "indic_unverified": [],
+        "indic_verified": [],
+        "math": [],
+        "multilingual": [],
+        "reasoning": []
+      },
+      "data_seed": 20260806,
+      "lane_cursor": {
+        "agentic": 6,
+        "code": 2,
+        "english": 9,
+        "forums": 4,
+        "indic_synthetic": 3,
+        "indic_translated": 2,
+        "indic_unverified": 3,
+        "indic_verified": 1,
+        "math": 2,
+        "multilingual": 4,
+        "reasoning": 2
+      },
+      "lane_epoch": {
+        "code": 2,
+        "english": 2,
+        "indic_synthetic": 1,
+        "indic_translated": 2,
+        "indic_unverified": 1,
+        "indic_verified": 1,
+        "math": 1
+      },
+      "next_step": 6,
+      "scarcity": [
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 4.6,
+          "epoch": 1,
+          "fallback": "reduce_share",
+          "lane": "english",
+          "over_cap": false,
+          "step": 2
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 6.9,
+          "epoch": 1,
+          "fallback": "repeat",
+          "lane": "code",
+          "over_cap": false,
+          "step": 3
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 4.6,
+          "epoch": 1,
+          "fallback": "reduce_share",
+          "lane": "indic_translated",
+          "over_cap": false,
+          "step": 3
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 6.9,
+          "epoch": 1,
+          "fallback": "repeat",
+          "lane": "indic_unverified",
+          "over_cap": false,
+          "step": 3
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 4.6,
+          "epoch": 2,
+          "fallback": "reduce_share",
+          "lane": "english",
+          "over_cap": false,
+          "step": 4
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 4.6,
+          "epoch": 1,
+          "fallback": "synthesize",
+          "lane": "indic_synthetic",
+          "over_cap": false,
+          "step": 4
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 9.2,
+          "epoch": 1,
+          "fallback": "repeat",
+          "lane": "math",
+          "over_cap": false,
+          "step": 4
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 6.9,
+          "epoch": 2,
+          "fallback": "repeat",
+          "lane": "code",
+          "over_cap": false,
+          "step": 5
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 4.6,
+          "epoch": 2,
+          "fallback": "reduce_share",
+          "lane": "indic_translated",
+          "over_cap": false,
+          "step": 5
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 9.2,
+          "epoch": 1,
+          "fallback": "repeat",
+          "lane": "indic_verified",
+          "over_cap": false,
+          "step": 5
+        }
+      ]
+    },
+    "opus": {
+      "counter": 96,
+      "deferred": [
+        {
+          "candidate_id": "cand-00002-reasoning-00047",
+          "deferred_at": 2,
+          "lane": "reasoning",
+          "reason": "stage_mismatch",
+          "score": 0.05209215325787427,
+          "span_ids": [
+            "shard-reasoning-train-000:0:256"
+          ]
+        },
+        {
+          "candidate_id": "cand-00004-agentic-00066",
+          "deferred_at": 4,
+          "lane": "agentic",
+          "reason": "stage_mismatch",
+          "score": -0.31508557552788996,
+          "span_ids": [
+            "shard-agentic-train-000:0:209"
+          ]
+        },
+        {
+          "candidate_id": "cand-00004-agentic-00065",
+          "deferred_at": 4,
+          "lane": "agentic",
+          "reason": "stage_mismatch",
+          "score": -0.827323795821537,
+          "span_ids": [
+            "shard-agentic-train-001:154:229"
+          ]
+        },
+        {
+          "candidate_id": "cand-00004-indic_synthetic-00075",
+          "deferred_at": 4,
+          "lane": "indic_synthetic",
+          "reason": "stage_mismatch",
+          "score": -0.4094694614492813,
+          "span_ids": [
+            "shard-indic_synthetic-train-000:96:96",
+            "shard-indic_synthetic-train-000:0:96",
+            "shard-indic_synthetic-train-000:192:64"
+          ]
+        },
+        {
+          "candidate_id": "cand-00004-indic_unverified-00077",
+          "deferred_at": 4,
+          "lane": "indic_unverified",
+          "reason": "stage_mismatch",
+          "score": 0.9283395839148793,
+          "span_ids": [
+            "shard-indic_unverified-train-001:0:173",
+            "shard-indic_unverified-train-000:0:83"
+          ]
+        },
+        {
+          "candidate_id": "cand-00004-math-00080",
+          "deferred_at": 4,
+          "lane": "math",
+          "reason": "quota_pressure",
+          "score": -0.5582840133775705,
+          "span_ids": [
+            "shard-math-train-001:171:211"
+          ]
+        },
+        {
+          "candidate_id": "cand-00005-code-00081",
+          "deferred_at": 5,
+          "lane": "code",
+          "reason": "quota_pressure",
+          "score": -0.6869377916543362,
+          "span_ids": [
+            "shard-code-train-000:169:256"
+          ]
+        },
+        {
+          "candidate_id": "cand-00005-code-00082",
+          "deferred_at": 5,
+          "lane": "code",
+          "reason": "quota_pressure",
+          "score": -0.6959227406806866,
+          "span_ids": [
+            "shard-code-train-001:0:214"
+          ]
+        },
+        {
+          "candidate_id": "cand-00005-english-00085",
+          "deferred_at": 5,
+          "lane": "english",
+          "reason": "quota_pressure",
+          "score": -0.7742520558358246,
+          "span_ids": [
+            "shard-english-train-000:0:237",
+            "shard-english-train-001:208:19"
+          ]
+        },
+        {
+          "candidate_id": "cand-00005-english-00088",
+          "deferred_at": 5,
+          "lane": "english",
+          "reason": "quota_pressure",
+          "score": -0.8946032229974485,
+          "span_ids": [
+            "shard-english-train-003:154:43",
+            "shard-english-train-004:360:182",
+            "shard-english-train-004:0:31"
+          ]
+        },
+        {
+          "candidate_id": "cand-00005-indic_translated-00092",
+          "deferred_at": 5,
+          "lane": "indic_translated",
+          "reason": "stage_mismatch",
+          "score": 0.9233768494525063,
+          "span_ids": [
+            "shard-indic_translated-train-000:7:78"
+          ]
+        },
+        {
+          "candidate_id": "cand-00005-indic_verified-00094",
+          "deferred_at": 5,
+          "lane": "indic_verified",
+          "reason": "stage_mismatch",
+          "score": 1.7035719076271088,
+          "span_ids": [
+            "shard-indic_verified-train-000:217:219"
+          ]
+        }
+      ],
+      "recent": [
+        [
+          "shard-code-train-002",
+          "shard-english-train-000",
+          "shard-english-train-003",
+          "shard-english-train-004",
+          "shard-forums-train-000",
+          "shard-forums-train-001",
+          "shard-indic_unverified-train-000",
+          "shard-math-train-001",
+          "shard-multilingual-train-000"
+        ],
+        [
+          "shard-code-train-000",
+          "shard-code-train-001",
+          "shard-english-train-001",
+          "shard-english-train-002",
+          "shard-english-train-004",
+          "shard-indic_synthetic-train-000",
+          "shard-indic_translated-train-000",
+          "shard-indic_unverified-train-001"
+        ],
+        [
+          "shard-agentic-train-001",
+          "shard-code-train-000",
+          "shard-english-train-001",
+          "shard-english-train-003",
+          "shard-english-train-004",
+          "shard-indic_verified-train-000",
+          "shard-math-train-000",
+          "shard-reasoning-train-001"
+        ],
+        [
+          "shard-code-train-002",
+          "shard-english-train-000",
+          "shard-english-train-002",
+          "shard-english-train-003",
+          "shard-forums-train-000",
+          "shard-indic_translated-train-000",
+          "shard-indic_unverified-train-001",
+          "shard-math-train-000"
+        ],
+        [
+          "shard-agentic-train-000",
+          "shard-code-train-002",
+          "shard-english-train-001",
+          "shard-english-train-002",
+          "shard-english-train-003",
+          "shard-english-train-004",
+          "shard-indic_synthetic-train-000",
+          "shard-indic_unverified-train-000",
+          "shard-math-train-000"
+        ],
+        [
+          "shard-code-train-001",
+          "shard-code-train-002",
+          "shard-english-train-001",
+          "shard-english-train-002",
+          "shard-english-train-004",
+          "shard-indic_translated-train-000",
+          "shard-indic_verified-train-000",
+          "shard-multilingual-train-000"
+        ]
+      ]
+    }
+  },
+  "loader_state_hash": "bdbae5fe9642eea0cb48b9ab74aa3f3cbfa38bf2fcfffba5ccda52e3f7f6ef4a",
+  "profile": "demo",
+  "record_hash": "ea5b9742ba9c0d5ce1081091645601ad62317abe23b84431a139440e6bfc9b4b",
+  "run_id": "erav6-run-0001",
+  "tokenizer_hash": "b026dbabc4a964a630ff590c8d1126b5e6b71ed07d9c2b48c4afca87f5f376fb",
+  "tokens_consumed": 8465,
+  "weights_file": "ckpt-main-000006.pt"
+}

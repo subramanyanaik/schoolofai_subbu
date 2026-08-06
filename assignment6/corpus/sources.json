@@ -1,0 +1,93 @@
+[
+  {
+    "lane": "english",
+    "license": "permissive",
+    "note": "FineWeb-Edu/DCLM-grade web (proxy)",
+    "provenance": "[PUB]",
+    "source_id": "src-web-edu"
+  },
+  {
+    "lane": "english",
+    "license": "share-alike",
+    "note": "long-form English (proxy)",
+    "provenance": "[EST]",
+    "source_id": "src-books-en"
+  },
+  {
+    "lane": "code",
+    "license": "permissive",
+    "note": "Stack-v2 permissive, lint-gated (proxy)",
+    "provenance": "[PUB]",
+    "source_id": "src-stack-perm"
+  },
+  {
+    "lane": "math",
+    "license": "permissive",
+    "note": "FineMath-grade worked solutions (proxy)",
+    "provenance": "[PUB]",
+    "source_id": "src-math-worked"
+  },
+  {
+    "lane": "indic_verified",
+    "license": "gov-open",
+    "note": "Sangraha-verified native core (proxy)",
+    "provenance": "[PUB]",
+    "source_id": "src-sangraha-ver"
+  },
+  {
+    "lane": "indic_unverified",
+    "license": "gov-open",
+    "note": "judgments / gov records (proxy)",
+    "provenance": "[EST]",
+    "source_id": "src-indic-gov"
+  },
+  {
+    "lane": "indic_translated",
+    "license": "permissive",
+    "note": "BPCC/Samanantar parallel corpus (proxy)",
+    "provenance": "[PUB]",
+    "source_id": "src-bpcc-parallel"
+  },
+  {
+    "lane": "indic_synthetic",
+    "license": "own",
+    "note": "transliteration doubles, generated (proxy)",
+    "provenance": "[EST]",
+    "source_id": "src-synth-translit"
+  },
+  {
+    "lane": "agentic",
+    "license": "own",
+    "note": "sandbox self-play, execution-verified (proxy)",
+    "provenance": "[EST]",
+    "source_id": "src-sandbox-selfplay"
+  },
+  {
+    "lane": "reasoning",
+    "license": "permissive",
+    "note": "answer-verified long CoT (proxy)",
+    "provenance": "[PUB]",
+    "source_id": "src-cot-verified"
+  },
+  {
+    "lane": "forums",
+    "license": "permissive",
+    "note": "romanized/code-mixed forums (proxy)",
+    "provenance": "[EST]",
+    "source_id": "src-forums-codemix"
+  },
+  {
+    "lane": "multilingual",
+    "license": "permissive",
+    "note": "CulturaX non-Indic (proxy)",
+    "provenance": "[PUB]",
+    "source_id": "src-culturax"
+  },
+  {
+    "lane": "eval",
+    "license": "restricted",
+    "note": "held-out benchmark items — NEVER TRAIN",
+    "provenance": "[PUB]",
+    "source_id": "src-benchmarks"
+  }
+]

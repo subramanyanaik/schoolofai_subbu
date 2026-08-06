@@ -1,0 +1,175 @@
+
+=== ERA V5 SESSION 6 - TRAINING DATA EXECUTION SYSTEM ========================
+2026-08-06T05:33:08Z  INFO   phase=demo  profile=demo device=auto steps=24 seq_len=256 global_batch=8
+2026-08-06T05:33:08Z  INFO   phase=demo  executing the Session-5 plan imported from assignment5/src/erav5: 11 lanes, 5 curriculum stages, protected floor 8% native Indic
+
+=== PHASE 1 - FROZEN TOKENIZER ===============================================
+2026-08-06T05:33:08Z  EVENT  phase=tokenizer  tokenizer_loaded  name=erav6-bytebpe version=1.0.0 vocab_size=512 n_merges=247
+[PASS] tokenizer_hash_verified  tokenizer_hash=b026dbabc4a964a630ff590c8d1126b5 multibyte_round_trip=True vocab_size=512
+
+=== PHASE 2 - SHARDS, MANIFESTS AND ADMISSION ================================
+2026-08-06T05:33:08Z  EVENT  phase=shards  tokenizer_loaded  tokenizer_hash=b026dbabc4a964a630ff590c8d1126b5e6b71ed07d9c2b48c4afca87f5f376fb vocab_size=512
+2026-08-06T05:33:09Z  EVENT  phase=shards  documents_tokenized  n_documents=78 n_tokens=14375
+2026-08-06T05:33:09Z  EVENT  phase=shards  eval_registry_built  n_entries=6 n_fingerprints=266 benchmarks=[canary,humaneval-mini,indic-perplexity-holdout,milu-mini,perplexity-holdout]
+2026-08-06T05:33:09Z  EVENT  phase=shards  shards_created  n_shards=29 n_tokens=14375
+2026-08-06T05:33:09Z  EVENT  phase=shards  shard_blocked  shard_id=shard-english-train-005 lane=english split=train reasons=[eval_overlap]
+2026-08-06T05:33:09Z  EVENT  phase=shards  shard_blocked  shard_id=shard-english-train-006 lane=english split=train reasons=[license_not_permitted]
+2026-08-06T05:33:09Z  EVENT  phase=shards  shard_blocked  shard_id=shard-eval-test-000 lane=eval split=test reasons=[license_not_permitted,eval_registry_never_train,non_training_split]
+2026-08-06T05:33:09Z  EVENT  phase=shards  shard_blocked  shard_id=shard-eval-validation-000 lane=eval split=validation reasons=[license_not_permitted,non_training_split]
+2026-08-06T05:33:09Z  EVENT  phase=shards  manifests_validated  n_admitted=25 n_blocked=4 set_hash=6ae65d55cd63f7c0
+2026-08-06T05:33:09Z  EVENT  phase=shards  shards_created  n_shards=29 n_tokens=14375 shard_dir=D:\schoolofai\schoolofai_subbu\assignment6\work\shards
+2026-08-06T05:33:09Z  EVENT  phase=shards  manifests_validated  n_admitted=25 n_blocked=4 admitted_set_hash=6ae65d55cd63f7c0
+[PASS] manifests_complete  n_manifests=29 required_fields=15
+[PASS] all_shards_bound_to_tokenizer  n_manifests=29
+
+=== PHASE 3 - SHARD IMMUTABILITY =============================================
+2026-08-06T05:33:09Z  EVENT  phase=immutability  shard_tamper_test  shard_id=shard-agentic-train-000 bytes_changed=1
+[PASS] shard_immutability_enforced  shard_id=shard-agentic-train-000 original_hash=791930056d5dcfb246d11578 tampered_hash=187dcb82d40b611a6b34e7e4 admission_would_reject=True
+
+=== PHASE 4 - EVALUATION AND VALIDATION FIREWALL =============================
+2026-08-06T05:33:09Z  EVENT  phase=firewall  eval_registry  n_entries=6 n_fingerprints=266 ngram=24 benchmarks=[canary,humaneval-mini,indic-perplexity-holdout,milu-mini,perplexity-holdout]
+2026-08-06T05:33:09Z  EVENT  phase=firewall  eval_shard_blocked  shard_id=shard-english-train-005 reasons=[eval_overlap]
+2026-08-06T05:33:09Z  EVENT  phase=firewall  shard_blocked  shard_id=shard-english-train-006 reasons=[license_not_permitted]
+2026-08-06T05:33:09Z  EVENT  phase=firewall  eval_shard_blocked  shard_id=shard-eval-test-000 reasons=[license_not_permitted,eval_registry_never_train,non_training_split]
+2026-08-06T05:33:09Z  EVENT  phase=firewall  eval_shard_blocked  shard_id=shard-eval-validation-000 reasons=[license_not_permitted,non_training_split]
+[PASS] eval_shard_blocked  contamination_blocked=[shard-english-train-005] never_train_blocked=[shard-eval-test-000] validation_split_blocked=[shard-eval-test-000,shard-eval-validation-000] matched_ngrams=47 benchmark=milu-mini
+[PASS] license_gate_enforced  blocked=[shard-english-train-006,shard-eval-test-000,shard-eval-validation-000]
+[PASS] validation_read_allowed_gradient_denied  shard_id=shard-eval-validation-000 eval_read=allowed gradient_read=denied
+
+=== PHASE 5 - MIXTURE TIMELINE ===============================================
+2026-08-06T05:33:09Z  EVENT  phase=mixture  mixture_compiled  n_steps=24 seqs_per_step=8 stages=[S0 Warmup,S1 Foundation,S2 Skill ramp,S3 Long context,S4 Anneal] reserved_shards={agentic:['shard-agentic-train-002'],indic_verified:['shard-indic_verified-train-001'],reasoning:['shard-reasoning-train-002']}
+2026-08-06T05:33:09Z  EVENT  phase=mixture  lane_scarcity  lane=english status=over_cap epochs=4.9163 cap=4.6 fallback=reduce_share
+2026-08-06T05:33:09Z  EVENT  phase=mixture  lane_scarcity  lane=indic_translated status=over_cap epochs=5.8017 cap=4.6 fallback=reduce_share
+2026-08-06T05:33:09Z  EVENT  phase=mixture  lane_scarcity  lane=indic_synthetic status=over_cap epochs=5.1054 cap=4.6 fallback=synthesize
+[PASS] mixture_integrates_to_session5_plan  max_drift=0.012292 tolerance=0.05 n_lanes=11
+[PASS] protected_floor_satisfiable  floor_pct=0.08 floor_lanes=[indic_verified,indic_unverified] min_required=1
+[PASS] scarcity_fallbacks_declared  lanes_over_cap=[english,indic_translated,indic_synthetic]
+
+=== PHASE 6 - PACKING POLICIES ===============================================
+2026-08-06T05:33:09Z  EVENT  phase=packing  batches_packed  lane=english policy=pad_only sequences=6 utilization=0.80013 loss_density=0.796224 truncated=0 boundary_crossings=0 loss_across_boundary=0
+2026-08-06T05:33:09Z  EVENT  phase=packing  batches_packed  lane=english policy=concat_and_chop sequences=6 utilization=1 loss_density=0.991536 truncated=0 boundary_crossings=7 loss_across_boundary=0
+2026-08-06T05:33:09Z  EVENT  phase=packing  batches_packed  lane=english policy=greedy sequences=6 utilization=0.80013 loss_density=0.796224 truncated=0 boundary_crossings=0 loss_across_boundary=0
+2026-08-06T05:33:09Z  EVENT  phase=packing  batches_packed  lane=english policy=best_fit sequences=6 utilization=0.819661 loss_density=0.815755 truncated=0 boundary_crossings=0 loss_across_boundary=0
+2026-08-06T05:33:09Z  EVENT  phase=packing  batches_packed  lane=english policy=structure_preserving sequences=6 utilization=0.819661 loss_density=0.815755 truncated=0 boundary_crossings=0 loss_across_boundary=0
+2026-08-06T05:33:09Z  EVENT  phase=packing  batches_packed  lane=english policy=long_context sequences=6 utilization=0.813151 loss_density=0.809245 truncated=0 boundary_crossings=0 loss_across_boundary=0
+2026-08-06T05:33:09Z  EVENT  phase=packing  batches_packed  lane=agentic policy=pad_only sequences=6 utilization=0.8125 loss_density=0.522786 truncated=182 boundary_crossings=0 loss_across_boundary=0
+2026-08-06T05:33:09Z  EVENT  phase=packing  batches_packed  lane=agentic policy=concat_and_chop sequences=6 utilization=1 loss_density=0.651042 truncated=0 boundary_crossings=6 loss_across_boundary=0
+2026-08-06T05:33:09Z  EVENT  phase=packing  batches_packed  lane=agentic policy=greedy sequences=6 utilization=0.771484 loss_density=0.481771 truncated=245 boundary_crossings=0 loss_across_boundary=0
+2026-08-06T05:33:09Z  EVENT  phase=packing  batches_packed  lane=agentic policy=best_fit sequences=6 utilization=0.791667 loss_density=0.471354 truncated=327 boundary_crossings=0 loss_across_boundary=0
+2026-08-06T05:33:09Z  EVENT  phase=packing  batches_packed  lane=agentic policy=structure_preserving sequences=6 utilization=0.791667 loss_density=0.471354 truncated=327 boundary_crossings=0 loss_across_boundary=0
+2026-08-06T05:33:09Z  EVENT  phase=packing  batches_packed  lane=agentic policy=long_context sequences=6 utilization=0.791667 loss_density=0.471354 truncated=327 boundary_crossings=0 loss_across_boundary=0
+2026-08-06T05:33:09Z  EVENT  phase=packing  batches_packed  lane=reasoning policy=pad_only sequences=6 utilization=1 loss_density=0.802734 truncated=671 boundary_crossings=0 loss_across_boundary=0
+2026-08-06T05:33:09Z  EVENT  phase=packing  batches_packed  lane=reasoning policy=concat_and_chop sequences=6 utilization=1 loss_density=0.817057 truncated=0 boundary_crossings=4 loss_across_boundary=0
+2026-08-06T05:33:09Z  EVENT  phase=packing  batches_packed  lane=reasoning policy=greedy sequences=6 utilization=1 loss_density=0.802734 truncated=671 boundary_crossings=0 loss_across_boundary=0
+2026-08-06T05:33:09Z  EVENT  phase=packing  batches_packed  lane=reasoning policy=best_fit sequences=6 utilization=1 loss_density=0.802734 truncated=671 boundary_crossings=0 loss_across_boundary=0
+2026-08-06T05:33:09Z  EVENT  phase=packing  batches_packed  lane=reasoning policy=structure_preserving sequences=6 utilization=1 loss_density=0.802734 truncated=671 boundary_crossings=0 loss_across_boundary=0
+2026-08-06T05:33:09Z  EVENT  phase=packing  batches_packed  lane=reasoning policy=long_context sequences=6 utilization=1 loss_density=0.802734 truncated=671 boundary_crossings=0 loss_across_boundary=0
+2026-08-06T05:33:09Z  EVENT  phase=packing  batches_packed  lane=code policy=pad_only sequences=6 utilization=0.774089 loss_density=0.770182 truncated=33 boundary_crossings=0 loss_across_boundary=0
+2026-08-06T05:33:09Z  EVENT  phase=packing  batches_packed  lane=code policy=concat_and_chop sequences=6 utilization=1 loss_density=0.991536 truncated=0 boundary_crossings=7 loss_across_boundary=0
+2026-08-06T05:33:09Z  EVENT  phase=packing  batches_packed  lane=code policy=greedy sequences=6 utilization=0.774089 loss_density=0.770182 truncated=33 boundary_crossings=0 loss_across_boundary=0
+2026-08-06T05:33:09Z  EVENT  phase=packing  batches_packed  lane=code policy=best_fit sequences=6 utilization=0.817708 loss_density=0.813802 truncated=33 boundary_crossings=0 loss_across_boundary=0
+2026-08-06T05:33:09Z  EVENT  phase=packing  batches_packed  lane=code policy=structure_preserving sequences=6 utilization=0.817708 loss_density=0.813802 truncated=33 boundary_crossings=0 loss_across_boundary=0
+2026-08-06T05:33:09Z  EVENT  phase=packing  batches_packed  lane=code policy=long_context sequences=6 utilization=0.804688 loss_density=0.800781 truncated=33 boundary_crossings=0 loss_across_boundary=0
+[PASS] packing_isolation_enforced  policies=6 isolating_policies=[best_fit,greedy,long_context,pad_only,structure_preserving] loss_across_boundary_violations=0
+
+=== PHASE 7 - TRAINING (WILL CRASH DELIBERATELY) =============================
+2026-08-06T05:33:15Z  EVENT  phase=train:main  training_started  branch=main from_step=0 until=24 device=cuda model_params=889600 crash_at=16
+2026-08-06T05:33:15Z  EVENT  phase=train:main  step  global_step=0 stage=S0 Warmup loss=6.2721 grad_norm=1.3804 util=0.68 loss_tokens=1382 batch_hash=836180406f3de4f7
+2026-08-06T05:33:16Z  EVENT  phase=train:main  step  global_step=1 stage=S0 Warmup loss=6.1706 grad_norm=1.3638 util=0.534 loss_tokens=1082 batch_hash=486b224d4c163a75
+2026-08-06T05:33:16Z  EVENT  phase=train:main  step  global_step=2 stage=S1 Foundation loss=6.1231 grad_norm=0.9702 util=0.841 loss_tokens=1604 batch_hash=69a0573975518802
+2026-08-06T05:33:16Z  EVENT  phase=train:main  step  global_step=3 stage=S1 Foundation loss=5.9698 grad_norm=0.7815 util=0.641 loss_tokens=1301 batch_hash=97a5a2322406a868
+2026-08-06T05:33:16Z  EVENT  phase=train:main  step  global_step=4 stage=S1 Foundation loss=5.7966 grad_norm=0.6149 util=0.708 loss_tokens=1365 batch_hash=70e0ceaded1701cc
+2026-08-06T05:33:16Z  EVENT  phase=train:main  step  global_step=5 stage=S1 Foundation loss=5.7377 grad_norm=0.5645 util=0.729 loss_tokens=1480 batch_hash=98fe40672452c494
+[PASS] checkpoint_saved  checkpoint_id=ckpt-main-000006 next_step=6 ledger_offset=41 ledger_head=971035eb1905fe2c loader_state_hash=bdbae5fe9642eea0 binding_verified=True
+2026-08-06T05:33:16Z  EVENT  phase=train:main  step  global_step=6 stage=S1 Foundation loss=5.5542 grad_norm=0.565 util=0.755 loss_tokens=1535 batch_hash=ddfabc7a060a3e5d
+2026-08-06T05:33:16Z  EVENT  phase=train:main  step  global_step=7 stage=S1 Foundation loss=5.5882 grad_norm=0.4916 util=0.749 loss_tokens=1410 batch_hash=1a524d15b548fc16
+2026-08-06T05:33:16Z  EVENT  phase=train:main  step  global_step=8 stage=S1 Foundation loss=5.8006 grad_norm=1.5287 util=0.69 loss_tokens=1336 batch_hash=0cf158f681cb814c
+2026-08-06T05:33:17Z  EVENT  phase=train:main  step  global_step=9 stage=S1 Foundation loss=5.5368 grad_norm=2.835 util=0.94 loss_tokens=1911 batch_hash=026a849896697b2e
+2026-08-06T05:33:17Z  EVENT  phase=train:main  step  global_step=10 stage=S1 Foundation loss=5.5812 grad_norm=0.5511 util=0.768 loss_tokens=1512 batch_hash=99e412a8d22ac116
+2026-08-06T05:33:17Z  EVENT  phase=train:main  step  global_step=11 stage=S1 Foundation loss=5.4661 grad_norm=0.4034 util=0.713 loss_tokens=1450 batch_hash=04047e00b89eb5b0
+[PASS] checkpoint_saved  checkpoint_id=ckpt-main-000012 next_step=12 ledger_offset=86 ledger_head=bf03ca6686cff2b2 loader_state_hash=cb5e56fce6081008 binding_verified=True
+2026-08-06T05:33:17Z  EVENT  phase=train:main  step  global_step=12 stage=S1 Foundation loss=6.3234 grad_norm=1.0977 util=0.695 loss_tokens=1352 batch_hash=fd87351b22f1137d
+2026-08-06T05:33:17Z  EVENT  phase=train:main  step  global_step=13 stage=S2 Skill ramp loss=5.8166 grad_norm=0.7318 util=0.777 loss_tokens=1470 batch_hash=d1aa4db46d633f60
+2026-08-06T05:33:17Z  EVENT  phase=train:main  step  global_step=14 stage=S2 Skill ramp loss=5.6656 grad_norm=0.6192 util=0.793 loss_tokens=1368 batch_hash=61768c1bd3375abf
+2026-08-06T05:33:17Z  EVENT  phase=train:main  step  global_step=15 stage=S2 Skill ramp loss=5.5701 grad_norm=0.5525 util=0.589 loss_tokens=1039 batch_hash=f74b8529961017b6
+2026-08-06T05:33:17Z  EVENT  phase=train:main  crash_simulated  global_step=16 exit_code=137 last_checkpoint_id=ckpt-main-000012
+2026-08-06T05:33:18Z  EVENT  phase=demo  subprocess_exit  cmd=--mode train --branch main --until 24 --crash-at 16 --profile demo --device auto --artifacts D:\schoolofai\schoolofai_subbu\assignment6\submission_artifacts --out D:\schoolofai\schoolofai_subbu\assignment6\work\phase_train.json exit_code=137 expected=137
+[PASS] crash_produced_nonzero_exit  exit_code=137 expected=137 crash_at_step=16 mechanism=os._exit, no unwinding or flush
+
+=== PHASE 8 - RESUME FROM CHECKPOINT =========================================
+2026-08-06T05:33:24Z  EVENT  phase=resume:main  ledger_rolled_back  to_offset=86 from_offset=132 orphaned_events=46 orphaned_steps=[12,13,14,15]
+[PASS] checkpoint_ledger_binding_verified  checkpoint_id=ckpt-main-000012 ledger_offset=86 ledger_head=bf03ca6686cff2b2
+2026-08-06T05:33:24Z  EVENT  phase=resume:main  run_resumed  branch=main checkpoint_id=ckpt-main-000012 next_step=12 tokens_consumed=17918
+2026-08-06T05:33:25Z  EVENT  phase=resume:main  step  global_step=12 stage=S1 Foundation loss=6.3234 grad_norm=1.0977 util=0.695 loss_tokens=1352 batch_hash=fd87351b22f1137d
+2026-08-06T05:33:25Z  EVENT  phase=resume:main  step  global_step=13 stage=S2 Skill ramp loss=5.8166 grad_norm=0.7318 util=0.777 loss_tokens=1470 batch_hash=d1aa4db46d633f60
+2026-08-06T05:33:25Z  EVENT  phase=resume:main  step  global_step=14 stage=S2 Skill ramp loss=5.6656 grad_norm=0.6192 util=0.793 loss_tokens=1368 batch_hash=61768c1bd3375abf
+2026-08-06T05:33:25Z  EVENT  phase=resume:main  step  global_step=15 stage=S2 Skill ramp loss=5.5701 grad_norm=0.5525 util=0.589 loss_tokens=1039 batch_hash=f74b8529961017b6
+2026-08-06T05:33:25Z  EVENT  phase=resume:main  step  global_step=16 stage=S2 Skill ramp loss=5.9408 grad_norm=19.2843 util=0.832 loss_tokens=1610 batch_hash=62ef15b91b50132a
+2026-08-06T05:33:25Z  EVENT  phase=resume:main  step  global_step=17 stage=S2 Skill ramp loss=5.9978 grad_norm=0.9973 util=0.797 loss_tokens=1556 batch_hash=474e64b4e74d80b5
+[PASS] checkpoint_saved  checkpoint_id=ckpt-main-000018 next_step=18 ledger_offset=200 ledger_head=c84495cd8e2b195d loader_state_hash=34ab44418d1a2644 binding_verified=True
+2026-08-06T05:33:26Z  EVENT  phase=resume:main  step  global_step=18 stage=S3 Long context loss=5.5235 grad_norm=0.546 util=0.708 loss_tokens=1248 batch_hash=2b7d4bb336ab1b69
+2026-08-06T05:33:26Z  EVENT  phase=resume:main  step  global_step=19 stage=S3 Long context loss=5.6543 grad_norm=0.5959 util=0.72 loss_tokens=1351 batch_hash=03a087e3c63dfc2d
+2026-08-06T05:33:26Z  EVENT  phase=resume:main  step  global_step=20 stage=S3 Long context loss=5.6791 grad_norm=0.7742 util=0.891 loss_tokens=1553 batch_hash=e3630b59e33c86dc
+2026-08-06T05:33:26Z  EVENT  phase=resume:main  step  global_step=21 stage=S4 Anneal loss=5.6518 grad_norm=0.5152 util=0.855 loss_tokens=1675 batch_hash=5a17afe0c5364892
+2026-08-06T05:33:26Z  EVENT  phase=resume:main  step  global_step=22 stage=S4 Anneal loss=5.7324 grad_norm=0.6708 util=0.716 loss_tokens=1235 batch_hash=32ef261b9eb2358c
+2026-08-06T05:33:26Z  EVENT  phase=resume:main  step  global_step=23 stage=S4 Anneal loss=5.73 grad_norm=0.6504 util=0.838 loss_tokens=1614 batch_hash=019c31070df56f4c
+[PASS] checkpoint_saved  checkpoint_id=ckpt-main-000024 next_step=24 ledger_offset=276 ledger_head=d7c6bab528497a54 loader_state_hash=1d91a9536f731ac1 binding_verified=True
+2026-08-06T05:33:26Z  EVENT  phase=resume:main  training_finished  branch=main steps_run=12 first_step=12 last_step=23 final_loss=5.73004
+2026-08-06T05:33:27Z  EVENT  phase=demo  subprocess_exit  cmd=--mode resume --branch main --until 24 --profile demo --device auto --artifacts D:\schoolofai\schoolofai_subbu\assignment6\submission_artifacts --out D:\schoolofai\schoolofai_subbu\assignment6\work\phase_resume.json exit_code=0 expected=0
+[PASS] resume_next_batch_matched  expected_next_step=12 actual_next_step=12 checkpoint_id=ckpt-main-000012
+[PASS] resume_no_skipped_or_repeated_batches  skipped=[] repeated=[] orphaned_by_rollback=[12,13,14,15]
+[PASS] resume_batch_hashes_identical  steps_compared=4 mismatches=0
+
+=== PHASE 9 - REPLAY OF A HISTORICAL INTERVAL ================================
+2026-08-06T05:33:27Z  EVENT  phase=replay  historical_stream_replayed  interval=[6,12] microbatches=24 token_spans=72
+[PASS] replay_hash_matched  interval=[6,12] microbatches_replayed=24 token_spans_verified=72 mismatches=0
+
+=== PHASE 10 - FORK FROM AN EARLIER CHECKPOINT ===============================
+[PASS] fork_parent_binding_verified  parent_branch=main fork_at=6 parent_ledger_hash=971035eb1905fe2c
+2026-08-06T05:33:33Z  EVENT  phase=fork:fork-anneal-early  branch_forked  branch=fork-anneal-early parent_branch=main parent_step=6 new_data_seed=20261797
+2026-08-06T05:33:34Z  EVENT  phase=fork:fork-anneal-early  step  global_step=6 stage=S1 Foundation loss=5.607 grad_norm=0.4811 util=0.763 loss_tokens=1550 batch_hash=4dabef7c662c2daf
+2026-08-06T05:33:34Z  EVENT  phase=fork:fork-anneal-early  step  global_step=7 stage=S1 Foundation loss=5.5704 grad_norm=0.6018 util=0.662 loss_tokens=1232 batch_hash=7d1125059a379f02
+2026-08-06T05:33:34Z  EVENT  phase=fork:fork-anneal-early  step  global_step=8 stage=S1 Foundation loss=5.8172 grad_norm=0.7824 util=0.741 loss_tokens=1451 batch_hash=4eb51a00eb1c5cae
+2026-08-06T05:33:34Z  EVENT  phase=fork:fork-anneal-early  step  global_step=9 stage=S1 Foundation loss=5.7503 grad_norm=35.169 util=0.722 loss_tokens=1467 batch_hash=cb495db0000003c0
+2026-08-06T05:33:34Z  EVENT  phase=fork:fork-anneal-early  training_finished  branch=fork-anneal-early steps_run=4 first_step=6 last_step=9 final_loss=5.75032
+2026-08-06T05:33:34Z  EVENT  phase=demo  subprocess_exit  cmd=--mode fork --branch fork-anneal-early --parent-branch main --fork-at 6 --until 10 --data-seed 20261797 --profile demo --device auto --artifacts D:\schoolofai\schoolofai_subbu\assignment6\submission_artifacts --out D:\schoolofai\schoolofai_subbu\assignment6\work\phase_fork.json exit_code=0 expected=0
+[PASS] fork_divergence_recorded  branch=fork-anneal-early parent=main parent_step=6 shared_steps=4 diverging_steps=4
+
+=== PHASE 10b - PROTECTED FLOOR DRILL (CONTROLLED COUNTERFACTUAL) ============
+2026-08-06T05:33:34Z  INFO   phase=floor_drill  the real run's proxy PREFERS Indic (it is the highest-loss content at this scale), so the override never fires there; this drill scores one identical candidate pool with the English-tuned proxy Session 5 warns about, with and without the floor
+2026-08-06T05:33:35Z  EVENT  phase=floor_drill  protected_floor_drill  proxy=english_tuned_quality_proxy candidates=16 unprotected_native_indic=0 protected_native_indic=1 floor_required=1
+[PASS] protected_floor_override_demonstrated  unprotected_native_indic=0 protected_native_indic=1 floor_required=1 n_overrides=1 mean_biased_score_native=-5.38967 mean_biased_score_other=-1.14844
+
+=== PHASE 11 - AUDIT =========================================================
+2026-08-06T05:33:35Z  EVENT  phase=audit  opus_decisions_recorded  n=649 by_status={accepted:224,deferred:185,rejected:240} floor_overrides=0 deferred_returned=162
+[PASS] ledger_chain_intact  main=[consumption,opus,learning,firewall,token_trace] n_events=277
+[PASS] no_eval_data_in_training  never_train_consumed=[] blocked_consumed=[] distinct_shards_consumed=24
+[PASS] mixture_deviation_fully_attributed  max_unexplained_drift=0 tolerance=0.02 max_raw_drift=0.114583 substitution_events=16 sequences_substituted=26
+[PASS] protected_floor_held_every_batch  steps=24 violations=0 min_share=0.125
+[PASS] anneal_reserve_respected  reserved=[shard-agentic-train-002,shard-indic_verified-train-001,shard-reasoning-train-002] leaked=[]
+[PASS] opus_every_candidate_decided  decisions=649 statuses=[accepted,deferred,rejected]
+2026-08-06T05:33:35Z  EVENT  phase=audit  audit_completed  queries=[interval,token_range,loss_spikes,firewall,mixture,floor,reserve] interval_shards=21 interval_documents=39 loss_spikes=1
+
+=== PHASE 12 - PERFORMANCE ===================================================
+2026-08-06T05:33:35Z  EVENT  phase=performance  performance_measured  raw_tokens_per_s=2148 useful_tokens_per_s=1503.54 packing_utilization=0.744559 padding_waste=0.255441 context_only=0.059889 opus_acceptance=0.345946 cache_hit_rate=1
+[PASS] throughput_measured  useful_tokens_per_s=1503.54 raw_tokens_per_s=2148 packing_utilization=0.744559
+
+=== PHASE 13 - EVIDENCE BUNDLE ===============================================
+2026-08-06T05:33:35Z  INFO   phase=evidence  regenerating evidence in a separate process that never imports the trainer, reading only the artefacts on disk
+2026-08-06T05:33:39Z  EVENT  phase=evidence  requirement  key=tokenizer_integrity result=PASS
+2026-08-06T05:33:39Z  EVENT  phase=evidence  requirement  key=shard_integrity result=PASS
+2026-08-06T05:33:39Z  EVENT  phase=evidence  requirement  key=evaluation_firewall result=PASS
+2026-08-06T05:33:39Z  EVENT  phase=evidence  requirement  key=packing_correctness result=PASS
+2026-08-06T05:33:39Z  EVENT  phase=evidence  requirement  key=mixture_compliance result=PASS
+2026-08-06T05:33:39Z  EVENT  phase=evidence  requirement  key=opus_audit_trail result=PASS
+2026-08-06T05:33:39Z  EVENT  phase=evidence  requirement  key=learning_trace result=PASS
+2026-08-06T05:33:39Z  EVENT  phase=evidence  requirement  key=crash_recovery result=PASS
+2026-08-06T05:33:39Z  EVENT  phase=evidence  requirement  key=replay result=PASS
+2026-08-06T05:33:39Z  EVENT  phase=evidence  requirement  key=throughput result=PASS
+2026-08-06T05:33:39Z  EVENT  phase=evidence  requirement  key=end_to_end result=PASS
+[PASS] evidence_bundle_generated  passed=11 total=11 failed=0
+
+=== SUMMARY ==================================================================
+2026-08-06T05:33:39Z  INFO   phase=demo  requirements passed: 11/11
+2026-08-06T05:33:39Z  INFO   phase=demo  artifacts: D:\schoolofai\schoolofai_subbu\assignment6\submission_artifacts
+2026-08-06T05:33:39Z  INFO   phase=demo  total wall clock: 31.1s

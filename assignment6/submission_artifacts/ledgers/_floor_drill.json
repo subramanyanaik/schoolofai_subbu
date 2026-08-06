@@ -1,0 +1,80 @@
+{
+  "biased_score_gap": {
+    "mean_native_indic": -5.389667,
+    "mean_other": -1.148439
+  },
+  "conclusion": "the unprotected selector starves the native-Indic lane under an English-tuned proxy; the floor restores it via explicit override records",
+  "floor_lanes": [
+    "indic_unverified",
+    "indic_verified"
+  ],
+  "floor_required": 1,
+  "floor_was_necessary": true,
+  "lane_bias": {
+    "forums": -4.0,
+    "indic_synthetic": -8.0,
+    "indic_translated": -8.0,
+    "indic_unverified": -8.0,
+    "indic_verified": -8.0,
+    "multilingual": -2.5
+  },
+  "n_candidates": 16,
+  "ok": true,
+  "protected": {
+    "floor_met": true,
+    "lanes": {
+      "code": 1,
+      "english": 3,
+      "forums": 1,
+      "indic_unverified": 1,
+      "math": 1,
+      "multilingual": 1
+    },
+    "n_floor_overrides": 1,
+    "native_indic_sequences": 1,
+    "native_indic_share": 0.125,
+    "overrides": [
+      {
+        "candidate_id": "cand-00006-indic_unverified-00012",
+        "curriculum_stage": "S1 Foundation",
+        "deferred_from_step": null,
+        "doc_ids": [
+          "iu-001"
+        ],
+        "effective_token_estimate": 0.0,
+        "headroom": 5.9436,
+        "lane": "indic_unverified",
+        "model_checkpoint": "drill",
+        "n_loss_tokens": 97,
+        "opus_score": -5.290243,
+        "protected_floor_override": true,
+        "proxy_version": "opus-proxy-1.0.0-lane-biased-drill",
+        "reason": "protected_floor_rescue",
+        "redundancy": 0.0,
+        "rejection_reason": null,
+        "shard_ids": [
+          "shard-indic_unverified-train-000"
+        ],
+        "span_ids": [
+          "shard-indic_unverified-train-000:300:98"
+        ],
+        "stage_fit": 0.195368,
+        "status": "floor_override",
+        "step": 6
+      }
+    ]
+  },
+  "proxy": "english_tuned_quality_proxy",
+  "proxy_version": "opus-proxy-1.0.0-lane-biased-drill",
+  "stage": "S1 Foundation",
+  "step": 6,
+  "unprotected": {
+    "floor_met": false,
+    "lanes": {
+      "english": 6,
+      "math": 2
+    },
+    "native_indic_sequences": 0,
+    "native_indic_share": 0.0
+  }
+}

@@ -1,0 +1,985 @@
+{
+  "generated_by": "erav6.evidence.EvidenceBuilder",
+  "generated_from": [
+    "run.log",
+    "manifests/",
+    "ledgers/",
+    "checkpoints/",
+    "performance.json",
+    "tokenizer/tokenizer.json",
+    "work/shards/"
+  ],
+  "markers_in_run_log": [
+    {
+      "detail": {
+        "multibyte_round_trip": "True",
+        "tokenizer_hash": "b026dbabc4a964a630ff590c8d1126b5",
+        "vocab_size": "512"
+      },
+      "name": "tokenizer_hash_verified",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "n_manifests": "29",
+        "required_fields": "15"
+      },
+      "name": "manifests_complete",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "n_manifests": "29"
+      },
+      "name": "all_shards_bound_to_tokenizer",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "admission_would_reject": "True",
+        "original_hash": "791930056d5dcfb246d11578",
+        "shard_id": "shard-agentic-train-000",
+        "tampered_hash": "187dcb82d40b611a6b34e7e4"
+      },
+      "name": "shard_immutability_enforced",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "benchmark": "milu-mini",
+        "contamination_blocked": "[shard-english-train-005]",
+        "matched_ngrams": "47",
+        "never_train_blocked": "[shard-eval-test-000]",
+        "validation_split_blocked": "[shard-eval-test-000,shard-eval-validation-000]"
+      },
+      "name": "eval_shard_blocked",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "blocked": "[shard-english-train-006,shard-eval-test-000,shard-eval-validation-000]"
+      },
+      "name": "license_gate_enforced",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "eval_read": "allowed",
+        "gradient_read": "denied",
+        "shard_id": "shard-eval-validation-000"
+      },
+      "name": "validation_read_allowed_gradient_denied",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "max_drift": "0.012292",
+        "n_lanes": "11",
+        "tolerance": "0.05"
+      },
+      "name": "mixture_integrates_to_session5_plan",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "floor_lanes": "[indic_verified,indic_unverified]",
+        "floor_pct": "0.08",
+        "min_required": "1"
+      },
+      "name": "protected_floor_satisfiable",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "lanes_over_cap": "[english,indic_translated,indic_synthetic]"
+      },
+      "name": "scarcity_fallbacks_declared",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "isolating_policies": "[best_fit,greedy,long_context,pad_only,structure_preserving]",
+        "loss_across_boundary_violations": "0",
+        "policies": "6"
+      },
+      "name": "packing_isolation_enforced",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "binding_verified": "True",
+        "checkpoint_id": "ckpt-main-000006",
+        "ledger_head": "971035eb1905fe2c",
+        "ledger_offset": "41",
+        "loader_state_hash": "bdbae5fe9642eea0",
+        "next_step": "6"
+      },
+      "name": "checkpoint_saved",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "binding_verified": "True",
+        "checkpoint_id": "ckpt-main-000012",
+        "ledger_head": "bf03ca6686cff2b2",
+        "ledger_offset": "86",
+        "loader_state_hash": "cb5e56fce6081008",
+        "next_step": "12"
+      },
+      "name": "checkpoint_saved",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "crash_at_step": "16",
+        "exit_code": "137",
+        "expected": "137",
+        "mechanism": "os._exit,"
+      },
+      "name": "crash_produced_nonzero_exit",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "checkpoint_id": "ckpt-main-000012",
+        "ledger_head": "bf03ca6686cff2b2",
+        "ledger_offset": "86"
+      },
+      "name": "checkpoint_ledger_binding_verified",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "binding_verified": "True",
+        "checkpoint_id": "ckpt-main-000018",
+        "ledger_head": "c84495cd8e2b195d",
+        "ledger_offset": "200",
+        "loader_state_hash": "34ab44418d1a2644",
+        "next_step": "18"
+      },
+      "name": "checkpoint_saved",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "binding_verified": "True",
+        "checkpoint_id": "ckpt-main-000024",
+        "ledger_head": "d7c6bab528497a54",
+        "ledger_offset": "276",
+        "loader_state_hash": "1d91a9536f731ac1",
+        "next_step": "24"
+      },
+      "name": "checkpoint_saved",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "actual_next_step": "12",
+        "checkpoint_id": "ckpt-main-000012",
+        "expected_next_step": "12"
+      },
+      "name": "resume_next_batch_matched",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "orphaned_by_rollback": "[12,13,14,15]",
+        "repeated": "[]",
+        "skipped": "[]"
+      },
+      "name": "resume_no_skipped_or_repeated_batches",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "mismatches": "0",
+        "steps_compared": "4"
+      },
+      "name": "resume_batch_hashes_identical",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "interval": "[6,12]",
+        "microbatches_replayed": "24",
+        "mismatches": "0",
+        "token_spans_verified": "72"
+      },
+      "name": "replay_hash_matched",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "fork_at": "6",
+        "parent_branch": "main",
+        "parent_ledger_hash": "971035eb1905fe2c"
+      },
+      "name": "fork_parent_binding_verified",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "branch": "fork-anneal-early",
+        "diverging_steps": "4",
+        "parent": "main",
+        "parent_step": "6",
+        "shared_steps": "4"
+      },
+      "name": "fork_divergence_recorded",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "floor_required": "1",
+        "mean_biased_score_native": "-5.38967",
+        "mean_biased_score_other": "-1.14844",
+        "n_overrides": "1",
+        "protected_native_indic": "1",
+        "unprotected_native_indic": "0"
+      },
+      "name": "protected_floor_override_demonstrated",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "main": "[consumption,opus,learning,firewall,token_trace]",
+        "n_events": "277"
+      },
+      "name": "ledger_chain_intact",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "blocked_consumed": "[]",
+        "distinct_shards_consumed": "24",
+        "never_train_consumed": "[]"
+      },
+      "name": "no_eval_data_in_training",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "max_raw_drift": "0.114583",
+        "max_unexplained_drift": "0",
+        "sequences_substituted": "26",
+        "substitution_events": "16",
+        "tolerance": "0.02"
+      },
+      "name": "mixture_deviation_fully_attributed",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "min_share": "0.125",
+        "steps": "24",
+        "violations": "0"
+      },
+      "name": "protected_floor_held_every_batch",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "leaked": "[]",
+        "reserved": "[shard-agentic-train-002,shard-indic_verified-train-001,shard-reasoning-train-002]"
+      },
+      "name": "anneal_reserve_respected",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "decisions": "649",
+        "statuses": "[accepted,deferred,rejected]"
+      },
+      "name": "opus_every_candidate_decided",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "packing_utilization": "0.744559",
+        "raw_tokens_per_s": "2148",
+        "useful_tokens_per_s": "1503.54"
+      },
+      "name": "throughput_measured",
+      "result": "PASS"
+    }
+  ],
+  "note": "Every row below is recomputed in this process from the files listed in `evidence_paths`. No value is copied from the training run's memory; this module never imports the trainer.",
+  "profile": "demo",
+  "requirements": [
+    {
+      "detail": {
+        "manifest_index_hash": "b026dbabc4a964a630ff590c8d1126b5e6b71ed07d9c2b48c4afca87f5f376fb",
+        "mismatched_shards": [],
+        "multibyte_round_trip": true,
+        "n_manifests_checked": 29,
+        "n_mismatched": 0,
+        "recomputed_tokenizer_hash": "b026dbabc4a964a630ff590c8d1126b5e6b71ed07d9c2b48c4afca87f5f376fb",
+        "vocab_size": 512
+      },
+      "evidence": [
+        "manifests/_index.json",
+        "manifests/shard-*.json",
+        "tokenizer/tokenizer.json"
+      ],
+      "how_checked": "recomputed sha256 of tokenizer.json and compared against the tokenizer_hash recorded in every shard manifest; verified a multi-byte round trip",
+      "key": "tokenizer_integrity",
+      "requirement": "Tokenizer integrity",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "failing_shards": [],
+        "n_admitted": 25,
+        "n_blocked": 4,
+        "n_content_hash_failures": 0,
+        "n_incomplete_manifests": 0,
+        "n_shards": 29,
+        "required_fields": [
+          "cleaning_pipeline_hash",
+          "contamination_status",
+          "content_hash",
+          "dedup_status",
+          "doc_ids",
+          "eval_overlap_status",
+          "lane",
+          "language",
+          "license_tier",
+          "parent_shard_ids",
+          "script",
+          "shard_id",
+          "source_ids",
+          "token_count",
+          "tokenizer_hash"
+        ],
+        "tamper_detection_demonstrated": true
+      },
+      "evidence": [
+        "manifests/*.json",
+        "work/shards/*"
+      ],
+      "how_checked": "recomputed each shard's content hash from the bytes on disk and its index, compared against the manifest, and confirmed every manifest carries all required fields; the run separately demonstrated that a mutated shard fails this check",
+      "key": "shard_integrity",
+      "requirement": "Shards, manifests and immutability",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "block_reasons": {
+          "eval_overlap": [
+            "shard-english-train-005"
+          ],
+          "eval_registry_never_train": [
+            "shard-eval-test-000"
+          ],
+          "license_not_permitted": [
+            "shard-english-train-006",
+            "shard-eval-test-000",
+            "shard-eval-validation-000"
+          ],
+          "non_training_split": [
+            "shard-eval-test-000",
+            "shard-eval-validation-000"
+          ]
+        },
+        "blocked_shards_consumed": [],
+        "contamination_blocked": [
+          "shard-english-train-005"
+        ],
+        "fork_branch_clean": true,
+        "n_blocked_shards": 4,
+        "n_contamination_fingerprints": 266,
+        "n_distinct_shards_consumed": 24,
+        "n_registry_entries": 6,
+        "never_train_blocked": [
+          "shard-eval-test-000"
+        ],
+        "never_train_shards_consumed": [],
+        "non_training_split_shards_consumed": []
+      },
+      "evidence": [
+        "ledgers/consumption_*.jsonl",
+        "manifests/_index.json",
+        "manifests/_eval_registry.json"
+      ],
+      "how_checked": "walked every consume event on both branches, collected the shard ids that actually entered a gradient-bearing batch, and intersected them with the never-train registry; confirmed the gate blocked both a registered test shard and a training shard that shares an n-gram with a benchmark item",
+      "key": "evaluation_firewall",
+      "requirement": "Evaluation firewall",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "by_policy": {
+          "best_fit": {
+            "boundary": 0,
+            "loss": 157,
+            "loss_across_boundary": 0,
+            "loss_density": 0.613281,
+            "mean_utilization": 0.617188,
+            "n": 1,
+            "positions": 256,
+            "real": 158,
+            "truncated": 0
+          },
+          "concat_and_chop": {
+            "boundary": 54,
+            "loss": 13442,
+            "loss_across_boundary": 0,
+            "loss_density": 0.673177,
+            "mean_utilization": 0.679788,
+            "n": 78,
+            "positions": 19968,
+            "real": 13574,
+            "truncated": 0
+          },
+          "greedy": {
+            "boundary": 0,
+            "loss": 5079,
+            "loss_across_boundary": 0,
+            "loss_density": 0.708566,
+            "mean_utilization": 0.712472,
+            "n": 28,
+            "positions": 7168,
+            "real": 5107,
+            "truncated": 0
+          },
+          "long_context": {
+            "boundary": 0,
+            "loss": 15564,
+            "loss_across_boundary": 0,
+            "loss_density": 0.732492,
+            "mean_utilization": 0.829443,
+            "n": 83,
+            "positions": 21248,
+            "real": 17624,
+            "truncated": 0
+          },
+          "structure_preserving": {
+            "boundary": 0,
+            "loss": 197,
+            "loss_across_boundary": 0,
+            "loss_density": 0.384766,
+            "mean_utilization": 0.623047,
+            "n": 2,
+            "positions": 512,
+            "real": 319,
+            "truncated": 0
+          }
+        },
+        "n_sequences_rebuilt": 192,
+        "n_violations": 0,
+        "overall_packing_utilization": 0.748332,
+        "policies_exercised": [
+          "best_fit",
+          "concat_and_chop",
+          "greedy",
+          "long_context",
+          "structure_preserving"
+        ],
+        "total_loss_bearing_tokens": 34439,
+        "violations": []
+      },
+      "evidence": [
+        "ledgers/consumption_main.jsonl",
+        "manifests/shard-*.json"
+      ],
+      "how_checked": "rebuilt every packed window from its ledger coordinates and re-tested five invariants on the rebuilt arrays: label shift, no loss on padding, no loss across an isolation boundary, position ids restarting per segment, and loss-mask hash equality",
+      "key": "packing_correctness",
+      "requirement": "Packing correctness",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "anneal_reserve_ok": true,
+        "floor_ok": true,
+        "floor_pct": 0.08,
+        "floor_violations": 0,
+        "lanes": [
+          {
+            "actual_loss_token_share": 0.217718,
+            "actual_sequence_share": 0.177083,
+            "drift_vs_planned": -0.114583,
+            "drift_vs_session5": -0.122917,
+            "expected_after_substitutions": 34.0,
+            "lane": "english",
+            "loss_tokens": 7498,
+            "planned_sequences": 56.0,
+            "planned_share": 0.291667,
+            "sequences": 34,
+            "session5_target_share": 0.3,
+            "substituted_away": 22,
+            "substituted_in": 0,
+            "unexplained_drift": 0.0
+          },
+          {
+            "actual_loss_token_share": 0.240628,
+            "actual_sequence_share": 0.21875,
+            "drift_vs_planned": 0.0,
+            "drift_vs_session5": -0.00125,
+            "expected_after_substitutions": 42.0,
+            "lane": "code",
+            "loss_tokens": 8287,
+            "planned_sequences": 42.0,
+            "planned_share": 0.21875,
+            "sequences": 42,
+            "session5_target_share": 0.22,
+            "substituted_away": 0,
+            "substituted_in": 0,
+            "unexplained_drift": 0.0
+          },
+          {
+            "actual_loss_token_share": 0.147478,
+            "actual_sequence_share": 0.145833,
+            "drift_vs_planned": 0.026042,
+            "drift_vs_session5": 0.025833,
+            "expected_after_substitutions": 28.0,
+            "lane": "math",
+            "loss_tokens": 5079,
+            "planned_sequences": 23.0,
+            "planned_share": 0.119792,
+            "sequences": 28,
+            "session5_target_share": 0.12,
+            "substituted_away": 0,
+            "substituted_in": 5,
+            "unexplained_drift": 0.0
+          },
+          {
+            "actual_loss_token_share": 0.104562,
+            "actual_sequence_share": 0.078125,
+            "drift_vs_planned": 0.020833,
+            "drift_vs_session5": 0.033125,
+            "expected_after_substitutions": 15.0,
+            "lane": "indic_verified",
+            "loss_tokens": 3601,
+            "planned_sequences": 11.0,
+            "planned_share": 0.057292,
+            "sequences": 15,
+            "session5_target_share": 0.045,
+            "substituted_away": 0,
+            "substituted_in": 4,
+            "unexplained_drift": 0.0
+          },
+          {
+            "actual_loss_token_share": 0.081855,
+            "actual_sequence_share": 0.088542,
+            "drift_vs_planned": 0.015625,
+            "drift_vs_session5": 0.018542,
+            "expected_after_substitutions": 17.0,
+            "lane": "indic_unverified",
+            "loss_tokens": 2819,
+            "planned_sequences": 14.0,
+            "planned_share": 0.072917,
+            "sequences": 17,
+            "session5_target_share": 0.07,
+            "substituted_away": 0,
+            "substituted_in": 3,
+            "unexplained_drift": 0.0
+          },
+          {
+            "actual_loss_token_share": 0.018555,
+            "actual_sequence_share": 0.036458,
+            "drift_vs_planned": -0.005208,
+            "drift_vs_session5": -0.008542,
+            "expected_after_substitutions": 7.0,
+            "lane": "indic_translated",
+            "loss_tokens": 639,
+            "planned_sequences": 8.0,
+            "planned_share": 0.041667,
+            "sequences": 7,
+            "session5_target_share": 0.045,
+            "substituted_away": 1,
+            "substituted_in": 0,
+            "unexplained_drift": 0.0
+          },
+          {
+            "actual_loss_token_share": 0.006185,
+            "actual_sequence_share": 0.03125,
+            "drift_vs_planned": -0.005208,
+            "drift_vs_session5": -0.00875,
+            "expected_after_substitutions": 6.0,
+            "lane": "indic_synthetic",
+            "loss_tokens": 213,
+            "planned_sequences": 7.0,
+            "planned_share": 0.036458,
+            "sequences": 6,
+            "session5_target_share": 0.04,
+            "substituted_away": 1,
+            "substituted_in": 0,
+            "unexplained_drift": 0.0
+          },
+          {
+            "actual_loss_token_share": 0.055722,
+            "actual_sequence_share": 0.09375,
+            "drift_vs_planned": 0.026042,
+            "drift_vs_session5": 0.03375,
+            "expected_after_substitutions": 18.0,
+            "lane": "agentic",
+            "loss_tokens": 1919,
+            "planned_sequences": 13.0,
+            "planned_share": 0.067708,
+            "sequences": 18,
+            "session5_target_share": 0.06,
+            "substituted_away": 0,
+            "substituted_in": 5,
+            "unexplained_drift": 0.0
+          },
+          {
+            "actual_loss_token_share": 0.061297,
+            "actual_sequence_share": 0.057292,
+            "drift_vs_planned": 0.015625,
+            "drift_vs_session5": 0.017292,
+            "expected_after_substitutions": 11.0,
+            "lane": "reasoning",
+            "loss_tokens": 2111,
+            "planned_sequences": 8.0,
+            "planned_share": 0.041667,
+            "sequences": 11,
+            "session5_target_share": 0.04,
+            "substituted_away": 2,
+            "substituted_in": 5,
+            "unexplained_drift": 0.0
+          },
+          {
+            "actual_loss_token_share": 0.040013,
+            "actual_sequence_share": 0.036458,
+            "drift_vs_planned": 0.010417,
+            "drift_vs_session5": 0.006458,
+            "expected_after_substitutions": 7.0,
+            "lane": "forums",
+            "loss_tokens": 1378,
+            "planned_sequences": 5.0,
+            "planned_share": 0.026042,
+            "sequences": 7,
+            "session5_target_share": 0.03,
+            "substituted_away": 0,
+            "substituted_in": 2,
+            "unexplained_drift": 0.0
+          },
+          {
+            "actual_loss_token_share": 0.025988,
+            "actual_sequence_share": 0.036458,
+            "drift_vs_planned": 0.010417,
+            "drift_vs_session5": 0.006458,
+            "expected_after_substitutions": 7.0,
+            "lane": "multilingual",
+            "loss_tokens": 895,
+            "planned_sequences": 5.0,
+            "planned_share": 0.026042,
+            "sequences": 7,
+            "session5_target_share": 0.03,
+            "substituted_away": 0,
+            "substituted_in": 2,
+            "unexplained_drift": 0.0
+          }
+        ],
+        "max_abs_drift_vs_planned": 0.114583,
+        "max_abs_unexplained_drift": 0.0,
+        "mean_floor_share": 0.166667,
+        "min_floor_share": 0.125,
+        "n_substitution_events": 16,
+        "reserved_leaked": [],
+        "reserved_shards": [
+          "shard-agentic-train-002",
+          "shard-indic_verified-train-001",
+          "shard-reasoning-train-002"
+        ],
+        "stages_executed": [
+          "S0 Warmup",
+          "S1 Foundation",
+          "S2 Skill ramp",
+          "S3 Long context",
+          "S4 Anneal"
+        ],
+        "tolerance": 0.02,
+        "total_sequences_substituted": 26
+      },
+      "evidence": [
+        "ledgers/consumption_main.jsonl",
+        "manifests/_index.json"
+      ],
+      "how_checked": "recomputed realised lane shares from the consumption ledger and compared them against the quotas the timeline compiler produced from the Session-5 plan, requiring every deviation to be attributable to a logged scarcity substitution; re-checked the protected floor in every single batch rather than on average; verified anneal-reserved shards were untouched before S4",
+      "key": "mixture_compliance",
+      "requirement": "Mixture compliance, floors and curriculum",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "by_lane": {
+          "agentic": {
+            "accepted": 22,
+            "deferred": 19,
+            "rejected": 21
+          },
+          "code": {
+            "accepted": 51,
+            "deferred": 19,
+            "rejected": 51
+          },
+          "english": {
+            "accepted": 34,
+            "deferred": 8,
+            "rejected": 31
+          },
+          "forums": {
+            "accepted": 8,
+            "rejected": 12
+          },
+          "indic_synthetic": {
+            "accepted": 7,
+            "deferred": 7,
+            "rejected": 6
+          },
+          "indic_translated": {
+            "accepted": 8,
+            "deferred": 8,
+            "rejected": 7
+          },
+          "indic_unverified": {
+            "accepted": 20,
+            "deferred": 29,
+            "rejected": 21
+          },
+          "indic_verified": {
+            "accepted": 18,
+            "deferred": 34,
+            "rejected": 27
+          },
+          "math": {
+            "accepted": 35,
+            "deferred": 38,
+            "rejected": 45
+          },
+          "multilingual": {
+            "accepted": 7,
+            "deferred": 4,
+            "rejected": 7
+          },
+          "reasoning": {
+            "accepted": 14,
+            "deferred": 19,
+            "rejected": 12
+          }
+        },
+        "by_status": {
+          "accepted": 224,
+          "deferred": 185,
+          "rejected": 240
+        },
+        "drill_n_overrides": 1,
+        "drill_protected_native_indic": 1,
+        "drill_proxy_version": "opus-proxy-1.0.0-lane-biased-drill",
+        "drill_unprotected_native_indic": 0,
+        "every_candidate_has_a_decision": true,
+        "floor_override_demonstrated_in_drill": true,
+        "n_decisions": 649,
+        "n_deferred": 154,
+        "n_deferred_returned": 162,
+        "n_floor_overrides_main_run": 0,
+        "rejection_reasons": {
+          "defer_expired": 133,
+          "duplication": 103,
+          "low_proxy_utility": 2,
+          "quota_pressure": 86,
+          "stage_mismatch": 101
+        }
+      },
+      "evidence": [
+        "ledgers/opus_main.jsonl",
+        "ledgers/_floor_drill.json"
+      ],
+      "how_checked": "read every decision record from the OPUS ledger and confirmed each candidate carries a status, a proxy score measured from the live model, and a reason; checked that deferred candidates are re-offered rather than lost; confirmed the protected-floor override fires in the controlled drill where the proxy is the English-tuned kind Session 5 warns about",
+      "key": "opus_audit_trail",
+      "requirement": "OPUS audit trail",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "all_exposures_linked_to_shard": true,
+        "n_exposures_with_probe_delta": 212,
+        "n_shard_exposures": 212,
+        "n_token_records": 336,
+        "n_token_records_linked_to_source": 336,
+        "n_token_trace_batches": 7,
+        "usefulness_classes": [
+          "harmful",
+          "neutral",
+          "useful"
+        ]
+      },
+      "evidence": [
+        "ledgers/learning_main.jsonl",
+        "ledgers/token_trace_main.jsonl"
+      ],
+      "how_checked": "confirmed every shard exposure in the learning ledger carries a measured probe loss before and after the optimizer step, linked to the shard and lane it came from, and that every token-level record carries its own cross-entropy and perplexity linked back to a source document and shard",
+      "key": "learning_trace",
+      "requirement": "Learning trace",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "actual_next_step": 12,
+        "checkpoint_ledger_binding_verified": true,
+        "comparisons": [
+          {
+            "match": true,
+            "original_hash": "fd87351b22f1137d88023628",
+            "resumed_hash": "fd87351b22f1137d88023628",
+            "step": 12
+          },
+          {
+            "match": true,
+            "original_hash": "d1aa4db46d633f6036ac73c0",
+            "resumed_hash": "d1aa4db46d633f6036ac73c0",
+            "step": 13
+          },
+          {
+            "match": true,
+            "original_hash": "61768c1bd3375abfed8dbfe7",
+            "resumed_hash": "61768c1bd3375abfed8dbfe7",
+            "step": 14
+          },
+          {
+            "match": true,
+            "original_hash": "f74b8529961017b6178fa363",
+            "resumed_hash": "f74b8529961017b6178fa363",
+            "step": 15
+          }
+        ],
+        "crash_at_step": 16,
+        "crash_exit_code": 137,
+        "crash_recorded": true,
+        "expected_next_step": 12,
+        "ledger_chain_intact": true,
+        "n_hash_mismatches": 0,
+        "n_steps_compared": 4,
+        "next_batch_matched": true,
+        "orphaned_steps": [
+          12,
+          13,
+          14,
+          15
+        ],
+        "repeated_steps": [],
+        "rollback_recorded": true,
+        "rollback_to_offset": 86,
+        "skipped_steps": []
+      },
+      "evidence": [
+        "ledgers/consumption_main.jsonl",
+        "checkpoints/*.json",
+        "run.log"
+      ],
+      "how_checked": "split the ledger at the rollback marker, compared the batch content hash the crashed process recorded at each step against the one the resumed process produced, and confirmed the first resumed step is exactly the step the checkpoint named -- no skip, no repeat; re-verified the checkpoint's ledger-head binding",
+      "key": "crash_recovery",
+      "requirement": "Crash recovery",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "fork_branch": "fork-anneal-early",
+        "fork_divergence_recorded": true,
+        "fork_diverging_steps": 4,
+        "fork_parent_step": 6,
+        "fork_shared_steps": 4,
+        "n_microbatches_replayed": 24,
+        "n_replay_mismatches": 0,
+        "n_token_spans_verified": 72,
+        "replay_interval": [
+          6,
+          12
+        ],
+        "replay_mismatches": []
+      },
+      "evidence": [
+        "ledgers/consumption_main.jsonl",
+        "ledgers/consumption_fork-anneal-early.jsonl"
+      ],
+      "how_checked": "re-opened the immutable shards, re-cut every recorded token span, rebuilt each window from its ledger coordinates and compared the batch id, loss-mask hash and full content hash against the original; separately confirmed the fork recorded its divergence point and produced a genuinely different stream",
+      "key": "replay",
+      "requirement": "Replay and fork",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "context_only_fraction": 0.059889,
+        "opus_acceptance_rate": 0.345946,
+        "packing_utilization_from_ledger": 0.748332,
+        "padding_waste": 0.255441,
+        "rates_reconstructible": true,
+        "raw_tokens_per_s": 2148.003,
+        "reconstruction": {
+          "accepted_loss_bearing_tokens_per_s": {
+            "ok": true,
+            "recomputed": 1503.535,
+            "reported": 1503.535
+          },
+          "raw_tokens_per_s": {
+            "ok": true,
+            "recomputed": 2148.003,
+            "reported": 2148.003
+          },
+          "real_tokens_per_s": {
+            "ok": true,
+            "recomputed": 1599.316,
+            "reported": 1599.316
+          },
+          "useful_loss_bearing_tokens_per_s": {
+            "ok": true,
+            "recomputed": 1503.535,
+            "reported": 1503.535
+          }
+        },
+        "reported_packing_utilization": 0.744559,
+        "shard_cache_hit_rate": 1.0,
+        "useful_tokens_per_s": 1503.535,
+        "utilization_agrees": true,
+        "wall_clock_s": 26.69642
+      },
+      "evidence": [
+        "performance.json",
+        "ledgers/consumption_main.jsonl"
+      ],
+      "how_checked": "re-divided the raw counters in performance.json to reproduce every headline rate, and cross-checked the reported packing utilization against the token counts independently recorded in the consumption ledger",
+      "key": "throughput",
+      "requirement": "Throughput and packing efficiency",
+      "result": "PASS"
+    },
+    {
+      "detail": {
+        "effective_steps": 24,
+        "expected_steps": 24,
+        "failed_markers": [],
+        "ledger_chain_detail": {
+          "consumption": true,
+          "firewall": true,
+          "fork_consumption": true,
+          "fork_firewall": true,
+          "fork_learning": true,
+          "fork_opus": true,
+          "fork_token_trace": true,
+          "learning": true,
+          "opus": true,
+          "token_trace": true
+        },
+        "ledger_chains_ok": true,
+        "missing_log_events": [],
+        "n_markers": 31,
+        "steps_contiguous": true
+      },
+      "evidence": [
+        "run.log",
+        "ledgers/*.jsonl"
+      ],
+      "how_checked": "confirmed run.log contains every required event name, that no check emitted a FAIL marker, that all ten ledger hash chains verify from genesis, and that the effective consumption ledger holds exactly one optimizer step per planned step with no gaps",
+      "key": "end_to_end",
+      "requirement": "End-to-end execution",
+      "result": "PASS"
+    }
+  ],
+  "run_id": "erav6-run-0001",
+  "summary": {
+    "all_passed": true,
+    "failed": 0,
+    "passed": 11,
+    "total": 11
+  }
+}

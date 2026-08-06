@@ -1,0 +1,523 @@
+{
+  "branch": "main",
+  "catalog_set_hash": "6ae65d55cd63f7c0226db8708a4fc90a55cc7be730850e567c503162f3a76124",
+  "checkpoint_id": "ckpt-main-000012",
+  "data_seed": 20260806,
+  "dataloader_version": "erav6-loader-1.0.0",
+  "global_step": 12,
+  "last_loss": 5.466136,
+  "ledger_head_hash": "bf03ca6686cff2b22f763d1354c0aabb0945e99b95029e8cfe57161627890dd1",
+  "ledger_offset": 86,
+  "loader_state": {
+    "loader": {
+      "branch": "main",
+      "carry": {
+        "agentic": [],
+        "code": [],
+        "english": [],
+        "forums": [],
+        "indic_synthetic": [],
+        "indic_translated": [],
+        "indic_unverified": [],
+        "indic_verified": [],
+        "math": [],
+        "multilingual": [],
+        "reasoning": []
+      },
+      "data_seed": 20260806,
+      "lane_cursor": {
+        "agentic": 4,
+        "code": 4,
+        "english": 15,
+        "forums": 3,
+        "indic_synthetic": 2,
+        "indic_translated": 4,
+        "indic_unverified": 3,
+        "indic_verified": 5,
+        "math": 6,
+        "multilingual": 4,
+        "reasoning": 6
+      },
+      "lane_epoch": {
+        "agentic": 1,
+        "code": 4,
+        "english": 4,
+        "forums": 1,
+        "indic_synthetic": 3,
+        "indic_translated": 3,
+        "indic_unverified": 3,
+        "indic_verified": 1,
+        "math": 2,
+        "multilingual": 1
+      },
+      "next_step": 12,
+      "scarcity": [
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 4.6,
+          "epoch": 1,
+          "fallback": "reduce_share",
+          "lane": "english",
+          "over_cap": false,
+          "step": 2
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 6.9,
+          "epoch": 1,
+          "fallback": "repeat",
+          "lane": "code",
+          "over_cap": false,
+          "step": 3
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 4.6,
+          "epoch": 1,
+          "fallback": "reduce_share",
+          "lane": "indic_translated",
+          "over_cap": false,
+          "step": 3
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 6.9,
+          "epoch": 1,
+          "fallback": "repeat",
+          "lane": "indic_unverified",
+          "over_cap": false,
+          "step": 3
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 4.6,
+          "epoch": 2,
+          "fallback": "reduce_share",
+          "lane": "english",
+          "over_cap": false,
+          "step": 4
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 4.6,
+          "epoch": 1,
+          "fallback": "synthesize",
+          "lane": "indic_synthetic",
+          "over_cap": false,
+          "step": 4
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 9.2,
+          "epoch": 1,
+          "fallback": "repeat",
+          "lane": "math",
+          "over_cap": false,
+          "step": 4
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 6.9,
+          "epoch": 2,
+          "fallback": "repeat",
+          "lane": "code",
+          "over_cap": false,
+          "step": 5
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 4.6,
+          "epoch": 2,
+          "fallback": "reduce_share",
+          "lane": "indic_translated",
+          "over_cap": false,
+          "step": 5
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 9.2,
+          "epoch": 1,
+          "fallback": "repeat",
+          "lane": "indic_verified",
+          "over_cap": false,
+          "step": 5
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 4.6,
+          "epoch": 3,
+          "fallback": "reduce_share",
+          "lane": "english",
+          "over_cap": false,
+          "step": 6
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 4.6,
+          "epoch": 1,
+          "fallback": "reduce_share",
+          "lane": "forums",
+          "over_cap": false,
+          "step": 6
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 4.6,
+          "epoch": 1,
+          "fallback": "reduce_share",
+          "lane": "multilingual",
+          "over_cap": false,
+          "step": 6
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 6.9,
+          "epoch": 1,
+          "fallback": "synthesize",
+          "lane": "agentic",
+          "over_cap": false,
+          "step": 7
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 4.6,
+          "epoch": 2,
+          "fallback": "synthesize",
+          "lane": "indic_synthetic",
+          "over_cap": false,
+          "step": 7
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 6.9,
+          "epoch": 2,
+          "fallback": "repeat",
+          "lane": "indic_unverified",
+          "over_cap": false,
+          "step": 7
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 6.9,
+          "epoch": 3,
+          "fallback": "repeat",
+          "lane": "code",
+          "over_cap": false,
+          "step": 8
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 4.6,
+          "epoch": 3,
+          "fallback": "reduce_share",
+          "lane": "indic_translated",
+          "over_cap": false,
+          "step": 8
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 9.2,
+          "epoch": 2,
+          "fallback": "repeat",
+          "lane": "math",
+          "over_cap": false,
+          "step": 8
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 4.6,
+          "epoch": 4,
+          "fallback": "reduce_share",
+          "lane": "english",
+          "over_cap": false,
+          "step": 9
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 6.9,
+          "epoch": 3,
+          "fallback": "repeat",
+          "lane": "indic_unverified",
+          "over_cap": false,
+          "step": 10
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 6.9,
+          "epoch": 4,
+          "fallback": "repeat",
+          "lane": "code",
+          "over_cap": false,
+          "step": 11
+        },
+        {
+          "action": "reduce_share",
+          "applied": true,
+          "cap": 4.6,
+          "epoch": 5,
+          "fallback": "reduce_share",
+          "lane": "english",
+          "over_cap": true,
+          "step": 11
+        },
+        {
+          "action": "repeat",
+          "applied": true,
+          "cap": 4.6,
+          "epoch": 3,
+          "fallback": "synthesize",
+          "lane": "indic_synthetic",
+          "over_cap": false,
+          "step": 11
+        }
+      ]
+    },
+    "opus": {
+      "counter": 189,
+      "deferred": [
+        {
+          "candidate_id": "cand-00008-indic_verified-00139",
+          "deferred_at": 8,
+          "lane": "indic_verified",
+          "reason": "stage_mismatch",
+          "score": 1.5357092526299807,
+          "span_ids": [
+            "shard-indic_verified-train-000:436:256"
+          ]
+        },
+        {
+          "candidate_id": "cand-00010-agentic-00161",
+          "deferred_at": 10,
+          "lane": "agentic",
+          "reason": "stage_mismatch",
+          "score": -0.7367083639305331,
+          "span_ids": [
+            "shard-agentic-train-001:154:229"
+          ]
+        },
+        {
+          "candidate_id": "cand-00010-indic_translated-00171",
+          "deferred_at": 10,
+          "lane": "indic_translated",
+          "reason": "stage_mismatch",
+          "score": 0.6208992730494773,
+          "span_ids": [
+            "shard-indic_translated-train-000:85:73",
+            "shard-indic_translated-train-000:158:91",
+            "shard-indic_translated-train-000:249:92"
+          ]
+        },
+        {
+          "candidate_id": "cand-00010-indic_translated-00172",
+          "deferred_at": 10,
+          "lane": "indic_translated",
+          "reason": "stage_mismatch",
+          "score": 0.4199712664936148,
+          "span_ids": [
+            "shard-indic_translated-train-000:341:12"
+          ]
+        },
+        {
+          "candidate_id": "cand-00011-code-00179",
+          "deferred_at": 11,
+          "lane": "code",
+          "reason": "quota_pressure",
+          "score": -0.9398938791081213,
+          "span_ids": [
+            "shard-code-train-002:0:158"
+          ]
+        },
+        {
+          "candidate_id": "cand-00011-indic_synthetic-00184",
+          "deferred_at": 11,
+          "lane": "indic_synthetic",
+          "reason": "stage_mismatch",
+          "score": -0.1808760653886542,
+          "span_ids": [
+            "shard-indic_synthetic-train-000:0:96",
+            "shard-indic_synthetic-train-000:281:70",
+            "shard-indic_synthetic-train-000:96:90"
+          ]
+        },
+        {
+          "candidate_id": "cand-00011-indic_unverified-00186",
+          "deferred_at": 11,
+          "lane": "indic_unverified",
+          "reason": "stage_mismatch",
+          "score": 1.0419367267253017,
+          "span_ids": [
+            "shard-indic_unverified-train-001:0:173",
+            "shard-indic_unverified-train-000:199:83"
+          ]
+        },
+        {
+          "candidate_id": "cand-00011-math-00188",
+          "deferred_at": 11,
+          "lane": "math",
+          "reason": "quota_pressure",
+          "score": -0.7694070687955027,
+          "span_ids": [
+            "shard-math-train-001:382:195"
+          ]
+        }
+      ],
+      "recent": [
+        [
+          "shard-code-train-002",
+          "shard-english-train-000",
+          "shard-english-train-003",
+          "shard-english-train-004",
+          "shard-forums-train-000",
+          "shard-forums-train-001",
+          "shard-indic_unverified-train-000",
+          "shard-math-train-001",
+          "shard-multilingual-train-000"
+        ],
+        [
+          "shard-code-train-000",
+          "shard-code-train-001",
+          "shard-english-train-001",
+          "shard-english-train-002",
+          "shard-english-train-004",
+          "shard-indic_synthetic-train-000",
+          "shard-indic_translated-train-000",
+          "shard-indic_unverified-train-001"
+        ],
+        [
+          "shard-agentic-train-001",
+          "shard-code-train-000",
+          "shard-english-train-001",
+          "shard-english-train-003",
+          "shard-english-train-004",
+          "shard-indic_verified-train-000",
+          "shard-math-train-000",
+          "shard-reasoning-train-001"
+        ],
+        [
+          "shard-code-train-002",
+          "shard-english-train-000",
+          "shard-english-train-002",
+          "shard-english-train-003",
+          "shard-forums-train-000",
+          "shard-indic_translated-train-000",
+          "shard-indic_unverified-train-001",
+          "shard-math-train-000"
+        ],
+        [
+          "shard-agentic-train-000",
+          "shard-code-train-002",
+          "shard-english-train-001",
+          "shard-english-train-002",
+          "shard-english-train-003",
+          "shard-english-train-004",
+          "shard-indic_synthetic-train-000",
+          "shard-indic_unverified-train-000",
+          "shard-math-train-000"
+        ],
+        [
+          "shard-code-train-001",
+          "shard-code-train-002",
+          "shard-english-train-001",
+          "shard-english-train-002",
+          "shard-english-train-004",
+          "shard-indic_translated-train-000",
+          "shard-indic_verified-train-000",
+          "shard-multilingual-train-000"
+        ],
+        [
+          "shard-code-train-002",
+          "shard-english-train-000",
+          "shard-english-train-001",
+          "shard-forums-train-000",
+          "shard-forums-train-001",
+          "shard-indic_unverified-train-000",
+          "shard-math-train-000",
+          "shard-multilingual-train-000"
+        ],
+        [
+          "shard-agentic-train-000",
+          "shard-code-train-000",
+          "shard-code-train-002",
+          "shard-english-train-000",
+          "shard-english-train-001",
+          "shard-english-train-002",
+          "shard-english-train-003",
+          "shard-indic_synthetic-train-000",
+          "shard-indic_unverified-train-000",
+          "shard-math-train-001"
+        ],
+        [
+          "shard-code-train-002",
+          "shard-english-train-000",
+          "shard-english-train-001",
+          "shard-english-train-002",
+          "shard-english-train-004",
+          "shard-indic_translated-train-000",
+          "shard-indic_verified-train-000",
+          "shard-math-train-000",
+          "shard-reasoning-train-000"
+        ],
+        [
+          "shard-code-train-000",
+          "shard-code-train-001",
+          "shard-english-train-000",
+          "shard-english-train-001",
+          "shard-english-train-002",
+          "shard-english-train-004",
+          "shard-forums-train-000",
+          "shard-indic_unverified-train-000",
+          "shard-math-train-000"
+        ],
+        [
+          "shard-agentic-train-001",
+          "shard-code-train-002",
+          "shard-english-train-001",
+          "shard-english-train-002",
+          "shard-english-train-003",
+          "shard-indic_translated-train-000",
+          "shard-indic_unverified-train-001",
+          "shard-multilingual-train-000"
+        ],
+        [
+          "shard-code-train-000",
+          "shard-code-train-001",
+          "shard-english-train-001",
+          "shard-english-train-002",
+          "shard-english-train-004",
+          "shard-indic_synthetic-train-000",
+          "shard-indic_unverified-train-000",
+          "shard-math-train-000"
+        ]
+      ]
+    }
+  },
+  "loader_state_hash": "cb5e56fce6081008072ed24b5cd7c425af507933ca1bd09c0cd2bddd35b1dd5a",
+  "profile": "demo",
+  "record_hash": "20528d25a578711a5ec2894224e9004fc412d78f807a241b4ea35bbbadf1f5ca",
+  "run_id": "erav6-run-0001",
+  "tokenizer_hash": "b026dbabc4a964a630ff590c8d1126b5e6b71ed07d9c2b48c4afca87f5f376fb",
+  "tokens_consumed": 17918,
+  "weights_file": "ckpt-main-000012.pt"
+}

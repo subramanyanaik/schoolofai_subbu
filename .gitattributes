@@ -1,0 +1,14 @@
+# Normalise to LF everywhere.
+#
+# This matters more than usual here: assignment6 commits frozen inputs
+# (corpus/documents.jsonl, tokenizer/tokenizer.json) and CI re-generates them
+# and diffs against the committed copies to prove they are reproducible. If git
+# rewrote line endings on checkout, that diff would fail on one platform and
+# pass on another, and the "frozen" claim would depend on the OS.
+* text=auto eol=lf
+
+# Never touch binary payloads.
+*.bin   binary
+*.pt    binary
+*.png   binary
+*.jpg   binary

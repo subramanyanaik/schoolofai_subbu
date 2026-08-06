@@ -1,0 +1,1804 @@
+{
+  "admitted": [
+    "shard-agentic-train-000",
+    "shard-agentic-train-001",
+    "shard-agentic-train-002",
+    "shard-code-train-000",
+    "shard-code-train-001",
+    "shard-code-train-002",
+    "shard-english-train-000",
+    "shard-english-train-001",
+    "shard-english-train-002",
+    "shard-english-train-003",
+    "shard-english-train-004",
+    "shard-forums-train-000",
+    "shard-forums-train-001",
+    "shard-indic_synthetic-train-000",
+    "shard-indic_translated-train-000",
+    "shard-indic_unverified-train-000",
+    "shard-indic_unverified-train-001",
+    "shard-indic_verified-train-000",
+    "shard-indic_verified-train-001",
+    "shard-math-train-000",
+    "shard-math-train-001",
+    "shard-multilingual-train-000",
+    "shard-reasoning-train-000",
+    "shard-reasoning-train-001",
+    "shard-reasoning-train-002"
+  ],
+  "admitted_set_hash": "6ae65d55cd63f7c0226db8708a4fc90a55cc7be730850e567c503162f3a76124",
+  "blocked": [
+    "shard-english-train-005",
+    "shard-english-train-006",
+    "shard-eval-test-000",
+    "shard-eval-validation-000"
+  ],
+  "cleaning_pipeline": "erav4-clean@4.2.1",
+  "cleaning_pipeline_hash": "8ba91fa75eed1db71b5fe4be96e285931fed1835d29490a7301eb141b4861e3f",
+  "decisions": [
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=791930056d5dcfb2 manifest=791930056d5dcfb2",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=own",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-agentic-train-000"
+    },
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=e70a5a835314d7d2 manifest=e70a5a835314d7d2",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=own",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-agentic-train-001"
+    },
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=0f8fbd31ea15bb76 manifest=0f8fbd31ea15bb76",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=own",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-agentic-train-002"
+    },
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=07000399cdfc71b0 manifest=07000399cdfc71b0",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=permissive",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-code-train-000"
+    },
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=825b68fd9b92484f manifest=825b68fd9b92484f",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=permissive",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-code-train-001"
+    },
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=77930a704ff749ac manifest=77930a704ff749ac",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=permissive",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-code-train-002"
+    },
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=a54a08afb407929d manifest=a54a08afb407929d",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=permissive",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-english-train-000"
+    },
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=9c15544367609217 manifest=9c15544367609217",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=permissive",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-english-train-001"
+    },
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=b5a77dff121f59ff manifest=b5a77dff121f59ff",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=permissive",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-english-train-002"
+    },
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=5d376d1b471900d7 manifest=5d376d1b471900d7",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=permissive",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-english-train-003"
+    },
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=9f2d516f040026b8 manifest=9f2d516f040026b8",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=permissive",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-english-train-004"
+    },
+    {
+      "admitted": false,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=3cfa026389e5f7b0 manifest=3cfa026389e5f7b0",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=permissive",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=overlap:milu-mini hits=1",
+          "passed": false
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [
+        "eval_overlap"
+      ],
+      "shard_id": "shard-english-train-005"
+    },
+    {
+      "admitted": false,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=6d8dfc9207527bf8 manifest=6d8dfc9207527bf8",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=unknown",
+          "passed": false
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [
+        "license_not_permitted"
+      ],
+      "shard_id": "shard-english-train-006"
+    },
+    {
+      "admitted": false,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=c585d21e90134001 manifest=c585d21e90134001",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=restricted",
+          "passed": false
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=True",
+          "passed": false
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=test",
+          "passed": false
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "not applicable: test shard, refused by is_training_split",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [
+        "license_not_permitted",
+        "eval_registry_never_train",
+        "non_training_split"
+      ],
+      "shard_id": "shard-eval-test-000"
+    },
+    {
+      "admitted": false,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=2fdf2041da026a89 manifest=2fdf2041da026a89",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=restricted",
+          "passed": false
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=validation (readable for eval, never gradient-bearing)",
+          "passed": false
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "not applicable: validation shard, refused by is_training_split",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [
+        "license_not_permitted",
+        "non_training_split"
+      ],
+      "shard_id": "shard-eval-validation-000"
+    },
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=3ce960b62dbe908a manifest=3ce960b62dbe908a",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=permissive",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-forums-train-000"
+    },
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=4d2ce7b3e15a35b7 manifest=4d2ce7b3e15a35b7",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=permissive",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-forums-train-001"
+    },
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=6205942ff9fdcc3c manifest=6205942ff9fdcc3c",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=own",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-indic_synthetic-train-000"
+    },
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=1de1ebe8e475a02b manifest=1de1ebe8e475a02b",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=permissive",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-indic_translated-train-000"
+    },
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=af9666d3696e62fb manifest=af9666d3696e62fb",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=gov-open",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-indic_unverified-train-000"
+    },
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=a001f13f2ad3f2af manifest=a001f13f2ad3f2af",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=gov-open",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-indic_unverified-train-001"
+    },
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=ba97c772bb748b8f manifest=ba97c772bb748b8f",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=gov-open",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-indic_verified-train-000"
+    },
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=264769a7e7fea710 manifest=264769a7e7fea710",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=gov-open",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-indic_verified-train-001"
+    },
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=9ad61705e4197fd3 manifest=9ad61705e4197fd3",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=permissive",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-math-train-000"
+    },
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=54a9ac20b96e1cf4 manifest=54a9ac20b96e1cf4",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=permissive",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-math-train-001"
+    },
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=36e2fcf38ae6f4ad manifest=36e2fcf38ae6f4ad",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=permissive",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-multilingual-train-000"
+    },
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=e4fd855e720ad575 manifest=e4fd855e720ad575",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=permissive",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-reasoning-train-000"
+    },
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=43db355e42886296 manifest=43db355e42886296",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=permissive",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-reasoning-train-001"
+    },
+    {
+      "admitted": true,
+      "checks": [
+        {
+          "check": "manifest_complete",
+          "detail": "15 fields present",
+          "passed": true
+        },
+        {
+          "check": "tokenizer_hash_verified",
+          "detail": "manifest=b026dbabc4a964a6 active=b026dbabc4a964a6",
+          "passed": true
+        },
+        {
+          "check": "content_hash_verified",
+          "detail": "recomputed=aa4ecab555e18ce7 manifest=aa4ecab555e18ce7",
+          "passed": true
+        },
+        {
+          "check": "license_permitted",
+          "detail": "tier=permissive",
+          "passed": true
+        },
+        {
+          "check": "cleaning_lineage_known",
+          "detail": "pipeline=erav4-clean@4.2.1",
+          "passed": true
+        },
+        {
+          "check": "dedup_passed",
+          "detail": "status=exact+fuzzy-passed",
+          "passed": true
+        },
+        {
+          "check": "not_never_train",
+          "detail": "never_train=False",
+          "passed": true
+        },
+        {
+          "check": "is_training_split",
+          "detail": "split=train",
+          "passed": true
+        },
+        {
+          "check": "eval_overlap_clean",
+          "detail": "status=clean hits=0",
+          "passed": true
+        },
+        {
+          "check": "no_canary_strings",
+          "detail": "hits=[]",
+          "passed": true
+        }
+      ],
+      "reasons": [],
+      "shard_id": "shard-reasoning-train-002"
+    }
+  ],
+  "lanes": {
+    "agentic": {
+      "loss_bearing_tokens": 1219,
+      "shards": [
+        "shard-agentic-train-000",
+        "shard-agentic-train-001",
+        "shard-agentic-train-002"
+      ],
+      "tokens": 1849
+    },
+    "code": {
+      "loss_bearing_tokens": 1608,
+      "shards": [
+        "shard-code-train-000",
+        "shard-code-train-001",
+        "shard-code-train-002"
+      ],
+      "tokens": 1616
+    },
+    "english": {
+      "loss_bearing_tokens": 2901,
+      "shards": [
+        "shard-english-train-000",
+        "shard-english-train-001",
+        "shard-english-train-002",
+        "shard-english-train-003",
+        "shard-english-train-004"
+      ],
+      "tokens": 2916
+    },
+    "forums": {
+      "loss_bearing_tokens": 694,
+      "shards": [
+        "shard-forums-train-000",
+        "shard-forums-train-001"
+      ],
+      "tokens": 699
+    },
+    "indic_synthetic": {
+      "loss_bearing_tokens": 347,
+      "shards": [
+        "shard-indic_synthetic-train-000"
+      ],
+      "tokens": 351
+    },
+    "indic_translated": {
+      "loss_bearing_tokens": 349,
+      "shards": [
+        "shard-indic_translated-train-000"
+      ],
+      "tokens": 353
+    },
+    "indic_unverified": {
+      "loss_bearing_tokens": 902,
+      "shards": [
+        "shard-indic_unverified-train-000",
+        "shard-indic_unverified-train-001"
+      ],
+      "tokens": 907
+    },
+    "indic_verified": {
+      "loss_bearing_tokens": 1096,
+      "shards": [
+        "shard-indic_verified-train-000",
+        "shard-indic_verified-train-001"
+      ],
+      "tokens": 1101
+    },
+    "math": {
+      "loss_bearing_tokens": 1087,
+      "shards": [
+        "shard-math-train-000",
+        "shard-math-train-001"
+      ],
+      "tokens": 1093
+    },
+    "multilingual": {
+      "loss_bearing_tokens": 577,
+      "shards": [
+        "shard-multilingual-train-000"
+      ],
+      "tokens": 581
+    },
+    "reasoning": {
+      "loss_bearing_tokens": 1898,
+      "shards": [
+        "shard-reasoning-train-000",
+        "shard-reasoning-train-001",
+        "shard-reasoning-train-002"
+      ],
+      "tokens": 2207
+    }
+  },
+  "n_admitted": 25,
+  "n_blocked": 4,
+  "n_shards": 29,
+  "tokenizer_hash": "b026dbabc4a964a630ff590c8d1126b5e6b71ed07d9c2b48c4afca87f5f376fb",
+  "tokenizer_name": "erav6-bytebpe",
+  "tokenizer_version": "1.0.0",
+  "vocab_size": 512
+}
