@@ -1,5 +1,5 @@
 {
-  "catalog_build_s": 0.610843,
+  "catalog_build_s": 0.551472,
   "counts": {
     "accepted_loss_bearing_tokens": 40139,
     "context_only_tokens": 2557,
@@ -28,23 +28,23 @@
   },
   "device": "cuda",
   "efficiency": {
-    "approx_idle_fraction_of_training": 0.868981,
-    "compute_fraction": 0.034778,
+    "approx_idle_fraction_of_training": 0.864777,
+    "compute_fraction": 0.03678,
     "context_only_fraction": 0.059889,
-    "idle_denominator_s": 7.086325,
-    "loader_wait_fraction": 0.030101,
+    "idle_denominator_s": 6.397595,
+    "loader_wait_fraction": 0.031581,
     "loss_bearing_fraction_of_positions": 0.699969,
     "loss_bearing_fraction_of_real_tokens": 0.940111,
     "opus_acceptance_rate": 0.345946,
     "packing_utilization": 0.744559,
     "padding_waste": 0.255441,
-    "selector_overhead_fraction": 0.027117,
+    "selector_overhead_fraction": 0.028587,
     "shard_cache_hit_rate": 1.0
   },
   "latency_ms": {
-    "mean_compute_per_step": 11.6055,
-    "mean_dataload_per_step": 50.2242,
-    "mean_opus_scoring_per_step": 45.2461,
+    "mean_compute_per_step": 10.8138,
+    "mean_dataload_per_step": 46.4261,
+    "mean_opus_scoring_per_step": 42.0251,
     "mean_shard_read": 0.0
   },
   "packing_policy_comparison": {
@@ -340,22 +340,22 @@
   "packing_utilization_from_ledger": 0.748332,
   "phases": {
     "fork": {
-      "compute": 0.261377,
-      "dataload": 0.271419,
-      "dataload_excluding_selection": 0.018404,
-      "opus_scoring_within_dataload": 0.253015,
-      "other": 2.313005,
-      "probe_eval": 0.075589,
-      "total": 2.92139
+      "compute": 0.228509,
+      "dataload": 0.251833,
+      "dataload_excluding_selection": 0.016416,
+      "opus_scoring_within_dataload": 0.235417,
+      "other": 2.090055,
+      "probe_eval": 0.072663,
+      "total": 2.64306
     },
     "resume": {
-      "compute": 0.667063,
-      "dataload": 0.532168,
-      "dataload_excluding_selection": 0.061246,
-      "opus_scoring_within_dataload": 0.470922,
-      "other": 2.780935,
-      "probe_eval": 0.184769,
-      "total": 4.164935
+      "compute": 0.636592,
+      "dataload": 0.490985,
+      "dataload_excluding_selection": 0.054,
+      "opus_scoring_within_dataload": 0.436985,
+      "other": 2.455516,
+      "probe_eval": 0.171442,
+      "total": 3.754535
     },
     "train": {}
   },
@@ -489,21 +489,21 @@
   },
   "replay_latency_s": 0.0,
   "throughput": {
-    "accepted_loss_bearing_tokens_per_s": 1503.535,
-    "optimizer_steps_per_s": 1.049,
-    "raw_tokens_per_s": 2148.003,
-    "real_tokens_per_s": 1599.316,
-    "sequences_per_s": 8.391,
-    "useful_loss_bearing_tokens_per_s": 1503.535
+    "accepted_loss_bearing_tokens_per_s": 1706.507,
+    "optimizer_steps_per_s": 1.19,
+    "raw_tokens_per_s": 2437.976,
+    "real_tokens_per_s": 1815.218,
+    "sequences_per_s": 9.523,
+    "useful_loss_bearing_tokens_per_s": 1706.507
   },
   "time_s": {
-    "compute": 0.92844,
-    "dataload": 0.803587,
-    "dataload_excluding_selection": 0.07965,
-    "opus_scoring_within_dataload": 0.723937,
-    "other": 24.704035,
-    "probe_eval": 0.260358,
-    "total": 26.69642
+    "compute": 0.865101,
+    "dataload": 0.742818,
+    "dataload_excluding_selection": 0.070416,
+    "opus_scoring_within_dataload": 0.672402,
+    "other": 21.669124,
+    "probe_eval": 0.244105,
+    "total": 23.521148
   },
   "timer_calls": {
     "compute": 80,
@@ -512,11 +512,11 @@
     "probe": 32
   },
   "timers_s": {
-    "compute": 0.92844,
-    "dataload": 0.803587,
-    "opus_scoring": 0.723937,
-    "probe": 0.260358,
-    "replay": 0.016696
+    "compute": 0.865101,
+    "dataload": 0.742818,
+    "opus_scoring": 0.672402,
+    "probe": 0.244105,
+    "replay": 0.015019
   },
-  "wall_clock_s": 26.69642
+  "wall_clock_s": 23.521148
 }

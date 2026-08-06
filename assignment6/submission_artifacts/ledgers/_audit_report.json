@@ -253,7 +253,7 @@
     "note": "a fork shares a checkpoint with its parent but not a data stream; identical hashes on shared steps would mean the fork silently replayed the parent instead of branching",
     "ok": true,
     "parent_branch": "main",
-    "parent_ledger_hash": "971035eb1905fe2cf467804acfb5799cbcffe37c37934e48a0371dd549e18ba2",
+    "parent_ledger_hash": "6c76f1b3dcdeec29c4e997970816165efb90624f327f524d62b94beec74de874",
     "parent_step": 6
   },
   "fork_ledger_chains": {
@@ -261,7 +261,7 @@
     "per_ledger": {
       "consumption": {
         "broken_at": null,
-        "head": "7b58bf72f09fff54413c5f77d27728715c3a312383ee51305b4c954c6b4de259",
+        "head": "1141df2f3d2e91842c0939d50f4e4b5beb222281674f1126da39cbb672f198ee",
         "n_events": 30,
         "ok": true,
         "reason": null
@@ -275,21 +275,21 @@
       },
       "learning": {
         "broken_at": null,
-        "head": "2ada821dff9956154f35a033c02b79c105c2084f1c69ae3ce3f1614cd075a1b1",
+        "head": "186f031103b1627c30d0b93071f2801c230887f2f1b533f033f0501f24482806",
         "n_events": 37,
         "ok": true,
         "reason": null
       },
       "opus": {
         "broken_at": null,
-        "head": "51f5de33e83bf056cf7b346c68743ecd982567d7a783f17a6143025b6a60cfcc",
+        "head": "d64529fd891e0591a482e0a138171cf5f1566addd19c3f9b1145dfa9d10c9992",
         "n_events": 91,
         "ok": true,
         "reason": null
       },
       "token_trace": {
         "broken_at": null,
-        "head": "815853ca3f8f66c0e1d9a146b5c3e4fce054114b464f760e56f05dab631f1b86",
+        "head": "01cf4c559e32c6b951d95f5eadafd142194fc3b460f2ea9a836762631cb8bfd5",
         "n_events": 1,
         "ok": true,
         "reason": null
@@ -384,7 +384,7 @@
     "per_ledger": {
       "consumption": {
         "broken_at": null,
-        "head": "2bd4f19043ccfadecd4471122e90cdb8582747b3aa4a6763bd8d5daea3976ffd",
+        "head": "5b494c59ccd89f560ba7781226572c1e3139fadde3a71528d549dbc6ab260c2d",
         "n_events": 277,
         "ok": true,
         "reason": null
@@ -398,21 +398,21 @@
       },
       "learning": {
         "broken_at": null,
-        "head": "72cf83ba1204ab1b21bc695c05bb94f396187c788a9146ec63247d442caf81fd",
+        "head": "2b3d1aea99a53216cd7553dfbd14d44ef3c1e720b649c3f44a6729d80eb7a649",
         "n_events": 212,
         "ok": true,
         "reason": null
       },
       "opus": {
         "broken_at": null,
-        "head": "e87c6f02942dd60574e7d1b846ad121a1b801fad67cd4b157a99419f78078109",
+        "head": "dde1bc560a651fa57423999ddcd1452a7073eecf1c171840947685079b5f4245",
         "n_events": 649,
         "ok": true,
         "reason": null
       },
       "token_trace": {
         "broken_at": null,
-        "head": "43926434d9c2eaac19482b78677971ce4a074ef5970e22ffad3422086567f936",
+        "head": "b17887f954e4ff8f71d754939af9e7ce7cadbb5dab0617381cec12511c9fd79e",
         "n_events": 7,
         "ok": true,
         "reason": null
@@ -1051,6 +1051,7 @@
       12
     ],
     "mismatches": [],
+    "n_batch_ids_verified": 24,
     "n_microbatches_replayed": 24,
     "n_mismatches": 0,
     "n_token_spans_verified": 72,
@@ -1058,197 +1059,250 @@
     "per_microbatch": [
       {
         "batch_id": "main/000006/r0/m0",
+        "batch_id_match": true,
         "match": true,
         "microbatch_id": 0,
         "n_sequences": 2,
         "rank": 0,
+        "reconstructed_batch_id": "main/000006/r0/m0",
         "step": 6
       },
       {
         "batch_id": "main/000006/r1/m0",
+        "batch_id_match": true,
         "match": true,
         "microbatch_id": 0,
         "n_sequences": 2,
         "rank": 1,
+        "reconstructed_batch_id": "main/000006/r1/m0",
         "step": 6
       },
       {
         "batch_id": "main/000006/r0/m1",
+        "batch_id_match": true,
         "match": true,
         "microbatch_id": 1,
         "n_sequences": 2,
         "rank": 0,
+        "reconstructed_batch_id": "main/000006/r0/m1",
         "step": 6
       },
       {
         "batch_id": "main/000006/r1/m1",
+        "batch_id_match": true,
         "match": true,
         "microbatch_id": 1,
         "n_sequences": 2,
         "rank": 1,
+        "reconstructed_batch_id": "main/000006/r1/m1",
         "step": 6
       },
       {
         "batch_id": "main/000007/r0/m0",
+        "batch_id_match": true,
         "match": true,
         "microbatch_id": 0,
         "n_sequences": 2,
         "rank": 0,
+        "reconstructed_batch_id": "main/000007/r0/m0",
         "step": 7
       },
       {
         "batch_id": "main/000007/r1/m0",
+        "batch_id_match": true,
         "match": true,
         "microbatch_id": 0,
         "n_sequences": 2,
         "rank": 1,
+        "reconstructed_batch_id": "main/000007/r1/m0",
         "step": 7
       },
       {
         "batch_id": "main/000007/r0/m1",
+        "batch_id_match": true,
         "match": true,
         "microbatch_id": 1,
         "n_sequences": 2,
         "rank": 0,
+        "reconstructed_batch_id": "main/000007/r0/m1",
         "step": 7
       },
       {
         "batch_id": "main/000007/r1/m1",
+        "batch_id_match": true,
         "match": true,
         "microbatch_id": 1,
         "n_sequences": 2,
         "rank": 1,
+        "reconstructed_batch_id": "main/000007/r1/m1",
         "step": 7
       },
       {
         "batch_id": "main/000008/r0/m0",
+        "batch_id_match": true,
         "match": true,
         "microbatch_id": 0,
         "n_sequences": 2,
         "rank": 0,
+        "reconstructed_batch_id": "main/000008/r0/m0",
         "step": 8
       },
       {
         "batch_id": "main/000008/r1/m0",
+        "batch_id_match": true,
         "match": true,
         "microbatch_id": 0,
         "n_sequences": 2,
         "rank": 1,
+        "reconstructed_batch_id": "main/000008/r1/m0",
         "step": 8
       },
       {
         "batch_id": "main/000008/r0/m1",
+        "batch_id_match": true,
         "match": true,
         "microbatch_id": 1,
         "n_sequences": 2,
         "rank": 0,
+        "reconstructed_batch_id": "main/000008/r0/m1",
         "step": 8
       },
       {
         "batch_id": "main/000008/r1/m1",
+        "batch_id_match": true,
         "match": true,
         "microbatch_id": 1,
         "n_sequences": 2,
         "rank": 1,
+        "reconstructed_batch_id": "main/000008/r1/m1",
         "step": 8
       },
       {
         "batch_id": "main/000009/r0/m0",
+        "batch_id_match": true,
         "match": true,
         "microbatch_id": 0,
         "n_sequences": 2,
         "rank": 0,
+        "reconstructed_batch_id": "main/000009/r0/m0",
         "step": 9
       },
       {
         "batch_id": "main/000009/r1/m0",
+        "batch_id_match": true,
         "match": true,
         "microbatch_id": 0,
         "n_sequences": 2,
         "rank": 1,
+        "reconstructed_batch_id": "main/000009/r1/m0",
         "step": 9
       },
       {
         "batch_id": "main/000009/r0/m1",
+        "batch_id_match": true,
         "match": true,
         "microbatch_id": 1,
         "n_sequences": 2,
         "rank": 0,
+        "reconstructed_batch_id": "main/000009/r0/m1",
         "step": 9
       },
       {
         "batch_id": "main/000009/r1/m1",
+        "batch_id_match": true,
         "match": true,
         "microbatch_id": 1,
         "n_sequences": 2,
         "rank": 1,
+        "reconstructed_batch_id": "main/000009/r1/m1",
         "step": 9
       },
       {
         "batch_id": "main/000010/r0/m0",
+        "batch_id_match": true,
         "match": true,
         "microbatch_id": 0,
         "n_sequences": 2,
         "rank": 0,
+        "reconstructed_batch_id": "main/000010/r0/m0",
         "step": 10
       },
       {
         "batch_id": "main/000010/r1/m0",
+        "batch_id_match": true,
         "match": true,
         "microbatch_id": 0,
         "n_sequences": 2,
         "rank": 1,
+        "reconstructed_batch_id": "main/000010/r1/m0",
         "step": 10
       },
       {
         "batch_id": "main/000010/r0/m1",
+        "batch_id_match": true,
         "match": true,
         "microbatch_id": 1,
         "n_sequences": 2,
         "rank": 0,
+        "reconstructed_batch_id": "main/000010/r0/m1",
         "step": 10
       },
       {
         "batch_id": "main/000010/r1/m1",
+        "batch_id_match": true,
         "match": true,
         "microbatch_id": 1,
         "n_sequences": 2,
         "rank": 1,
+        "reconstructed_batch_id": "main/000010/r1/m1",
         "step": 10
       },
       {
         "batch_id": "main/000011/r0/m0",
+        "batch_id_match": true,
         "match": true,
         "microbatch_id": 0,
         "n_sequences": 2,
         "rank": 0,
+        "reconstructed_batch_id": "main/000011/r0/m0",
         "step": 11
       },
       {
         "batch_id": "main/000011/r1/m0",
+        "batch_id_match": true,
         "match": true,
         "microbatch_id": 0,
         "n_sequences": 2,
         "rank": 1,
+        "reconstructed_batch_id": "main/000011/r1/m0",
         "step": 11
       },
       {
         "batch_id": "main/000011/r0/m1",
+        "batch_id_match": true,
         "match": true,
         "microbatch_id": 1,
         "n_sequences": 2,
         "rank": 0,
+        "reconstructed_batch_id": "main/000011/r0/m1",
         "step": 11
       },
       {
         "batch_id": "main/000011/r1/m1",
+        "batch_id_match": true,
         "match": true,
         "microbatch_id": 1,
         "n_sequences": 2,
         "rank": 1,
+        "reconstructed_batch_id": "main/000011/r1/m1",
         "step": 11
       }
-    ]
+    ],
+    "verified": {
+      "batch_ids": 24,
+      "content_hashes": 48,
+      "token_spans": 72
+    }
   },
   "resume": {
     "actual_next_step": 12,

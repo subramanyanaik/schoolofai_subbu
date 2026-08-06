@@ -6,7 +6,7 @@
   "dataloader_version": "erav6-loader-1.0.0",
   "global_step": 12,
   "last_loss": 5.466136,
-  "ledger_head_hash": "bf03ca6686cff2b22f763d1354c0aabb0945e99b95029e8cfe57161627890dd1",
+  "ledger_head_hash": "51f7671bbb4e4599b84ec6b8c59ec5c2f01bfb40aa39e664f0ca031cee89a4fd",
   "ledger_offset": 86,
   "loader_state": {
     "loader": {
@@ -515,7 +515,7 @@
   },
   "loader_state_hash": "cb5e56fce6081008072ed24b5cd7c425af507933ca1bd09c0cd2bddd35b1dd5a",
   "profile": "demo",
-  "record_hash": "20528d25a578711a5ec2894224e9004fc412d78f807a241b4ea35bbbadf1f5ca",
+  "record_hash": "1354d98ccacca838500c1819f757eabc719bd68505a37e1a34e23b627a4b3ce2",
   "run_id": "erav6-run-0001",
   "tokenizer_hash": "b026dbabc4a964a630ff590c8d1126b5e6b71ed07d9c2b48c4afca87f5f376fb",
   "tokens_consumed": 17918,

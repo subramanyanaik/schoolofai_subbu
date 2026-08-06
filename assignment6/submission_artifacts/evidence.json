@@ -109,7 +109,7 @@
       "detail": {
         "binding_verified": "True",
         "checkpoint_id": "ckpt-main-000006",
-        "ledger_head": "971035eb1905fe2c",
+        "ledger_head": "6c76f1b3dcdeec29",
         "ledger_offset": "41",
         "loader_state_hash": "bdbae5fe9642eea0",
         "next_step": "6"
@@ -121,7 +121,7 @@
       "detail": {
         "binding_verified": "True",
         "checkpoint_id": "ckpt-main-000012",
-        "ledger_head": "bf03ca6686cff2b2",
+        "ledger_head": "51f7671bbb4e4599",
         "ledger_offset": "86",
         "loader_state_hash": "cb5e56fce6081008",
         "next_step": "12"
@@ -142,7 +142,7 @@
     {
       "detail": {
         "checkpoint_id": "ckpt-main-000012",
-        "ledger_head": "bf03ca6686cff2b2",
+        "ledger_head": "51f7671bbb4e4599",
         "ledger_offset": "86"
       },
       "name": "checkpoint_ledger_binding_verified",
@@ -152,7 +152,7 @@
       "detail": {
         "binding_verified": "True",
         "checkpoint_id": "ckpt-main-000018",
-        "ledger_head": "c84495cd8e2b195d",
+        "ledger_head": "2c4323af6cd0f813",
         "ledger_offset": "200",
         "loader_state_hash": "34ab44418d1a2644",
         "next_step": "18"
@@ -164,7 +164,7 @@
       "detail": {
         "binding_verified": "True",
         "checkpoint_id": "ckpt-main-000024",
-        "ledger_head": "d7c6bab528497a54",
+        "ledger_head": "807a94c5f4fe00d4",
         "ledger_offset": "276",
         "loader_state_hash": "1d91a9536f731ac1",
         "next_step": "24"
@@ -200,6 +200,7 @@
     },
     {
       "detail": {
+        "batch_ids_verified": "24",
         "interval": "[6,12]",
         "microbatches_replayed": "24",
         "mismatches": "0",
@@ -212,7 +213,7 @@
       "detail": {
         "fork_at": "6",
         "parent_branch": "main",
-        "parent_ledger_hash": "971035eb1905fe2c"
+        "parent_ledger_hash": "6c76f1b3dcdeec29"
       },
       "name": "fork_parent_binding_verified",
       "result": "PASS"
@@ -296,8 +297,8 @@
     {
       "detail": {
         "packing_utilization": "0.744559",
-        "raw_tokens_per_s": "2148",
-        "useful_tokens_per_s": "1503.54"
+        "raw_tokens_per_s": "2437.98",
+        "useful_tokens_per_s": "1706.51"
       },
       "name": "throughput_measured",
       "result": "PASS"
@@ -880,6 +881,7 @@
         "fork_diverging_steps": 4,
         "fork_parent_step": 6,
         "fork_shared_steps": 4,
+        "n_batch_ids_verified": 24,
         "n_microbatches_replayed": 24,
         "n_replay_mismatches": 0,
         "n_token_spans_verified": 72,
@@ -893,7 +895,7 @@
         "ledgers/consumption_main.jsonl",
         "ledgers/consumption_fork-anneal-early.jsonl"
       ],
-      "how_checked": "re-opened the immutable shards, re-cut every recorded token span, rebuilt each window from its ledger coordinates and compared the batch id, loss-mask hash and full content hash against the original; separately confirmed the fork recorded its divergence point and produced a genuinely different stream",
+      "how_checked": "re-opened the immutable shards, re-cut every recorded token span, rebuilt each window from its ledger coordinates, and compared all three things the assignment asks a replay to prove: the batch id (recomputed from branch/step/rank/microbatch), the token spans (rebuilt from coordinates) and the hashes (loss-mask and full content); separately confirmed the fork recorded its divergence point and produced a genuinely different stream",
       "key": "replay",
       "requirement": "Replay and fork",
       "result": "PASS"
@@ -905,34 +907,34 @@
         "packing_utilization_from_ledger": 0.748332,
         "padding_waste": 0.255441,
         "rates_reconstructible": true,
-        "raw_tokens_per_s": 2148.003,
+        "raw_tokens_per_s": 2437.976,
         "reconstruction": {
           "accepted_loss_bearing_tokens_per_s": {
             "ok": true,
-            "recomputed": 1503.535,
-            "reported": 1503.535
+            "recomputed": 1706.507,
+            "reported": 1706.507
           },
           "raw_tokens_per_s": {
             "ok": true,
-            "recomputed": 2148.003,
-            "reported": 2148.003
+            "recomputed": 2437.976,
+            "reported": 2437.976
           },
           "real_tokens_per_s": {
             "ok": true,
-            "recomputed": 1599.316,
-            "reported": 1599.316
+            "recomputed": 1815.218,
+            "reported": 1815.218
           },
           "useful_loss_bearing_tokens_per_s": {
             "ok": true,
-            "recomputed": 1503.535,
-            "reported": 1503.535
+            "recomputed": 1706.507,
+            "reported": 1706.507
           }
         },
         "reported_packing_utilization": 0.744559,
         "shard_cache_hit_rate": 1.0,
-        "useful_tokens_per_s": 1503.535,
+        "useful_tokens_per_s": 1706.507,
         "utilization_agrees": true,
-        "wall_clock_s": 26.69642
+        "wall_clock_s": 23.521148
       },
       "evidence": [
         "performance.json",

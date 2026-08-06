@@ -15,7 +15,7 @@ Every row is recomputed by `src/erav6/evidence.py` from the generated artefacts,
 | Learning trace | **PASS** | Loss linked to source data | `n_shard_exposures=212`, `n_token_records=336` |
 | Crash recovery | **PASS** | Expected and resumed batch ids | `expected_next_step=12`, `actual_next_step=12`, `n_hash_mismatches=0` |
 | Replay and fork | **PASS** | Original and replay hashes | `n_microbatches_replayed=24`, `n_token_spans_verified=72`, `n_replay_mismatches=0` |
-| Throughput and packing efficiency | **PASS** | Performance report | `useful_tokens_per_s=1503.535`, `rates_reconstructible=True` |
+| Throughput and packing efficiency | **PASS** | Performance report | `useful_tokens_per_s=1706.507`, `rates_reconstructible=True` |
 | End-to-end execution | **PASS** | Execution log | `effective_steps=24`, `n_markers=31`, `ledger_chains_ok=True` |
 
 ---
@@ -153,13 +153,14 @@ Files read: `ledgers/consumption_main.jsonl`, `checkpoints/*.json`, `run.log`
 
 ### Replay and fork — PASS
 
-re-opened the immutable shards, re-cut every recorded token span, rebuilt each window from its ledger coordinates and compared the batch id, loss-mask hash and full content hash against the original; separately confirmed the fork recorded its divergence point and produced a genuinely different stream.
+re-opened the immutable shards, re-cut every recorded token span, rebuilt each window from its ledger coordinates, and compared all three things the assignment asks a replay to prove: the batch id (recomputed from branch/step/rank/microbatch), the token spans (rebuilt from coordinates) and the hashes (loss-mask and full content); separately confirmed the fork recorded its divergence point and produced a genuinely different stream.
 
 Files read: `ledgers/consumption_main.jsonl`, `ledgers/consumption_fork-anneal-early.jsonl`
 
 | Field | Value |
 |---|---|
 | `n_microbatches_replayed` | 24 |
+| `n_batch_ids_verified` | 24 |
 | `n_token_spans_verified` | 72 |
 | `n_replay_mismatches` | 0 |
 | `fork_branch` | fork-anneal-early |
@@ -176,13 +177,13 @@ Files read: `performance.json`, `ledgers/consumption_main.jsonl`
 
 | Field | Value |
 |---|---|
-| `wall_clock_s` | 26.69642 |
+| `wall_clock_s` | 23.521148 |
 | `rates_reconstructible` | True |
 | `reported_packing_utilization` | 0.744559 |
 | `packing_utilization_from_ledger` | 0.748332 |
 | `utilization_agrees` | True |
-| `useful_tokens_per_s` | 1503.535 |
-| `raw_tokens_per_s` | 2148.003 |
+| `useful_tokens_per_s` | 1706.507 |
+| `raw_tokens_per_s` | 2437.976 |
 | `padding_waste` | 0.255441 |
 | `context_only_fraction` | 0.059889 |
 | `opus_acceptance_rate` | 0.345946 |

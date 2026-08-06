@@ -192,6 +192,44 @@ class TestReplayAndFork(ArtifactTestCase):
         self.assertGreater(rep["n_microbatches_replayed"], 0)
         self.assertGreater(rep["n_token_spans_verified"], 0)
 
+    def test_replay_verifies_all_three_things_the_assignment_names(self):
+        """batch ids, token spans and hashes -- each actually reconstructed."""
+        lo, hi = self.profile["replay_interval"]
+        rep = AU.replay_interval(self.cat, self.main.consumption, lo, hi,
+                                 self.profile["seq_len"])
+        self.assertGreater(rep["verified"]["batch_ids"], 0)
+        self.assertGreater(rep["verified"]["token_spans"], 0)
+        self.assertGreater(rep["verified"]["content_hashes"], 0)
+        for row in rep["per_microbatch"]:
+            self.assertTrue(row["batch_id_match"], row["batch_id"])
+            self.assertEqual(row["reconstructed_batch_id"], row["batch_id"])
+
+    def test_replay_detects_a_changed_shard(self):
+        """The replay check must be capable of failing, not just of passing."""
+        import shutil
+        import tempfile
+        from erav6 import shards as SH
+        lo, hi = self.profile["replay_interval"]
+        ev = self.main.consumption.events_in_step_range(lo, hi)[0]
+        shard_id = ev["sequences"][0]["members"][0]["shard_id"]
+        shard = self.cat.shards[shard_id]
+
+        backup = tempfile.mkdtemp()
+        shutil.copy(shard.bin_path, backup)
+        try:
+            raw = bytearray(shard.bin_path.read_bytes())
+            raw[0] = (raw[0] + 1) % 256
+            shard.bin_path.write_bytes(bytes(raw))
+            shard._cache = None
+            rep = AU.replay_interval(self.cat, self.main.consumption, lo, hi,
+                                     self.profile["seq_len"])
+            self.assertFalse(rep["ok"], "replay passed against a mutated shard")
+            self.assertGreater(rep["n_mismatches"], 0)
+        finally:
+            shutil.copy(Path(backup) / shard.bin_path.name, shard.bin_path)
+            shard._cache = None
+            shutil.rmtree(backup, ignore_errors=True)
+
     def test_replay_covers_a_whole_optimizer_step(self):
         lo, hi = self.profile["replay_interval"]
         steps = {e["global_step"]

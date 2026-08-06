@@ -2,7 +2,7 @@
 
 [![validate](https://github.com/subramanyanaik/schoolofai_subbu/actions/workflows/validate.yml/badge.svg)](https://github.com/subramanyanaik/schoolofai_subbu/actions/workflows/validate.yml)
 ![evidence](https://img.shields.io/badge/evidence-11%2F11%20PASS-brightgreen)
-![tests](https://img.shields.io/badge/tests-95%2F95%20passing-brightgreen)
+![tests](https://img.shields.io/badge/tests-97%2F97%20passing-brightgreen)
 ![runtime](https://img.shields.io/badge/one%20command-~30s-blue)
 ![python](https://img.shields.io/badge/python-3.12-blue)
 
@@ -24,9 +24,9 @@ One command. No arguments, no network, no manual intervention. ~30 seconds on CP
 | **Plan executed** | Session 5's, **imported** from `assignment5/src/erav5` — 11 lanes, 5 stages, 8% native-Indic floor |
 | **Crash** | real process death, `os._exit(137)` — not a caught exception |
 | **Resume** | next batch = step 12 as the checkpoint named; **4 batch content hashes identical** across the crash |
-| **Replay** | 24 microbatches, **72 token spans** rebuilt from shards, 0 hash mismatches |
+| **Replay** | 24 batch ids, **72 token spans**, every content hash — rebuilt from the shards, 0 mismatches |
 | **Evidence** | **11/11 PASS**, re-derived from artefacts in a separate process |
-| **Tests** | **95** invariant tests, stdlib `unittest`, no install needed |
+| **Tests** | **97** invariant tests, stdlib `unittest`, no install needed |
 
 ---
 
@@ -111,9 +111,14 @@ Replay does not diff two in-memory objects, and it does not re-run the packer on
 
 Re-running the packer would prove the packer is deterministic. Rebuilding from coordinates proves the stronger thing: *the tokens that trained the model at that step are still there, unchanged, and can be produced again*. It also works for the concatenating policies, where a document is split across two windows and re-packing from whole documents would reproduce neither.
 
+All three things the assignment asks a replay to prove are checked separately: the **batch id** is recomputed from `branch/step/rank/microbatch` rather than read back, the **token spans** are rebuilt from coordinates and compared string-for-string, and the **hashes** cover both the loss mask and the full window content.
+
 ```
-[PASS] replay_hash_matched  interval=[6,12] microbatches_replayed=24 token_spans_verified=72 mismatches=0
+[PASS] replay_hash_matched  interval=[6,12] microbatches_replayed=24
+       batch_ids_verified=24 token_spans_verified=72 mismatches=0
 ```
+
+A test mutates one byte of a consumed shard and asserts the replay **fails** — a check that cannot fail is not a check.
 
 ### 2.5 Evidence is re-derived, never reported
 
@@ -125,6 +130,8 @@ Re-running the packer would prove the packer is deterministic. Rebuilding from c
 - every throughput rate is re-divided from the raw counters in the same file.
 
 If a claim cannot be reconstructed from the bundle, the row reports FAIL. That is the intended behaviour: an unverifiable claim is not evidence.
+
+This was verified adversarially. Corrupting a copy of the bundle in four different ways — altering a recorded batch hash, altering a loss-mask hash, multiplying a throughput rate by ten, and injecting a never-train shard id into a consume event — makes exactly the corresponding requirement flip to FAIL, while an untouched copy still reports 11/11. A generator reporting stored booleans would have stayed green through all four.
 
 ---
 
@@ -474,11 +481,11 @@ submission_artifacts/
 | OPUS audit trail | **PASS** | 740 decisions, 162 deferred returned, 1 floor override in drill |
 | Learning trace | **PASS** | 212 exposures with probe deltas, 336 token records |
 | Crash recovery | **PASS** | exit 137, expected step 12 = actual 12, **0 hash mismatches** |
-| Replay and fork | **PASS** | 24 microbatches, 72 spans, 0 mismatches; fork diverges 4/4 |
+| Replay and fork | **PASS** | 24 batch ids, 72 spans, all hashes, 0 mismatches; fork diverges 4/4 |
 | Throughput | **PASS** | all rates reconstructible from raw counts |
 | End-to-end | **PASS** | 24 contiguous steps, 10 chains verify, 0 FAIL markers |
 
-**95 tests**, `unittest.TestCase` so they run with zero install:
+**97 tests**, `unittest.TestCase` so they run with zero install:
 
 ```bash
 python -m unittest discover -s tests -v     # stdlib
@@ -487,7 +494,7 @@ python -m pytest tests -q                   # also works
 
 `test_invariants.py` (50) builds its own fixtures and needs no prior run — tokenizer determinism and hash sensitivity, span tiling, tool-observation masking, control-token smuggling, all six packing policies' mask/position/isolation invariants, rebuild-from-coordinates round trip, quota allocation, ledger chain corruption, admission gate rules, firewall permissions.
 
-`test_artifacts.py` (45) is an **independent second reading** of the generated bundle — it re-derives the same conclusions without going through `evidence.py`, and asserts they agree. If the generator and the tests disagree, one of them is wrong, and that is worth knowing.
+`test_artifacts.py` (47) is an **independent second reading** of the generated bundle — it re-derives the same conclusions without going through `evidence.py`, and asserts they agree. If the generator and the tests disagree, one of them is wrong, and that is worth knowing.
 
 ---
 
@@ -552,7 +559,7 @@ assignment6/
 
 ```bash
 python run_demo.py                       # the whole demonstration, ~30s
-python -m unittest discover -s tests     # 95 tests
+python -m unittest discover -s tests     # 97 tests
 ```
 
 The corpus and tokenizer are frozen inputs, rebuilt only if you change them:

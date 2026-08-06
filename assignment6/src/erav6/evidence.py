@@ -416,13 +416,16 @@ class EvidenceBuilder:
         self.add(
             "replay", "Replay and fork", ok,
             "re-opened the immutable shards, re-cut every recorded token span, "
-            "rebuilt each window from its ledger coordinates and compared the "
-            "batch id, loss-mask hash and full content hash against the "
-            "original; separately confirmed the fork recorded its divergence "
+            "rebuilt each window from its ledger coordinates, and compared all "
+            "three things the assignment asks a replay to prove: the batch id "
+            "(recomputed from branch/step/rank/microbatch), the token spans "
+            "(rebuilt from coordinates) and the hashes (loss-mask and full "
+            "content); separately confirmed the fork recorded its divergence "
             "point and produced a genuinely different stream",
             ["ledgers/consumption_main.jsonl", "ledgers/consumption_" + C.FORK_BRANCH + ".jsonl"],
             replay_interval=[lo, hi],
             n_microbatches_replayed=rep["n_microbatches_replayed"],
+            n_batch_ids_verified=rep["n_batch_ids_verified"],
             n_token_spans_verified=rep["n_token_spans_verified"],
             n_replay_mismatches=rep["n_mismatches"],
             replay_mismatches=rep["mismatches"][:5],

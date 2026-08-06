@@ -346,6 +346,7 @@ def main(argv=None) -> int:
              token_spans=rep["n_token_spans_verified"])
     p9.check("replay_hash_matched", rep["ok"], interval=[lo, hi],
              microbatches_replayed=rep["n_microbatches_replayed"],
+             batch_ids_verified=rep["n_batch_ids_verified"],
              token_spans_verified=rep["n_token_spans_verified"],
              mismatches=rep["n_mismatches"])
 

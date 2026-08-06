@@ -341,11 +341,27 @@ def replay_interval(cat: Catalog, consumption: Ledger, lo: int, hi: int,
     tokens with the wrong isolation structure still fails.
     """
     checked, mismatches, spans_checked = [], [], 0
+    ids_checked = 0
     for ev in consumption.events_in_step_range(lo, hi):
         rebuilt = rebuild_sequences_from_ledger(cat, ev, seq_len)
         recorded = ev["sequences"]
         ok = True
         detail = []
+
+        # Batch ids are a deterministic function of (branch, step, rank,
+        # microbatch). Recomputing one from its components and comparing it to
+        # the stored string is a small check, but it is the difference between
+        # "the id we read back is the id we read back" and an id that was
+        # actually reconstructed.
+        expected_id = (f"{ev['branch']}/{ev['global_step']:06d}"
+                       f"/r{ev['rank']}/m{ev['microbatch_id']}")
+        same_id = expected_id == ev["batch_id"]
+        ids_checked += 1
+        if not same_id:
+            ok = False
+            detail.append(dict(rule="batch_id", recorded=ev["batch_id"],
+                               reconstructed=expected_id))
+
         for rec, seq in zip(recorded, rebuilt):
             spans_checked += len(rec["span_ids"])
             same_content = seq.content_hash() == rec["content_hash"]
@@ -361,6 +377,7 @@ def replay_interval(cat: Catalog, consumption: Ledger, lo: int, hi: int,
                     replay_content_hash=seq.content_hash()[:24],
                 ))
         row = dict(step=ev["global_step"], batch_id=ev["batch_id"],
+                   reconstructed_batch_id=expected_id, batch_id_match=same_id,
                    rank=ev["rank"], microbatch_id=ev["microbatch_id"],
                    n_sequences=len(recorded), match=ok)
         if not ok:
@@ -372,8 +389,13 @@ def replay_interval(cat: Catalog, consumption: Ledger, lo: int, hi: int,
         ok=bool(checked) and not mismatches,
         interval=[lo, hi],
         n_microbatches_replayed=len(checked),
+        n_batch_ids_verified=ids_checked,
         n_token_spans_verified=spans_checked,
         n_mismatches=len(mismatches),
+        # The three things the assignment asks a replay to prove, named.
+        verified=dict(batch_ids=ids_checked, token_spans=spans_checked,
+                      content_hashes=sum(len(e["sequences"])
+                                         for e in consumption.events_in_step_range(lo, hi))),
         mismatches=mismatches,
         per_microbatch=checked,
     )
