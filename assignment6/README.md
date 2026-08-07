@@ -3,7 +3,7 @@
 [![validate](https://github.com/subramanyanaik/schoolofai_subbu/actions/workflows/validate.yml/badge.svg)](https://github.com/subramanyanaik/schoolofai_subbu/actions/workflows/validate.yml)
 ![evidence](https://img.shields.io/badge/evidence-11%2F11%20PASS-brightgreen)
 ![tests](https://img.shields.io/badge/tests-97%2F97%20passing-brightgreen)
-![runtime](https://img.shields.io/badge/one%20command-~30s-blue)
+![runtime](https://img.shields.io/badge/one%20command-under%202%20min-blue)
 ![python](https://img.shields.io/badge/python-3.12-blue)
 
 **Session-6 assignment.** The [Session-5 mixture plan](../assignment5/README.md) turned into an executed, ledgered, replayable data stream — and then deliberately crashed, resumed, replayed and forked to prove it can be reconstructed.
@@ -16,7 +16,9 @@ python run_demo.py                # regenerates all of submission_artifacts/
 echo $?                           # 0 = all 11 requirements PASS
 ```
 
-One command. No arguments, no network, no manual intervention. ~30 seconds on CPU.
+One command. No arguments, no network, no manual intervention.
+
+Measured wall clock: **27s** on an SSD with CUDA available, **74–92s** from a fresh clone on a slower volume, **79s** forced CPU-only (`--device cpu`, which is what CI runs). The device is auto-selected and recorded in `performance.json`; nothing here needs a GPU.
 
 | | |
 |---|---|
@@ -558,7 +560,8 @@ assignment6/
 ### Regenerating everything
 
 ```bash
-python run_demo.py                       # the whole demonstration, ~30s
+python run_demo.py                       # the whole demonstration
+python run_demo.py --device cpu          # force CPU (what CI runs)
 python -m unittest discover -s tests     # 97 tests
 ```
 
