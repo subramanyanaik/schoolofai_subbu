@@ -1,0 +1,105 @@
+{
+  "corpus": {
+    "en": {
+      "label": "English",
+      "config": "20231101.en",
+      "path": "data\\ood\\en.faithful.txt",
+      "chars": 425144,
+      "bytes": 425870,
+      "bytes_per_char": 1.0017076566998475
+    },
+    "es": {
+      "label": "Spanish",
+      "config": "20231101.es",
+      "path": "data\\ood\\es.faithful.txt",
+      "chars": 413737,
+      "bytes": 422615,
+      "bytes_per_char": 1.021458076024141
+    },
+    "hi": {
+      "label": "Hindi (Devanagari)",
+      "config": "20231101.hi",
+      "path": "data\\ood\\hi.faithful.txt",
+      "chars": 421185,
+      "bytes": 1058740,
+      "bytes_per_char": 2.5137172501394875
+    },
+    "te": {
+      "label": "Telugu",
+      "config": "20231101.te",
+      "path": "data\\ood\\te.faithful.txt",
+      "chars": 405821,
+      "bytes": 1068698,
+      "bytes_per_char": 2.6334221245327374
+    }
+  },
+  "arms": {
+    "a0_bpe_tied": {
+      "in_domain_bpb": 1.913415342635262,
+      "in_domain_ppl": 472.1910635889262,
+      "en": 2.0105762882674134,
+      "es": 4.160359430777837,
+      "hi": 6.430955158126127,
+      "te": 10.435405517046185
+    },
+    "a1_v1_dense": {
+      "in_domain_bpb": 1.9140933819947197,
+      "in_domain_ppl": 473.2224787752165,
+      "en": 2.018092016635561,
+      "es": 4.200065370985839,
+      "hi": 5.600507529713322,
+      "te": 10.104071794969121
+    },
+    "a2_kronf_kas": {
+      "in_domain_bpb": 2.4011094477483037,
+      "in_domain_ppl": 2268.301688116788,
+      "en": 2.416129362201775,
+      "es": 4.332155346959913,
+      "hi": 4.644965407568817,
+      "te": 8.689109493177707
+    },
+    "a3_kronf_kas_tied": {
+      "in_domain_bpb": 2.400347508640009,
+      "in_domain_ppl": 2262.746794744931,
+      "en": 2.4131149458277465,
+      "es": 4.3456330409716974,
+      "hi": 4.7043466929565,
+      "te": 8.509048751491836
+    },
+    "a4_kas_unigram": {
+      "in_domain_bpb": 2.2460698436936624,
+      "in_domain_ppl": 1377.2832329159914,
+      "en": 2.272299747782036,
+      "es": 4.228365273480336,
+      "hi": 4.566577741685415,
+      "te": 8.424235158476758
+    }
+  },
+  "pct_vs_a0": {
+    "a1_v1_dense": {
+      "en": 0.3738096590517493,
+      "es": 0.9543872559246209,
+      "hi": -12.913285942655888,
+      "te": -3.1750919649057407
+    },
+    "a2_kronf_kas": {
+      "en": 20.17098661219373,
+      "es": 4.129352740802874,
+      "hi": -27.771764950040765,
+      "te": -16.734337932684188
+    },
+    "a3_kronf_kas_tied": {
+      "en": 20.021058634249354,
+      "es": 4.453307779689142,
+      "hi": -26.848398452722716,
+      "te": -18.45981703737008
+    },
+    "a4_kas_unigram": {
+      "en": 13.017335429741854,
+      "es": 1.6346146008299232,
+      "hi": -28.990676666200866,
+      "te": -19.2725654531028
+    }
+  },
+  "confound": "the KAS arms are higher-entropy models and a flatter distribution is automatically better on out-of-distribution text; this design cannot separate byte-level transfer from calibration. Treat the margin as an upper bound. The clean version temperature-matches each arm on held-out in-domain data first and is not run here."
+}

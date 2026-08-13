@@ -1,0 +1,133 @@
+{
+  "baseline": "a0_bpe_tied",
+  "n_distinct_tokens": 27544,
+  "n_occurrences": 409600,
+  "deciles": [
+    {
+      "decile": 0,
+      "n_types": 2,
+      "n_occurrences": 33781,
+      "mean_freq": 16890.5,
+      "mean_byte_len": 2.5
+    },
+    {
+      "decile": 1,
+      "n_types": 4,
+      "n_occurrences": 42318,
+      "mean_freq": 10579.5,
+      "mean_byte_len": 2.25
+    },
+    {
+      "decile": 2,
+      "n_types": 14,
+      "n_occurrences": 46699,
+      "mean_freq": 3335.6428571428573,
+      "mean_byte_len": 3.0714285714285716
+    },
+    {
+      "decile": 3,
+      "n_types": 47,
+      "n_occurrences": 40822,
+      "mean_freq": 868.5531914893617,
+      "mean_byte_len": 3.5106382978723403
+    },
+    {
+      "decile": 4,
+      "n_types": 170,
+      "n_occurrences": 41091,
+      "mean_freq": 241.71176470588236,
+      "mean_byte_len": 4.364705882352941
+    },
+    {
+      "decile": 5,
+      "n_types": 432,
+      "n_occurrences": 41006,
+      "mean_freq": 94.92129629629629,
+      "mean_byte_len": 5.127314814814815
+    },
+    {
+      "decile": 6,
+      "n_types": 915,
+      "n_occurrences": 40979,
+      "mean_freq": 44.785792349726776,
+      "mean_byte_len": 6.0153005464480875
+    },
+    {
+      "decile": 7,
+      "n_types": 1939,
+      "n_occurrences": 40980,
+      "mean_freq": 21.13460546673543,
+      "mean_byte_len": 6.427539969056214
+    },
+    {
+      "decile": 8,
+      "n_types": 4632,
+      "n_occurrences": 40960,
+      "mean_freq": 8.842832469775475,
+      "mean_byte_len": 6.528281519861831
+    },
+    {
+      "decile": 9,
+      "n_types": 19389,
+      "n_occurrences": 40964,
+      "mean_freq": 2.112744339573985,
+      "mean_byte_len": 6.6207127752849555
+    }
+  ],
+  "arms": {
+    "a2_kronf_kas": {
+      "delta_nll_by_decile": [
+        0.6904052737971816,
+        0.9030265028424428,
+        2.1698057639113477,
+        2.410984043524108,
+        2.8159705013159253,
+        2.6927123874513463,
+        2.342401665999786,
+        1.5776299351218155,
+        0.5640534825448412,
+        -0.8740627229848116
+      ],
+      "overall_delta_nll": 1.5511554980406572,
+      "sign_flips": true,
+      "best_decile": 9,
+      "worst_decile": 4
+    },
+    "a3_kronf_kas_tied": {
+      "delta_nll_by_decile": [
+        0.718086048781705,
+        0.8630760623567929,
+        2.1717932224623784,
+        2.3980065165022846,
+        2.80568276252865,
+        2.692826037723645,
+        2.3406409781248287,
+        1.5755781891958023,
+        0.5650999625737313,
+        -0.8739627387919192
+      ],
+      "overall_delta_nll": 1.5469566696827792,
+      "sign_flips": true,
+      "best_decile": 9,
+      "worst_decile": 4
+    },
+    "a4_kas_unigram": {
+      "delta_nll_by_decile": [
+        0.42160478354604025,
+        0.5560429509398767,
+        1.3168071975093059,
+        1.6420597129563834,
+        2.0648717351519763,
+        2.068237711400061,
+        1.8125222145004927,
+        1.172538503301964,
+        0.3030204077309463,
+        -0.9354608822772191
+      ],
+      "overall_delta_nll": 1.05560026802935,
+      "sign_flips": true,
+      "best_decile": 9,
+      "worst_decile": 5
+    }
+  }
+}

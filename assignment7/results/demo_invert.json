@@ -1,0 +1,66 @@
+{
+  "D": 4096,
+  "v2": "KroneckerCodec(variant=v2, d_c=32, L_max=128, D=4096, byte=hadamard_bits, pos=dft, overflow=truncate)",
+  "v1": "KroneckerCodec(variant=v1, d_c=256, L_max=16, D=4096, byte=onehot, pos=identity, overflow=truncate)",
+  "cases": [
+    {
+      "string": "apple",
+      "bytes": 5,
+      "v2_ok": true,
+      "v2": "apple",
+      "v1_ok": true,
+      "v1": "apple"
+    },
+    {
+      "string": "a",
+      "bytes": 1,
+      "v2_ok": true,
+      "v2": "a",
+      "v1_ok": true,
+      "v1": "a"
+    },
+    {
+      "string": "counterrevolutionaries",
+      "bytes": 22,
+      "v2_ok": true,
+      "v2": "counterrevolutionaries",
+      "v1_ok": false,
+      "v1": "counterrevolutio"
+    },
+    {
+      "string": "\u092d\u093e\u0930\u0924",
+      "bytes": 12,
+      "v2_ok": true,
+      "v2": "\u092d\u093e\u0930\u0924",
+      "v1_ok": true,
+      "v1": "\u092d\u093e\u0930\u0924"
+    },
+    {
+      "string": "\u0c24\u0c46\u0c32\u0c41\u0c17\u0c41",
+      "bytes": 18,
+      "v2_ok": true,
+      "v2": "\u0c24\u0c46\u0c32\u0c41\u0c17\u0c41",
+      "v1_ok": false,
+      "v1": "\u0c24\u0c46\u0c32\u0c41\u0c17\ufffd"
+    },
+    {
+      "string": "\ud83c\udf7a",
+      "bytes": 4,
+      "v2_ok": true,
+      "v2": "\ud83c\udf7a",
+      "v1_ok": true,
+      "v1": "\ud83c\udf7a"
+    },
+    {
+      "string": "antidisestablishmentarianism",
+      "bytes": 28,
+      "v2_ok": true,
+      "v2": "antidisestablishmentarianism",
+      "v1_ok": false,
+      "v1": "antidisestablish"
+    }
+  ],
+  "forward_deterministic": true,
+  "reverse_deterministic": true,
+  "embedding_norm": 0.9999999999999997
+}

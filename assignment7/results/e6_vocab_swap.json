@@ -1,0 +1,24 @@
+{
+  "arm": "a2_kronf_kas",
+  "vocab_before": 50257,
+  "vocab_after": 1000000,
+  "params_before": 13865985,
+  "params_after": 13865985,
+  "delta_params": 0,
+  "occupancy_nnz": 8348534,
+  "occupancy_mb": 100.182408,
+  "dense_head_would_need_params": 384000000,
+  "dense_head_would_need_adam_gb": 4.608,
+  "bpb_before": 2.352136688759278,
+  "bpb_after": 2.7897736986651815,
+  "vocab_composition": {
+    "base": 50257,
+    "harvested": 435553,
+    "synthetic": 514190,
+    "total": 1000000
+  },
+  "gates": {
+    "delta_params_is_zero": true
+  },
+  "note": "bpb rises because mass now spreads over ~20x more classes the model never trained on; the claim is feasibility at zero parameter cost, not a quality gain"
+}

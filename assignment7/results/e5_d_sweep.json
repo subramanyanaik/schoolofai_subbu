@@ -1,0 +1,153 @@
+{
+  "runs": {
+    "d_c=128,L_max=32": {
+      "d_c": 128,
+      "L_max": 32,
+      "D": 4096,
+      "bpb": 2.4993251473542606,
+      "ppl": 2915.251241197606,
+      "params": 13865889,
+      "head_params": 1572897,
+      "max_coherence": 0.15625000000000003,
+      "mean_coherence": 0.049509803921568625,
+      "welch_bound": 0.06262242910851495,
+      "n_truncated": 14,
+      "tokens": 1499136,
+      "tokens_per_s": 6903.2700285266055
+    },
+    "d_c=64,L_max=32": {
+      "d_c": 64,
+      "L_max": 32,
+      "D": 2048,
+      "bpb": 2.4978572872559686,
+      "ppl": 2901.624274309692,
+      "params": 12293025,
+      "head_params": 786465,
+      "max_coherence": 0.28125,
+      "mean_coherence": 0.0857843137254902,
+      "welch_bound": 0.10846522890932808,
+      "n_truncated": 14,
+      "tokens": 1499136,
+      "tokens_per_s": 6974.270976040874
+    },
+    "d_c=64,L_max=128": {
+      "d_c": 64,
+      "L_max": 128,
+      "D": 8192,
+      "bpb": 2.5244357477506503,
+      "ppl": 3158.5330321007477,
+      "params": 17011713,
+      "head_params": 3145857,
+      "max_coherence": 0.28125,
+      "mean_coherence": 0.0857843137254902,
+      "welch_bound": 0.10846522890932808,
+      "n_truncated": 0,
+      "tokens": 1499136,
+      "tokens_per_s": 6659.773708008304
+    },
+    "d_c=32,L_max=32": {
+      "d_c": 32,
+      "L_max": 32,
+      "D": 1024,
+      "bpb": 2.539691863995467,
+      "ppl": 3316.1497331036626,
+      "params": 11506593,
+      "head_params": 393249,
+      "max_coherence": 0.5000000000000001,
+      "mean_coherence": 0.13186274509803922,
+      "welch_bound": 0.1656833739159028,
+      "n_truncated": 14,
+      "tokens": 1499136,
+      "tokens_per_s": 6998.183256713603
+    },
+    "d_c=32,L_max=64": {
+      "d_c": 32,
+      "L_max": 64,
+      "D": 2048,
+      "bpb": 2.5544385924440567,
+      "ppl": 3475.975482806273,
+      "params": 12293057,
+      "head_params": 786497,
+      "max_coherence": 0.5000000000000001,
+      "mean_coherence": 0.13186274509803922,
+      "welch_bound": 0.1656833739159028,
+      "n_truncated": 3,
+      "tokens": 1499136,
+      "tokens_per_s": 6909.775310758941
+    },
+    "d_c=32,L_max=128": {
+      "d_c": 32,
+      "L_max": 128,
+      "D": 4096,
+      "bpb": 2.5613177552415416,
+      "ppl": 3553.1448028897016,
+      "params": 13865985,
+      "head_params": 1572993,
+      "max_coherence": 0.5000000000000001,
+      "mean_coherence": 0.13186274509803922,
+      "welch_bound": 0.1656833739159028,
+      "n_truncated": 0,
+      "tokens": 1499136,
+      "tokens_per_s": 6766.376068230314
+    },
+    "d_c=16,L_max=128": {
+      "d_c": 16,
+      "L_max": 128,
+      "D": 2048,
+      "bpb": 2.609880635715924,
+      "ppl": 4148.899717285355,
+      "params": 12293121,
+      "head_params": 786561,
+      "max_coherence": 1.0,
+      "mean_coherence": 0.18823529411764706,
+      "welch_bound": 0.24253562503633297,
+      "n_truncated": 0,
+      "tokens": 1499136,
+      "tokens_per_s": 6832.177875927706
+    }
+  },
+  "analysis": {
+    "coherence_orders_bpb_monotonically": false,
+    "spearman_coherence_vs_bpb": 0.9642857142857145,
+    "spearman_D_vs_bpb": -0.07142857142857144,
+    "best": {
+      "d_c": 64,
+      "L_max": 32,
+      "D": 2048,
+      "bpb": 2.4978572872559686,
+      "ppl": 2901.624274309692,
+      "params": 12293025,
+      "head_params": 786465,
+      "max_coherence": 0.28125,
+      "mean_coherence": 0.0857843137254902,
+      "welch_bound": 0.10846522890932808,
+      "n_truncated": 14,
+      "tokens": 1499136,
+      "tokens_per_s": 6974.270976040874
+    },
+    "e4_config_rank": 6,
+    "n_runs": 7,
+    "spread_at_equal_D": {
+      "4096": {
+        "n": 2,
+        "bpb_min": 2.4993251473542606,
+        "bpb_max": 2.5613177552415416,
+        "spread": 0.061992607887281004
+      },
+      "2048": {
+        "n": 3,
+        "bpb_min": 2.4978572872559686,
+        "bpb_max": 2.609880635715924,
+        "spread": 0.11202334845995532
+      }
+    }
+  },
+  "config": {
+    "source": "fineweb",
+    "tokens": 1499136,
+    "batch_size": 8,
+    "block_size": 256,
+    "seed": 0,
+    "redo": false
+  }
+}

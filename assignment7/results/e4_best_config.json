@@ -1,0 +1,362 @@
+{
+  "config": {
+    "source": "fineweb",
+    "tokens": 5001216,
+    "budget_min": null,
+    "batch_size": 8,
+    "block_size": 256,
+    "d_c": 64,
+    "L_max": 32,
+    "d_model": 384,
+    "n_layer": 6,
+    "n_head": 6,
+    "lr": 0.0006,
+    "seed": 0,
+    "arms": "a2_kronf_kas,a3_kronf_kas_tied,a4_kas_unigram",
+    "out": "e4_best_config.json",
+    "tag": "_dc64L32"
+  },
+  "device": "cuda",
+  "tokens_per_arm": 5001216,
+  "probe_rates": {},
+  "arms": {
+    "a2_kronf_kas": {
+      "arm": "a2_kronf_kas",
+      "tokens": 5001216,
+      "steps": 2442,
+      "wall_s": 734.5507299001329,
+      "tokens_per_s": 6808.537241096948,
+      "final_train_loss": 7.627194881439209,
+      "val": {
+        "nll_nats_per_token": 7.519347319602966,
+        "ppl": 1843.3637739391654,
+        "bpb": 2.355724991563406,
+        "n_tokens": 409600,
+        "n_bytes": 1886210.0
+      },
+      "params": {
+        "total": 12293025,
+        "head": 786465,
+        "input_embedding": 786432,
+        "body": 10720128
+      },
+      "codec": "KroneckerCodec(variant=v2, d_c=64, L_max=32, D=2048, byte=hadamard_bits, pos=dft, overflow=truncate)",
+      "unused_params": [],
+      "output_row_norms": {
+        "min": 0.999999967484418,
+        "max": 1.0000000363917672,
+        "std": 1.944831238710595e-08,
+        "note": "every output row is unit norm => no per-token frequency prior"
+      },
+      "history": [
+        {
+          "step": 0,
+          "train_loss": 10.80274486541748,
+          "lr": 1.2499999999999999e-05,
+          "val_nll_nats_per_token": 10.621582913398743,
+          "val_ppl": 41010.47961527285,
+          "val_bpb": 3.286989992892378,
+          "val_n_tokens": 81920,
+          "val_n_bytes": 381905.0
+        },
+        {
+          "step": 244,
+          "train_loss": 8.277057647705078,
+          "lr": 0.0005911181832454379
+        },
+        {
+          "step": 488,
+          "train_loss": 8.011242866516113,
+          "lr": 0.0005562285463662718
+        },
+        {
+          "step": 732,
+          "train_loss": 7.898918628692627,
+          "lr": 0.000498342246501858
+        },
+        {
+          "step": 976,
+          "train_loss": 7.7729339599609375,
+          "lr": 0.0004233435619664357
+        },
+        {
+          "step": 1220,
+          "train_loss": 7.830239295959473,
+          "lr": 0.0003388562851606583,
+          "val_nll_nats_per_token": 7.766845881938934,
+          "val_ppl": 2361.012619232652,
+          "val_bpb": 2.4035536791852423,
+          "val_n_tokens": 81920,
+          "val_n_bytes": 381905.0
+        },
+        {
+          "step": 1464,
+          "train_loss": 7.688791751861572,
+          "lr": 0.000253468746171296
+        },
+        {
+          "step": 1708,
+          "train_loss": 7.775722026824951,
+          "lr": 0.00017586078885014508
+        },
+        {
+          "step": 1952,
+          "train_loss": 7.541313648223877,
+          "lr": 0.00011392144430382134
+        },
+        {
+          "step": 2196,
+          "train_loss": 7.261439800262451,
+          "lr": 7.394699235614859e-05
+        },
+        {
+          "step": 2440,
+          "train_loss": 7.542566776275635,
+          "lr": 6.0000929918662786e-05,
+          "val_nll_nats_per_token": 7.51404093503952,
+          "val_ppl": 1833.6080834784393,
+          "val_bpb": 2.325319828601274,
+          "val_n_tokens": 81920,
+          "val_n_bytes": 381905.0
+        },
+        {
+          "step": 2441,
+          "train_loss": 7.627194881439209,
+          "lr": 6.0000232479765786e-05,
+          "val_nll_nats_per_token": 7.513912451267243,
+          "val_ppl": 1833.3725097290214,
+          "val_bpb": 2.3252800675903997,
+          "val_n_tokens": 81920,
+          "val_n_bytes": 381905.0
+        }
+      ]
+    },
+    "a3_kronf_kas_tied": {
+      "arm": "a3_kronf_kas_tied",
+      "tokens": 5001216,
+      "steps": 2442,
+      "wall_s": 734.8068806999363,
+      "tokens_per_s": 6806.1638116890235,
+      "final_train_loss": 7.6444597244262695,
+      "val": {
+        "nll_nats_per_token": 7.5363652753829955,
+        "ppl": 1875.0025068363339,
+        "bpb": 2.3610565212869794,
+        "n_tokens": 409600,
+        "n_bytes": 1886210.0
+      },
+      "params": {
+        "total": 11506593,
+        "head": 33,
+        "input_embedding": 786432,
+        "body": 10720128
+      },
+      "codec": "KroneckerCodec(variant=v2, d_c=64, L_max=32, D=2048, byte=hadamard_bits, pos=dft, overflow=truncate)",
+      "unused_params": [],
+      "output_row_norms": {
+        "min": 0.999999967484418,
+        "max": 1.0000000363917672,
+        "std": 1.944831238710595e-08,
+        "note": "every output row is unit norm => no per-token frequency prior"
+      },
+      "history": [
+        {
+          "step": 0,
+          "train_loss": 10.954384803771973,
+          "lr": 1.2499999999999999e-05,
+          "val_nll_nats_per_token": 10.700051307678223,
+          "val_ppl": 44358.130984624084,
+          "val_bpb": 3.3112730803434602,
+          "val_n_tokens": 81920,
+          "val_n_bytes": 381905.0
+        },
+        {
+          "step": 244,
+          "train_loss": 8.312657356262207,
+          "lr": 0.0005911181832454379
+        },
+        {
+          "step": 488,
+          "train_loss": 8.026803016662598,
+          "lr": 0.0005562285463662718
+        },
+        {
+          "step": 732,
+          "train_loss": 7.912733554840088,
+          "lr": 0.000498342246501858
+        },
+        {
+          "step": 976,
+          "train_loss": 7.8222975730896,
+          "lr": 0.0004233435619664357
+        },
+        {
+          "step": 1220,
+          "train_loss": 7.8529438972473145,
+          "lr": 0.0003388562851606583,
+          "val_nll_nats_per_token": 7.785309505462647,
+          "val_ppl": 2405.01039665177,
+          "val_bpb": 2.4092674928653497,
+          "val_n_tokens": 81920,
+          "val_n_bytes": 381905.0
+        },
+        {
+          "step": 1464,
+          "train_loss": 7.708517074584961,
+          "lr": 0.000253468746171296
+        },
+        {
+          "step": 1708,
+          "train_loss": 7.807731628417969,
+          "lr": 0.00017586078885014508
+        },
+        {
+          "step": 1952,
+          "train_loss": 7.556222438812256,
+          "lr": 0.00011392144430382134
+        },
+        {
+          "step": 2196,
+          "train_loss": 7.276984691619873,
+          "lr": 7.394699235614859e-05
+        },
+        {
+          "step": 2440,
+          "train_loss": 7.544401168823242,
+          "lr": 6.0000929918662786e-05,
+          "val_nll_nats_per_token": 7.529299664497375,
+          "val_ppl": 1861.8011614191028,
+          "val_bpb": 2.33004184521981,
+          "val_n_tokens": 81920,
+          "val_n_bytes": 381905.0
+        },
+        {
+          "step": 2441,
+          "train_loss": 7.6444597244262695,
+          "lr": 6.0000232479765786e-05,
+          "val_nll_nats_per_token": 7.529659855365753,
+          "val_ppl": 1862.471885983361,
+          "val_bpb": 2.330153311070949,
+          "val_n_tokens": 81920,
+          "val_n_bytes": 381905.0
+        }
+      ]
+    },
+    "a4_kas_unigram": {
+      "arm": "a4_kas_unigram",
+      "tokens": 5001216,
+      "steps": 2442,
+      "wall_s": 748.9438097001985,
+      "tokens_per_s": 6677.691884524665,
+      "final_train_loss": 7.152425765991211,
+      "val": {
+        "nll_nats_per_token": 7.056941545009613,
+        "ppl": 1160.8892032920278,
+        "bpb": 2.210858583196687,
+        "n_tokens": 409600,
+        "n_bytes": 1886210.0
+      },
+      "params": {
+        "total": 12343282,
+        "head": 836722,
+        "input_embedding": 786432,
+        "body": 10720128
+      },
+      "codec": "KroneckerCodec(variant=v2, d_c=64, L_max=32, D=2048, byte=hadamard_bits, pos=dft, overflow=truncate)",
+      "unused_params": [],
+      "output_row_norms": {
+        "min": 0.999999967484418,
+        "max": 1.0000000363917672,
+        "std": 1.944831238710595e-08,
+        "note": "every output row is unit norm => no per-token frequency prior"
+      },
+      "history": [
+        {
+          "step": 0,
+          "train_loss": 10.80274486541748,
+          "lr": 1.2499999999999999e-05,
+          "val_nll_nats_per_token": 10.621583127975464,
+          "val_ppl": 41010.48841516803,
+          "val_bpb": 3.286990059295996,
+          "val_n_tokens": 81920,
+          "val_n_bytes": 381905.0
+        },
+        {
+          "step": 244,
+          "train_loss": 8.17148208618164,
+          "lr": 0.0005911181832454379
+        },
+        {
+          "step": 488,
+          "train_loss": 7.8177337646484375,
+          "lr": 0.0005562285463662718
+        },
+        {
+          "step": 732,
+          "train_loss": 7.630127429962158,
+          "lr": 0.000498342246501858
+        },
+        {
+          "step": 976,
+          "train_loss": 7.4351091384887695,
+          "lr": 0.0004233435619664357
+        },
+        {
+          "step": 1220,
+          "train_loss": 7.4532976150512695,
+          "lr": 0.0003388562851606583,
+          "val_nll_nats_per_token": 7.389661073684692,
+          "val_ppl": 1619.1572449271164,
+          "val_bpb": 2.2868288275024713,
+          "val_n_tokens": 81920,
+          "val_n_bytes": 381905.0
+        },
+        {
+          "step": 1464,
+          "train_loss": 7.293581008911133,
+          "lr": 0.000253468746171296
+        },
+        {
+          "step": 1708,
+          "train_loss": 7.329024791717529,
+          "lr": 0.00017586078885014508
+        },
+        {
+          "step": 1952,
+          "train_loss": 7.0801825523376465,
+          "lr": 0.00011392144430382134
+        },
+        {
+          "step": 2196,
+          "train_loss": 6.810715675354004,
+          "lr": 7.394699235614859e-05
+        },
+        {
+          "step": 2440,
+          "train_loss": 7.083273887634277,
+          "lr": 6.0000929918662786e-05,
+          "val_nll_nats_per_token": 7.0461639881134035,
+          "val_ppl": 1148.4448342578385,
+          "val_bpb": 2.180529089312202,
+          "val_n_tokens": 81920,
+          "val_n_bytes": 381905.0
+        },
+        {
+          "step": 2441,
+          "train_loss": 7.152425765991211,
+          "lr": 6.0000232479765786e-05,
+          "val_nll_nats_per_token": 7.046256339550018,
+          "val_ppl": 1148.5508996857266,
+          "val_bpb": 2.1805576686916086,
+          "val_n_tokens": 81920,
+          "val_n_bytes": 381905.0
+        }
+      ]
+    }
+  },
+  "unigram_floor": {
+    "nll_nats_per_token": 7.6687395294198355,
+    "bpb": 2.4025278518719073,
+    "n_tokens": 409600
+  }
+}

@@ -24,3 +24,12 @@ assignment6/work/
 # the ledger offset, ledger head hash, loader state and record hash that the
 # evidence bundle verifies -- those are the graded artefact, not the tensors.
 assignment6/submission_artifacts/checkpoints/*.pt
+
+# Assignment 7: regenerable inputs and weights.
+# data/ holds the tokenized FineWeb-Edu bins (~120 MB) and the Wikipedia OOD
+# text; both are rebuilt by experiments/prepare_data.py and
+# experiments/build_ood_corpus.py.  checkpoints/ holds the five trained arms
+# (~50 MB each), rebuilt by experiments/e4_train_arms.py.  results/ and
+# figures/ ARE committed -- every number in the README is read from them.
+assignment7/data/
+assignment7/checkpoints/

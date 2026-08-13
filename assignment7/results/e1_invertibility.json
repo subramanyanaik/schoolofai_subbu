@@ -1,0 +1,263 @@
+{
+  "gpt2_vocab": {
+    "V1 d_p=16": {
+      "n": 50257,
+      "exact": 50185,
+      "exact_frac": 0.9985673637503233,
+      "within_L_max": 50185,
+      "exact_within_L_max": 50185,
+      "exact_frac_within_L_max": 1.0,
+      "byte_accuracy": 0.9970763059218831,
+      "failures": [
+        [
+          "2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d",
+          "2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d"
+        ],
+        [
+          "2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e",
+          "2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e"
+        ],
+        [
+          "3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d",
+          "3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d"
+        ],
+        [
+          "2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d",
+          "2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d"
+        ],
+        [
+          "5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+          "5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f"
+        ],
+        [
+          "c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382",
+          "c383c382c383c382c383c382c383c382"
+        ],
+        [
+          "e28094e28094e28094e28094e28094e28094e28094e28094",
+          "e28094e28094e28094e28094e28094e2"
+        ],
+        [
+          "20726573706f6e736962696c6974696573",
+          "20726573706f6e736962696c69746965"
+        ],
+        [
+          "202d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d",
+          "202d2d2d2d2d2d2d2d2d2d2d2d2d2d2d"
+        ],
+        [
+          "2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a",
+          "2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a"
+        ]
+      ],
+      "seconds": 5.41,
+      "D": 4096
+    },
+    "V1 d_p=32": {
+      "n": 50257,
+      "exact": 50243,
+      "exact_frac": 0.9997214318403407,
+      "within_L_max": 50243,
+      "exact_within_L_max": 50243,
+      "exact_frac_within_L_max": 1.0,
+      "byte_accuracy": 0.9988062102005131,
+      "failures": [
+        [
+          "2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d",
+          "2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d"
+        ],
+        [
+          "202d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d",
+          "202d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d"
+        ],
+        [
+          "202d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d",
+          "202d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d"
+        ],
+        [
+          "c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382",
+          "c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382"
+        ],
+        [
+          "2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e",
+          "2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e"
+        ],
+        [
+          "3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d",
+          "3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d"
+        ],
+        [
+          "5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f",
+          "5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f"
+        ],
+        [
+          "e28094e28094e28094e28094e28094e28094e28094e28094e28094e28094e28094e28094e28094e28094e28094e28094",
+          "e28094e28094e28094e28094e28094e28094e28094e28094e28094e28094e280"
+        ],
+        [
+          "c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382",
+          "c383c382c383c382c383c382c383c382c383c382c383c382c383c382c383c382"
+        ],
+        [
+          "203d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d",
+          "203d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d"
+        ]
+      ],
+      "seconds": 12.56,
+      "D": 8192
+    },
+    "V2 d_c=32, L=128": {
+      "n": 50257,
+      "exact": 50257,
+      "exact_frac": 1.0,
+      "within_L_max": 50257,
+      "exact_within_L_max": 50257,
+      "exact_frac_within_L_max": 1.0,
+      "byte_accuracy": 1.0,
+      "failures": [],
+      "seconds": 9.94,
+      "D": 4096
+    },
+    "V2 d_c=64, L=128": {
+      "n": 50257,
+      "exact": 50257,
+      "exact_frac": 1.0,
+      "within_L_max": 50257,
+      "exact_within_L_max": 50257,
+      "exact_frac_within_L_max": 1.0,
+      "byte_accuracy": 1.0,
+      "failures": [],
+      "seconds": 17.34,
+      "D": 8192
+    }
+  },
+  "vocab_stats": {
+    "n": 50257,
+    "mean_len": 6.383727639930756,
+    "max_len": 128,
+    "p99_len": 14.0
+  },
+  "matched_D_4096": {
+    "v1_dp16_truncated": 72,
+    "v2_dc32_L128_truncated": 0,
+    "length_limit_ratio": 8.0
+  },
+  "random_strings": {
+    "d_c=16": {
+      "n": 256000,
+      "exact": 256000,
+      "exact_frac": 1.0,
+      "within_L_max": 256000,
+      "exact_within_L_max": 256000,
+      "exact_frac_within_L_max": 1.0,
+      "byte_accuracy": 1.0,
+      "failures": [],
+      "seconds": 12.27
+    },
+    "d_c=32": {
+      "n": 256000,
+      "exact": 256000,
+      "exact_frac": 1.0,
+      "within_L_max": 256000,
+      "exact_within_L_max": 256000,
+      "exact_frac_within_L_max": 1.0,
+      "byte_accuracy": 1.0,
+      "failures": [],
+      "seconds": 22.18
+    },
+    "d_c=64": {
+      "n": 256000,
+      "exact": 256000,
+      "exact_frac": 1.0,
+      "within_L_max": 256000,
+      "exact_within_L_max": 256000,
+      "exact_frac_within_L_max": 1.0,
+      "byte_accuracy": 1.0,
+      "failures": [],
+      "seconds": 39.92
+    }
+  },
+  "multiscript": [
+    {
+      "text": "apple",
+      "bytes": 5,
+      "ok": true
+    },
+    {
+      "text": "Hello, world!",
+      "bytes": 13,
+      "ok": true
+    },
+    {
+      "text": "counterrevolutionaries",
+      "bytes": 22,
+      "ok": true
+    },
+    {
+      "text": "\u092d\u093e\u0930\u0924 \u090f\u0915 \u0935\u093f\u0936\u093e\u0932 \u0926\u0947\u0936 \u0939\u0948",
+      "bytes": 52,
+      "ok": true
+    },
+    {
+      "text": "\u0c24\u0c46\u0c32\u0c41\u0c17\u0c41 \u0c2d\u0c3e\u0c37 \u0c1a\u0c3e\u0c32\u0c3e \u0c05\u0c02\u0c26\u0c2e\u0c48\u0c28\u0c26\u0c3f",
+      "bytes": 66,
+      "ok": true
+    },
+    {
+      "text": "\u4e2d\u6587\u5206\u8bcd\u6d4b\u8bd5\u7528\u4f8b",
+      "bytes": 24,
+      "ok": true
+    },
+    {
+      "text": "\u041a\u0438\u0440\u0438\u043b\u043b\u0438\u0446\u0430 \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442",
+      "bytes": 35,
+      "ok": true
+    },
+    {
+      "text": "\u05e2\u05d1\u05e8\u05d9\u05ea \u05de\u05d9\u05de\u05d9\u05df \u05dc\u05e9\u05de\u05d0\u05dc",
+      "bytes": 32,
+      "ok": true
+    },
+    {
+      "text": "\u0627\u0644\u0639\u0631\u0628\u064a\u0629 \u0644\u063a\u0629 \u062c\u0645\u064a\u0644\u0629",
+      "bytes": 32,
+      "ok": true
+    },
+    {
+      "text": "\ud83c\udf7a\ud83d\ude80\ud83e\uddee",
+      "bytes": 12,
+      "ok": true
+    },
+    {
+      "text": "mixed \u092d\u093e\u0930\u0924 \u4e2d\u6587 \ud83c\udf7a end",
+      "bytes": 34,
+      "ok": true
+    }
+  ],
+  "overflow": {
+    "72": {
+      "truncate": 0.8888888888888888,
+      "alias": 0.789306640625
+    },
+    "96": {
+      "truncate": 0.6666666666666666,
+      "alias": 0.3664957682291667
+    },
+    "128": {
+      "truncate": 0.5,
+      "alias": 0.0496826171875
+    }
+  },
+  "sign_equals_nn": true,
+  "gates": {
+    "gpt2_100pct_at_L128_dc32": true,
+    "gpt2_100pct_at_L128_dc64": true,
+    "random_100pct": true,
+    "multiscript_100pct": true,
+    "v1_dp16_loses_tokens_at_D4096": true,
+    "v2_loses_none_at_D4096": true,
+    "truncate_beats_alias": true,
+    "sign_equals_nn": true
+  },
+  "all_gates_pass": true
+}

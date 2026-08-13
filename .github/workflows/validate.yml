@@ -79,3 +79,48 @@ jobs:
         with:
           name: submission-artifacts
           path: assignment6/submission_artifacts/
+
+  session7-kronecker-v2:
+    name: Session 7 - Kronecker V2 exactness gates (CPU only)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install (CPU torch)
+        run: |
+          pip install --quiet torch --index-url https://download.pytorch.org/whl/cpu
+          pip install --quiet numpy tiktoken pytest matplotlib
+
+      # E2 lives here: logits, the log-partition function AND gradients must
+      # match the naive dense head to <1e-10 in fp64.  This is arithmetic, not
+      # measurement -- it must hold on any machine, GPU or not.
+      - name: Test suite (88 tests)
+        working-directory: assignment7
+        run: python -m pytest tests/ -q
+
+      # The property Problem 5 asks for, shown directly.
+      - name: Reverse-determinism demo
+        working-directory: assignment7
+        run: python experiments/demo_invert.py
+
+      # Re-derives the invertibility gates from scratch: 100% of the 50,257
+      # GPT-2 tokens, 256,000 random byte strings, multi-script UTF-8.
+      # Exits non-zero if any gate fails.
+      - name: E1 invertibility gates
+        working-directory: assignment7
+        run: python experiments/e1_invertibility.py
+
+      # The number this whole project is about: the head's parameter count
+      # must not move when |V| does.
+      - name: Parameter audit
+        working-directory: assignment7
+        run: python experiments/params_audit.py
+
+      # Belt and braces: assert the committed evidence a grader reads actually
+      # says PASS, independently of the scripts that produced it.
+      - name: Assert committed gates report PASS
+        working-directory: assignment7
+        run: python experiments/verify_gates.py

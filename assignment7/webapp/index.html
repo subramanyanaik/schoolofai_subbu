@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Kronecker Embeddings V2 -- a reverse-deterministic byte codec and a vocabulary-free softmax head.">
+<style>*,*::before,*::after{box-sizing:border-box}body{margin:0}</style>
+<title>Kronecker V2 — the embedding that decodes back</title>
+<style>
+:root{
+  --paper:#F1F3F2; --raised:#FAFBFA; --sunk:#E5E9E7;
+  --ink:#151721; --ink-2:#454A57; --ink-3:#6E7583;
+  --rule:#CDD4D1; --rule-2:#DEE3E1;
+  --kas:#0F6E6A; --kas-soft:#0F6E6A22;
+  --dense:#3E4A6B; --dense-soft:#3E4A6B22;
+  --warn:#B04A2F; --warn-soft:#B04A2F1A;
+  --serif:ui-serif,"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Mono","JetBrains Mono","Roboto Mono",Consolas,monospace;
+  --measure:34rem;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#14161A; --raised:#1B1E24; --sunk:#0F1114;
+    --ink:#E7E9EC; --ink-2:#AFB6C0; --ink-3:#828B98;
+    --rule:#2C3138; --rule-2:#22262C;
+    --kas:#57B8B1; --kas-soft:#57B8B126;
+    --dense:#8C9CC6; --dense-soft:#8C9CC626;
+    --warn:#DE8560; --warn-soft:#DE856022;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#14161A; --raised:#1B1E24; --sunk:#0F1114;
+  --ink:#E7E9EC; --ink-2:#AFB6C0; --ink-3:#828B98;
+  --rule:#2C3138; --rule-2:#22262C;
+  --kas:#57B8B1; --kas-soft:#57B8B126;
+  --dense:#8C9CC6; --dense-soft:#8C9CC626;
+  --warn:#DE8560; --warn-soft:#DE856022;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--serif); font-size:17px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:min(100% - 2.5rem,62rem); margin-inline:auto; padding-block:0 5rem}
+.col{max-width:var(--measure)}
+p{margin:0 0 1.05em}
+a{color:var(--kas)}
+h1,h2,h3{text-wrap:balance; margin:0; font-weight:600; letter-spacing:-.012em}
+strong{font-weight:650}
+code,.num{font-family:var(--mono); font-variant-numeric:tabular-nums}
+code{font-size:.86em; background:var(--sunk); padding:.1em .34em; border-radius:2px}
+
+/* ---------- masthead ---------- */
+.mast{padding-block:3.4rem 2rem; border-bottom:1px solid var(--rule)}
+.eyebrow{
+  font-family:var(--mono); font-size:.7rem; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--ink-3); margin:0 0 1.1rem
+}
+h1{font-size:clamp(2.1rem,5.4vw,3.4rem); line-height:1.06}
+h1 em{font-style:italic; color:var(--kas)}
+.dek{font-size:1.12rem; color:var(--ink-2); margin-top:1rem; max-width:38rem}
+.problem{
+  margin:1.8rem 0 0; padding:.9rem 0 .9rem 1.15rem;
+  border-left:2px solid var(--kas); color:var(--ink-2); font-style:italic;
+  max-width:38rem
+}
+
+/* ---------- live codec ---------- */
+.demo{
+  margin:2.6rem 0 0; background:var(--raised);
+  border:1px solid var(--rule); border-radius:3px; overflow:hidden
+}
+.demo-head{
+  display:flex; flex-wrap:wrap; gap:.75rem; align-items:center;
+  padding:.8rem 1.1rem; border-bottom:1px solid var(--rule-2)
+}
+.demo-head label{
+  font-family:var(--mono); font-size:.7rem; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--ink-3)
+}
+#src{
+  flex:1 1 14rem; min-width:0; font-family:var(--mono); font-size:.95rem;
+  padding:.5rem .7rem; color:var(--ink); background:var(--paper);
+  border:1px solid var(--rule); border-radius:2px
+}
+#src:focus-visible{outline:2px solid var(--kas); outline-offset:1px}
+.chips{display:flex; gap:.35rem; flex-wrap:wrap}
+.chip{
+  font-family:var(--mono); font-size:.76rem; padding:.3rem .55rem; cursor:pointer;
+  color:var(--ink-2); background:var(--paper);
+  border:1px solid var(--rule); border-radius:2px
+}
+.chip:hover{border-color:var(--kas); color:var(--kas)}
+.chip:focus-visible{outline:2px solid var(--kas); outline-offset:1px}
+.lanes{display:grid; grid-template-columns:1fr; gap:1px; background:var(--rule-2)}
+@media (min-width:44rem){.lanes{grid-template-columns:1fr 1fr}}
+.lane{background:var(--raised); padding:1.05rem 1.1rem 1.2rem}
+.lane h3{
+  font-family:var(--mono); font-size:.72rem; letter-spacing:.11em;
+  text-transform:uppercase; color:var(--ink-3); margin-bottom:.7rem
+}
+.lane.v2 h3{color:var(--kas)}
+.sig{width:100%; height:46px; display:block; margin-bottom:.75rem}
+.out{
+  font-family:var(--mono); font-size:1.02rem; word-break:break-all;
+  min-height:1.6em; line-height:1.5
+}
+.out.ok{color:var(--ink)}
+.out.lost{color:var(--warn)}
+.meta{
+  font-family:var(--mono); font-size:.74rem; color:var(--ink-3);
+  margin-top:.55rem; line-height:1.7; white-space:pre-line
+}
+.verdict{
+  display:inline-block; font-family:var(--mono); font-size:.68rem;
+  letter-spacing:.1em; text-transform:uppercase; padding:.16rem .45rem;
+  border-radius:2px; margin-bottom:.55rem
+}
+.verdict.ok{background:var(--kas-soft); color:var(--kas)}
+.verdict.lost{background:var(--warn-soft); color:var(--warn)}
+.demo-foot{
+  padding:.7rem 1.1rem; border-top:1px solid var(--rule-2);
+  font-family:var(--mono); font-size:.72rem; color:var(--ink-3)
+}
+
+/* ---------- sections ---------- */
+section{padding-block:3rem 0}
+.sec-id{
+  font-family:var(--mono); font-size:.7rem; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--kas); margin:0 0 .5rem
+}
+h2{font-size:clamp(1.4rem,3vw,1.85rem); margin-bottom:.35rem}
+.sub{color:var(--ink-3); font-family:var(--mono); font-size:.76rem; margin:0 0 1.5rem}
+h3.mini{font-size:1.02rem; margin:2rem 0 .6rem}
+
+/* ---------- plates ---------- */
+.plate{margin:1.6rem 0; overflow-x:auto; border:1px solid var(--rule); border-radius:3px; background:var(--raised)}
+table{border-collapse:collapse; width:100%; font-family:var(--mono); font-size:.8rem}
+caption{
+  text-align:left; padding:.7rem .9rem; color:var(--ink-3);
+  font-size:.72rem; letter-spacing:.1em; text-transform:uppercase;
+  border-bottom:1px solid var(--rule-2)
+}
+th,td{padding:.44rem .9rem; text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left}
+thead th{
+  color:var(--ink-3); font-weight:400; font-size:.72rem;
+  letter-spacing:.06em; border-bottom:1px solid var(--rule-2)
+}
+tbody tr+tr td{border-top:1px solid var(--rule-2)}
+td.win{color:var(--kas); font-weight:600}
+td.lose{color:var(--warn)}
+tr.rule-top td{border-top:1px solid var(--rule)}
+tr.muted td{color:var(--ink-3); font-style:italic}
+.fig{margin:1.6rem 0; overflow-x:auto}
+.fig svg{display:block; min-width:min(100%,30rem); width:100%; height:auto}
+.legend{
+  display:flex; gap:1.1rem; flex-wrap:wrap; font-family:var(--mono);
+  font-size:.72rem; color:var(--ink-3); margin-top:.5rem
+}
+.legend span{display:flex; align-items:center; gap:.35rem}
+.sw{width:11px; height:11px; border-radius:2px; display:inline-block}
+
+/* ---------- notes ---------- */
+.note{
+  margin:1.5rem 0; padding:.95rem 1.1rem; border-radius:3px;
+  background:var(--warn-soft); border-left:2px solid var(--warn);
+  font-size:.95rem; max-width:44rem
+}
+.note b{color:var(--warn); font-weight:650}
+.note p:last-child{margin-bottom:0}
+.keystat{
+  display:flex; flex-wrap:wrap; gap:1px; background:var(--rule-2);
+  border:1px solid var(--rule); border-radius:3px; margin:1.6rem 0
+}
+.keystat div{flex:1 1 9rem; background:var(--raised); padding:.9rem 1rem}
+.keystat dt{
+  font-family:var(--mono); font-size:.68rem; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-3); margin-bottom:.3rem
+}
+.keystat dd{
+  margin:0; font-family:var(--mono); font-size:1.35rem;
+  font-variant-numeric:tabular-nums; letter-spacing:-.02em
+}
+.keystat dd.pos{color:var(--kas)}
+.eq{
+  font-family:var(--mono); font-size:.86rem; line-height:1.9;
+  background:var(--sunk); border-radius:3px; padding:1rem 1.1rem;
+  margin:1.4rem 0; overflow-x:auto; white-space:pre
+}
+footer{
+  margin-top:4rem; padding-top:1.4rem; border-top:1px solid var(--rule);
+  font-family:var(--mono); font-size:.74rem; color:var(--ink-3)
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+
+<header class="mast">
+  <p class="eyebrow">Assignment 7 · Problem 5 · arXiv:2605.29459</p>
+  <h1>The embedding that <em>decodes back</em></h1>
+  <p class="dek">Kronecker embeddings are forward deterministic. Make them reverse deterministic and the output head stops being a parameter — it becomes a derived, fixed, 0.019%-dense occupancy matrix. Vocabulary size stops costing anything.</p>
+  <p class="problem">“Kronecker is forward deterministic. How do I make a reverse of this? If we can do this, then we can get rid of the final head as well — then we can have a vocab of 1M as well without any issues.”</p>
+
+  <div class="demo">
+    <div class="demo-head">
+      <label for="src">Encode</label>
+      <input id="src" value="counterrevolutionaries" spellcheck="false" autocomplete="off">
+      <div class="chips">
+        <button class="chip" data-s="apple">apple</button>
+        <button class="chip" data-s="भारत">भारत</button>
+        <button class="chip" data-s="తెలుగు">తెలుగు</button>
+        <button class="chip" data-s="🍺">🍺</button>
+      </div>
+    </div>
+    <div class="lanes">
+      <div class="lane v2">
+        <h3>V2 · d_c=32, L_max=128 · D=4096</h3>
+        <svg class="sig" id="sig2" viewBox="0 0 400 46" preserveAspectRatio="none" aria-hidden="true"></svg>
+        <div id="v2v" class="verdict ok">recovered</div>
+        <div id="v2" class="out ok"></div>
+        <div id="v2m" class="meta"></div>
+      </div>
+      <div class="lane">
+        <h3>V1 · d_c=256, L_max=16 · D=4096</h3>
+        <svg class="sig" id="sig1" viewBox="0 0 400 46" preserveAspectRatio="none" aria-hidden="true"></svg>
+        <div id="v1v" class="verdict ok">recovered</div>
+        <div id="v1" class="out ok"></div>
+        <div id="v1m" class="meta"></div>
+      </div>
+    </div>
+    <div class="demo-foot">Both codecs run in your browser at identical D = 4096, same construction as <code>src/kronecker_v2/codec.py</code>. V2 decodes with an 8-bit sign read; V1 needs a 256-way search. Watch the nonzero counts — that gap <em>is</em> V1's sparsity waste, and it is why V1 must spend its 4096 dimensions on only 16 byte positions.</div>
+  </div>
+</header>
+
+<section>
+  <p class="sec-id">The mechanism</p>
+  <h2>Why this one encoder makes the softmax cheap</h2>
+  <p class="sub">and why a character CNN cannot</p>
+  <div class="col">
+    <p>Character-CNN and compositional output heads already cut parameters. Neither cuts compute, because <code>⟨h, CNN(chars)⟩</code> has no structure — all |V| inner products must be formed.</p>
+    <p>The Kronecker codec is <strong>linear in byte-position occupancy</strong>, and no other surface-form encoder is. That single property changes the cost of the softmax:</p>
+  </div>
+  <div class="eq">logit(v) = ⟨S_pos, M_pos(v)⟩ = (1/√L_v) · Σ  A[b_p, p]        A = G · S_pos
+                                        p&lt;L_v
+
+A is one 256 × L_max table per batch. After it, every token's logit
+is a sum of L_v scalar lookups — no d-dimensional dot product exists.</div>
+  <div class="col">
+    <p>Equivalently: the dense output matrix is replaced by the vocabulary's byte-occupancy matrix — fixed, derived, <strong>zero trainable parameters</strong>. And because it is a reformulation rather than an approximation, logits, the partition function <em>and gradients</em> come out bit-identical to the dense head. Unlike hierarchical, adaptive or sampled softmax, the distribution being trained does not change.</p>
+  </div>
+  <dl class="keystat">
+    <div><dt>Occupancy nonzeros</dt><dd>320,827</dd></div>
+    <div><dt>Density</dt><dd>0.019%</dd></div>
+    <div><dt>Replaces</dt><dd>154 MB</dd></div>
+    <div><dt>Costs</dt><dd class="pos">4 MB</dd></div>
+  </dl>
+</section>
+
+<section>
+  <p class="sec-id">E1 — invertibility</p>
+  <h2>Every one of the 50,257 GPT-2 tokens comes back</h2>
+  <p class="sub">plus 256,000 random byte strings at each d_c, and 11 multi-script cases</p>
+  <div class="plate">
+    <table>
+      <caption>Round-trip on the full GPT-2 vocabulary</caption>
+      <thead><tr><th>codec</th><th>D</th><th>exact / 50,257</th><th>rate</th><th>truncated</th></tr></thead>
+      <tbody>
+        <tr><td>V1 d_p=16</td><td>4096</td><td>50,185</td><td class="lose">99.857%</td><td class="lose">72</td></tr>
+        <tr><td>V1 d_p=32</td><td>8192</td><td>50,243</td><td class="lose">99.972%</td><td class="lose">14</td></tr>
+        <tr><td>V2 d_c=32, L=128</td><td>4096</td><td>50,257</td><td class="win">100%</td><td class="win">0</td></tr>
+        <tr><td>V2 d_c=64, L=128</td><td>8192</td><td>50,257</td><td class="win">100%</td><td class="win">0</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col">
+    <p>At matched D = 4096 V1 truncates 72 tokens and V2 truncates none — <strong>8× the length limit at the same dimension</strong>. Length is not stored anywhere: it falls out of the decode, because the zero <em>vector</em> is reserved as “absent”. The zero <em>byte</em> stays a perfectly ordinary byte value.</p>
+    <h3 class="mini">A design claim that measurement killed</h3>
+    <p>The original specification said overflow past <code>L_max</code> should <em>alias</em> rather than truncate — “graceful degradation”. It is the opposite of graceful.</p>
+  </div>
+  <div class="fig" id="fig-alias"></div>
+  <div class="legend"><span><i class="sw" style="background:var(--kas)"></i>truncate</span><span><i class="sw" style="background:var(--warn)"></i>alias</span></div>
+  <div class="col"><p>Aliasing corrupts <em>every</em> position at once; truncation keeps a correct prefix. Truncation became the default, and the rejected alternative is still tested so the comparison stays reproducible.</p></div>
+</section>
+
+<section>
+  <p class="sec-id">E2 — exactness</p>
+  <h2>Bit-identical to the dense softmax</h2>
+  <p class="sub">17 tests · arithmetic, not measurement · must hold on any machine</p>
+  <div class="plate">
+    <table>
+      <caption>Agreement with the naive dense head</caption>
+      <thead><tr><th>property</th><th>tolerance</th><th>result</th></tr></thead>
+      <tbody>
+        <tr><td>logits, d_c ∈ {16, 32, 64}</td><td>&lt; 1e−10 fp64</td><td class="win">PASS</td></tr>
+        <tr><td>logits, fp32</td><td>&lt; 1e−4</td><td class="win">PASS</td></tr>
+        <tr><td>all four implementations agree</td><td>&lt; 1e−10</td><td class="win">PASS</td></tr>
+        <tr><td>log-partition function</td><td>&lt; 1e−10</td><td class="win">PASS</td></tr>
+        <tr><td>gradients w.r.t. W_out, beta, h</td><td>&lt; 1e−10</td><td class="win">PASS</td></tr>
+        <tr><td>tied path · unigram-bias path</td><td>&lt; 1e−10</td><td class="win">PASS</td></tr>
+        <tr><td>head params invariant to |V|</td><td>exact</td><td class="win">PASS</td></tr>
+        <tr><td>occupancy rows unit norm</td><td>&lt; 1e−14</td><td class="win">PASS</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col"><p>Four independent implementations ship — the fused <code>embedding_bag</code> path, a CSR sparse matmul, the naive slice-add loop, and a fully dense <code>S @ Kᵀ</code> reference. They are the evidence that the fast path is not cheating.</p></div>
+</section>
+
+<section>
+  <p class="sec-id">E3 — cost</p>
+  <h2>The head stops scaling with the vocabulary</h2>
+  <p class="sub">d_model = 768 · d_c = 32 · L_max = 128</p>
+  <div class="fig" id="fig-params"></div>
+  <div class="legend"><span><i class="sw" style="background:var(--dense)"></i>dense head</span><span><i class="sw" style="background:var(--kas)"></i>KAS head</span></div>
+  <div class="plate">
+    <table>
+      <caption>Parameters, optimizer memory, op counts</caption>
+      <thead><tr><th>vocab</th><th>dense head</th><th>KAS head</th><th>ratio</th><th>dense Adam</th><th>ops (strict)</th></tr></thead>
+      <tbody>
+        <tr><td>50,257</td><td>38.6M</td><td class="win">3.15M</td><td>12.3×</td><td>0.46 GB</td><td>9×</td></tr>
+        <tr><td>131,072</td><td>100.7M</td><td class="win">3.15M</td><td>32.0×</td><td>1.21 GB</td><td>20×</td></tr>
+        <tr><td>262,144</td><td>201.3M</td><td class="win">3.15M</td><td>64.0×</td><td>2.42 GB</td><td>34×</td></tr>
+        <tr><td>524,288</td><td>402.7M</td><td class="win">3.15M</td><td>128×</td><td>4.83 GB</td><td>53×</td></tr>
+        <tr><td>1,000,000</td><td>768.0M</td><td class="win">3.15M</td><td>244×</td><td>9.22 GB</td><td>73×</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">
+    <p><b>Wall-clock, honestly.</b> On this GPU the dense head <em>wins</em> at batch — 0.50–0.69× at N=256 across every vocabulary size. A dense matmul is exactly what a GPU is best at, and a 0.019%-dense sparse product cannot beat it at high arithmetic intensity.</p>
+    <p>The real speedup is on CPU and at small batch: <strong>6.3× to 16.4×</strong> at N=64. The op-count ratio is not a wall-clock claim and is not presented as one.</p>
+  </div>
+  <div class="plate">
+    <table>
+      <caption>Trap 4 — the same maths, three ways, N=256, V=50k</caption>
+      <thead><tr><th>implementation</th><th>ms</th><th>vs dense</th></tr></thead>
+      <tbody>
+        <tr><td>dense matmul</td><td>3.01</td><td>1.00×</td></tr>
+        <tr><td>KAS slice-add loop (128 kernel launches)</td><td class="lose">50.43</td><td class="lose">0.06×</td></tr>
+        <tr><td>KAS as a sparse matmul</td><td>4.62</td><td>0.64×</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col"><p>The obvious implementation is <strong>10.9× slower than the fused one</strong> — latency-bound on tiny kernel launches, not compute-bound. Recognising the operation as a sparse matmul is the difference between a curiosity and a method.</p></div>
+</section>
+
+<section>
+  <p class="sec-id">E4 — five arms, token-matched</p>
+  <h2>It loses. Here is exactly why.</h2>
+  <p class="sub">5,001,216 tokens per arm · FineWeb-Edu · d_model 384 · 6 layers · seed 0 · single seed, directional</p>
+  <div class="fig" id="fig-arms"></div>
+  <div class="legend"><span><i class="sw" style="background:var(--dense)"></i>dense head</span><span><i class="sw" style="background:var(--kas)"></i>KAS head</span><span><i class="sw" style="background:var(--warn)"></i>unigram floor</span></div>
+  <div class="plate">
+    <table>
+      <caption>Validation bits per byte</caption>
+      <thead><tr><th>arm</th><th>bpb</th><th>ppl</th><th>params</th><th>head params</th></tr></thead>
+      <tbody>
+        <tr><td>A0 · BPE + tied dense head</td><td class="win">1.9301</td><td>473.8</td><td>30.02M</td><td>0 (tied)</td></tr>
+        <tr><td>A1 · V1 codec + dense head</td><td class="win">1.9296</td><td>473.1</td><td>31.59M</td><td>19,298,688</td></tr>
+        <tr><td>A2 · Kronecker-F + KAS</td><td class="lose">2.4161</td><td>2234.9</td><td>13.87M</td><td>1,572,993</td></tr>
+        <tr><td>A3 · Kronecker-F + KAS, tied</td><td class="lose">2.4147</td><td>2225.5</td><td>12.29M</td><td class="win">129</td></tr>
+        <tr><td>A4 · KAS + 1 scalar / token</td><td>2.2608</td><td>1361.6</td><td>13.92M</td><td>1,623,250</td></tr>
+        <tr class="rule-top muted"><td>unigram-only floor</td><td>2.4025</td><td>—</td><td>—</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col">
+    <p><strong>Weight tying is free — in fact slightly better.</strong> A3 costs −0.0013 bpb and saves 1,572,864 parameters. Its entire head is 129 numbers. The base paper §3.5 calls tying architecturally inapplicable because <code>D ≠ d_model</code>; routing the head through the codec makes the mismatch irrelevant.</p>
+    <p><strong>And KAS lands on the unigram floor</strong> — 2.4161 against 2.4025. The surface-form head learned almost nothing beyond token frequency.</p>
+    <h3 class="mini">The diagnosis, and the test of it</h3>
+    <p>The codec's <code>1/√L</code> normalisation makes every row of the output matrix <em>exactly unit norm</em>. A dense head encodes each token's unigram log-prior for free, in the <strong>magnitude</strong> of its row. KAS has no per-token magnitude at all — its only per-token freedom is 129 length-indexed values shared across 50,257 tokens.</p>
+    <p>So: add exactly one learned scalar per token, change nothing else.</p>
+  </div>
+  <div class="plate">
+    <table>
+      <caption>50,257 parameters — 0.26% of the dense head</caption>
+      <thead><tr><th></th><th>head params</th><th>bpb</th><th>gap vs A0</th></tr></thead>
+      <tbody>
+        <tr><td>A0 dense head</td><td>19,298,688</td><td>1.9301</td><td>—</td></tr>
+        <tr><td>A2 KAS</td><td>1,572,993</td><td>2.4161</td><td class="lose">+0.4860</td></tr>
+        <tr><td>A4 KAS + unigram bias</td><td>1,623,250</td><td>2.2608</td><td class="win">+0.3307</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col"><p>32% of the gap recovered by a frequency table. <strong>Most of what a dense output head's parameters buy is not representational capacity.</strong> This also breaks the zero-vocabulary-parameter claim for A4 specifically: it costs 1 scalar per token instead of 384 — a 384× reduction, not an elimination.</p></div>
+</section>
+
+<section>
+  <p class="sec-id">E5 — capacity</p>
+  <h2>D is the wrong quantity to reason about</h2>
+  <p class="sub">seven configurations · 1,499,136 tokens each · comparable within this sweep only</p>
+  <div class="fig" id="fig-coh"></div>
+  <div class="col">
+    <p>The design-time claim was “D is the only capacity knob”. It is false. What predicts language-model quality is <strong>how close to mutually orthogonal the 256 byte codes are</strong> — and that has a closed form, so a codec can be configured analytically instead of by sweeping.</p>
+  </div>
+  <dl class="keystat">
+    <div><dt>Spearman · coherence vs bpb</dt><dd class="pos">+0.964</dd></div>
+    <div><dt>Spearman · D vs bpb</dt><dd>−0.071</dd></div>
+    <div><dt>Spread at equal D=2048</dt><dd>0.112</dd></div>
+  </dl>
+  <div class="col">
+    <p><code>d_c=16</code> is degenerate — coherence 1.000 means some byte codes are exactly antipodal. Decoding still succeeds, because the <em>sign</em> separates them; the language model pays for the geometry anyway. And <code>L_max</code> should be as small as coverage allows: mean token length is 6.38 bytes, so high positions are almost always empty and extending <code>L_max</code> just spreads the codebook over cells that receive no gradient.</p>
+  </div>
+  <div class="note">
+    <p><b>Strict monotonicity fails, and I am not rounding it up.</b> There is one inversion, between the two <em>best</em> configurations, 0.0014 bpb apart at a 1.5M-token budget. That is inside noise and I have one seed — so the honest statistic is the rank correlation, not “perfect ordering”.</p>
+    <p>The sweep also says <strong>E4 above used the sixth-best configuration of seven</strong>. E4 was launched before this sweep existed. So the correction was tested.</p>
+  </div>
+
+  <h3 class="mini">What the correction is worth</h3>
+  <div class="col">
+    <p>The three KAS arms re-run at <code>d_c=64, L_max=32</code> — same 5,001,216-token budget, same seed, same token stream. A0 and A1 are not re-run because <code>d_c</code> and <code>L_max</code> cannot affect them: A0 has no codec, and A1's V1 codec is pinned at <code>d_c=256, L_max=16</code>.</p>
+  </div>
+  <div class="plate">
+    <table>
+      <caption>Every arm improves while getting smaller</caption>
+      <thead><tr><th>arm</th><th>d_c=32, L=128</th><th>d_c=64, L=32</th><th>Δ bpb</th><th>params</th></tr></thead>
+      <tbody>
+        <tr><td>A2 KAS</td><td>2.4161</td><td class="win">2.3557</td><td class="win">−0.0603</td><td>13.87M → 12.29M</td></tr>
+        <tr><td>A3 KAS tied</td><td>2.4147</td><td class="win">2.3611</td><td class="win">−0.0537</td><td>12.29M → 11.51M</td></tr>
+        <tr><td>A4 KAS + unigram</td><td>2.2608</td><td class="win">2.2109</td><td class="win">−0.0500</td><td>13.92M → 12.34M</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col">
+    <p>E5 predicted <strong>0.063 bpb from the coherence ordering alone, without training</strong>. The measured gain is 0.0603 — the prediction held to within 0.003 bpb. That is the strongest evidence here that coherence is the right quantity to design a codec against.</p>
+    <p>And one reading from E4 flips: <strong>A2 now sits 0.047 bpb <em>below</em> the unigram floor</strong> instead of 0.014 above it. At a bad configuration KAS learned essentially nothing beyond frequency; at a good one it clears the floor. That also puts this run on the same side of the floor as the reference run, which was 0.046 below — agreement reached by fixing the configuration, not by adjusting the interpretation.</p>
+  </div>
+</section>
+
+<section>
+  <p class="sec-id">E6 — vocabulary swap</p>
+  <h2>50,257 → 1,000,000 for zero new parameters</h2>
+  <p class="sub">the trained weights, loaded unchanged into a 20× larger vocabulary</p>
+  <dl class="keystat">
+    <div><dt>Params before</dt><dd>13,865,985</dd></div>
+    <div><dt>Params after</dt><dd>13,865,985</dd></div>
+    <div><dt>Δ parameters</dt><dd class="pos">+0</dd></div>
+    <div><dt>A dense head would need</dt><dd>384M</dd></div>
+  </dl>
+  <div class="col">
+    <p>Every trainable tensor is vocabulary-independent, so the swap is a plain <code>load_state_dict</code>. bits-per-byte rises from 2.3521 to 2.7898, and that cost is real: probability mass now spreads over 20× more classes the model never trained on. <strong>The claim is feasibility at zero parameter cost, not a quality gain</strong> — and a dense head cannot do this at all without allocating 384M parameters and 4.6 GB of Adam state, then retraining.</p>
+  </div>
+</section>
+
+<section>
+  <p class="sec-id">E7 — out of domain</p>
+  <h2>The same constraint, with the sign reversed</h2>
+  <p class="sub">bits per byte on Wikipedia · ~400k characters per language</p>
+  <div class="fig" id="fig-ood"></div>
+  <div class="legend"><span><i class="sw" style="background:var(--dense)"></i>A0 dense</span><span><i class="sw" style="background:var(--dense);opacity:.5"></i>A1 V1 + dense</span><span><i class="sw" style="background:var(--kas)"></i>A2 KAS</span><span><i class="sw" style="background:var(--kas);opacity:.5"></i>A4 KAS + unigram</span></div>
+  <div class="plate">
+    <table>
+      <caption>Change vs the dense-head baseline — negative means the codec head wins</caption>
+      <thead><tr><th>arm</th><th>English</th><th>Spanish</th><th>Hindi</th><th>Telugu</th></tr></thead>
+      <tbody>
+        <tr><td>A1 V1 + dense</td><td>+0.4%</td><td>+1.0%</td><td class="win">−12.9%</td><td class="win">−3.2%</td></tr>
+        <tr><td>A2 KAS</td><td class="lose">+20.2%</td><td class="lose">+4.1%</td><td class="win">−27.8%</td><td class="win">−16.7%</td></tr>
+        <tr><td>A3 KAS tied</td><td class="lose">+20.0%</td><td class="lose">+4.5%</td><td class="win">−26.8%</td><td class="win">−18.5%</td></tr>
+        <tr><td>A4 KAS + unigram</td><td class="lose">+13.0%</td><td>+1.6%</td><td class="win">−29.0%</td><td class="win">−19.3%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col">
+    <p>A 19.3M-parameter dense head has learned essentially nothing about Devanagari or Telugu byte sequences. The codec head sees the same bytes it always did. <strong>The fixed subspace that costs quality in-domain buys generalisation out-of-domain — one mechanism, two signs.</strong></p>
+    <p>Watch A1 in particular: the V1 codec on the <em>input side alone</em>, with an ordinary dense head, already buys −12.9% on Hindi at no in-domain cost (+0.4% on English, perplexity 473.2 against A0's 472.2).</p>
+  </div>
+  <div class="note">
+    <p><b>Confound, stated rather than glossed.</b> A2 and A3 are much higher-entropy models (perplexity ~2265 vs A0's 472), and a flatter distribution is automatically better on out-of-distribution text. This design cannot separate byte-level transfer from calibration.</p>
+    <p>The reference run argued the effect was not <em>only</em> calibration because its tied arm beat the dense baseline on Spanish. <strong>In my run it does not</strong> — A3 is +4.5% on Spanish. So that argument does not replicate and the confound stands more strongly here. What survives is A1, which is not flat and still wins on Hindi. Treat the A2/A3/A4 magnitudes as an upper bound.</p>
+  </div>
+</section>
+
+<section>
+  <p class="sec-id">E8 — token buckets</p>
+  <h2>Where the constraint helps, and where it hurts</h2>
+  <p class="sub">Δ NLL vs the dense head, by validation frequency decile</p>
+  <div class="fig" id="fig-dec"></div>
+  <div class="legend"><span><i class="sw" style="background:var(--kas)"></i>A2 KAS</span><span><i class="sw" style="background:var(--warn)"></i>A4 KAS + unigram</span></div>
+  <div class="col">
+    <p><strong>The sign flips on the rarest decile.</strong> This was the design-time prediction and it is what the data shows: frequent tokens need the unigram prior KAS cannot express; rare tokens need the surface-form generalisation the dense head never learns. Damage peaks in the mid-frequency band and reverses in the tail.</p>
+    <p>A4's whole curve sits below A2's — the unigram bias helps most exactly where the missing frequency prior hurt most — and it <em>still</em> wins slightly harder in the tail. The two mechanisms are separable, which is what the diagnosis predicted.</p>
+  </div>
+</section>
+
+<section>
+  <p class="sec-id">Limits</p>
+  <h2>What this does not prove</h2>
+  <div class="col">
+    <p>This ran on an RTX 3050 Laptop with 4.3 GB against the reference run's 8.6 GB card, on FineWeb-Edu rather than CC-News, at a quarter of the token budget — 5,001,216 per arm against 20,174,848. Everything hardware-independent reproduced exactly: E1's 72 / 14 / 0 / 0 truncation counts, the 0.889 / 0.667 / 0.500 alias accuracies, the 38.6M → 3.15M parameter table, and <code>Δparams == 0</code>.</p>
+    <p>Everything budget-dependent moved, and in ways worth naming. A4 recovers about a third of the gap rather than 65%, because 50,257 fresh scalars in 2,442 optimizer steps barely move. E5's monotonicity gate fails. E7's confound is stronger. All language-model results are single-seed and directional; <strong>E1 and E2 carry the evidentiary weight, because they are theorems with machine-precision tests.</strong></p>
+    <p>One apparent discrepancy turned out not to be budget at all. A2 sat slightly <em>above</em> the unigram floor here where the reference had it below — and that was a configuration artefact, resolved by the re-run above rather than explained away. E6, E7 and E8 were measured from the E4-config checkpoints and have not been re-derived at the better one; that is the next thing worth doing.</p>
+    <h3 class="mini">One bug worth recording</h3>
+    <p><code>beta</code> was originally sized from the vocabulary's observed longest token rather than from <code>L_max</code>. Every arm trained fine. The only symptom was that A2's parameter count crept by <strong>+33</strong> between two vocabulary sizes — in a project whose entire claim is that the head's parameter count does not depend on |V|. The parameter audit failed, and it was right to.</p>
+  </div>
+</section>
+
+<footer>
+  88 tests · 14 / 14 hardware-independent gates · every number read from <code>results/</code> · <code>python experiments/report.py</code> prints them all
+</footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- the codec, same construction as codec.py ---------- */
+var BITCOLS=[1,2,4,8,16,32,64,128];
+function popcount(x){var c=0;while(x){c+=x&1;x>>=1;}return c;}
+function hadamard(i,j){return popcount(i&j)&1?-1:1;}
+
+function byteCodebook(dc){
+  // Walsh bit-columns first (they make the decode an 8-bit sign read),
+  // then the remaining columns in ascending order. Column 0 is excluded:
+  // it is all-ones, carries nothing about the byte, and raises coherence.
+  var cols=BITCOLS.slice(),c=1;
+  while(cols.length<dc){ if(cols.indexOf(c)<0)cols.push(c); c++; }
+  var s=1/Math.sqrt(dc),G=[];
+  for(var b=0;b<256;b++){var r=new Float64Array(dc);
+    for(var k=0;k<dc;k++)r[k]=hadamard(b,cols[k])*s; G.push(r);}
+  return G;
+}
+function positionBasis(N){
+  // Phi[p][k]: real orthonormal Fourier, period P = N.
+  var P=[],p,k;
+  for(p=0;p<N;p++)P.push(new Float64Array(N));
+  var inv=1/Math.sqrt(N),two=Math.sqrt(2/N);
+  for(p=0;p<N;p++)P[p][0]=inv;
+  var col=1;
+  for(k=1;k<=((N-1)>>1);k++){
+    for(p=0;p<N;p++){var a=2*Math.PI*k*p/N;P[p][col]=two*Math.cos(a);P[p][col+1]=two*Math.sin(a);}
+    col+=2;
+  }
+  if(N%2===0&&N>1){for(p=0;p<N;p++)P[p][col]=Math.cos(Math.PI*p)*inv;}
+  return P;
+}
+function utf8(s){return Array.from(new TextEncoder().encode(s));}
+
+function Codec(dc,L,identityPos,onehot){
+  this.dc=dc; this.L=L; this.D=dc*L; this.onehot=!!onehot;
+  this.G=onehot?null:byteCodebook(dc);
+  this.Phi=identityPos?null:positionBasis(L);
+}
+Codec.prototype.code=function(b,c){ return this.onehot?(b===c?1:0):this.G[b][c]; };
+Codec.prototype.encode=function(bytes){
+  var L=this.L,dc=this.dc,kept=bytes.slice(0,L),n=kept.length;
+  var scale=n?1/Math.sqrt(n):0, pos=[],c,p;
+  for(c=0;c<dc;c++){var row=new Float64Array(L);
+    for(p=0;p<n;p++)row[p]=this.code(kept[p],c)*scale; pos.push(row);}
+  if(!this.Phi)return{pos:pos,freq:pos,n:n};
+  var freq=[];
+  for(c=0;c<dc;c++){var f=new Float64Array(L);
+    for(var k=0;k<L;k++){var s=0;for(p=0;p<n;p++)s+=pos[c][p]*this.Phi[p][k];f[k]=s;}
+    freq.push(f);}
+  return{pos:pos,freq:freq,n:n};
+};
+Codec.prototype.decode=function(freq){
+  var L=this.L,dc=this.dc,c,p,k,back=[];
+  if(!this.Phi){back=freq;}
+  else{for(c=0;c<dc;c++){var r=new Float64Array(L);
+    for(p=0;p<L;p++){var s=0;for(k=0;k<L;k++)s+=freq[c][k]*this.Phi[p][k];r[p]=s;}
+    back.push(r);}}
+  var len=L;
+  for(p=0;p<L;p++){var nn=0;for(c=0;c<dc;c++)nn+=back[c][p]*back[c][p];
+    if(Math.sqrt(nn)<=1e-3){len=p;break;}}
+  var sc=Math.sqrt(Math.max(len,1)),out=[];
+  for(p=0;p<len;p++){
+    if(this.onehot){ // G = I, so nearest neighbour is an argmax
+      var best=0,bv=-1e9;
+      for(c=0;c<dc;c++){var v=back[c][p]*sc;if(v>bv){bv=v;best=c;}}
+      out.push(best);
+    }else{ // bit k is 1 iff coordinate k is negative
+      var b=0;
+      for(k=0;k<8;k++)if(back[k][p]*sc<0)b|=(1<<k);
+      out.push(b);
+    }
+  }
+  return out;
+};
+
+var V2=new Codec(32,128,false,false), V1=new Codec(256,16,true,true);
+
+function decodeText(bytes){
+  try{return new TextDecoder("utf-8",{fatal:false}).decode(new Uint8Array(bytes));}
+  catch(e){return "";}
+}
+function flatten(freq,dc,L){
+  var v=new Float64Array(dc*L),c,k;
+  for(c=0;c<dc;c++)for(k=0;k<L;k++)v[c*L+k]=freq[c][k];
+  return v;
+}
+function sparkline(el,vec,nBars){
+  // The D-dimensional vector itself, downsampled: each bar is the
+  // largest-magnitude entry in its bucket, sign kept.  V1's one-hot codec
+  // shows a few isolated spikes; V2's shows a dense signal -- which is
+  // the sparsity waste, drawn.
+  var W=400,H=46,per=Math.ceil(vec.length/nBars),vals=[],i,j;
+  for(i=0;i<vec.length;i+=per){
+    var best=0;
+    for(j=i;j<Math.min(i+per,vec.length);j++)
+      if(Math.abs(vec[j])>Math.abs(best))best=vec[j];
+    vals.push(best);
+  }
+  var m=0;for(i=0;i<vals.length;i++)m=Math.max(m,Math.abs(vals[i]));
+  m=m||1;
+  var w=W/vals.length,parts=[];
+  for(i=0;i<vals.length;i++){
+    var h=Math.abs(vals[i])<1e-12?0.7:Math.max(1,Math.abs(vals[i])/m*(H/2-3));
+    var y=vals[i]>=0?H/2-h:H/2;
+    parts.push('<rect x="'+(i*w).toFixed(2)+'" y="'+y.toFixed(2)+'" width="'+
+      Math.max(w-0.5,0.6).toFixed(2)+'" height="'+h.toFixed(2)+'"/>');
+  }
+  el.innerHTML='<line x1="0" y1="23" x2="400" y2="23" stroke="currentColor" stroke-width=".5" opacity=".3"/>'+
+    '<g fill="currentColor" opacity=".85">'+parts.join("")+'</g>';
+}
+
+function run(){
+  var s=document.getElementById("src").value;
+  var bytes=utf8(s);
+  [[V2,"v2","sig2"],[V1,"v1","sig1"]].forEach(function(t){
+    var codec=t[0],id=t[1];
+    var enc=codec.encode(bytes);
+    var got=codec.decode(enc.freq);
+    var ok=got.length===bytes.length&&got.every(function(b,i){return b===bytes[i];});
+    var el=document.getElementById(id), vd=document.getElementById(id+"v");
+    var txt=decodeText(got);
+    el.textContent=txt||"(empty)";
+    el.className="out "+(ok?"ok":"lost");
+    vd.textContent=ok?"recovered":"lost "+(bytes.length-got.length)+" bytes";
+    vd.className="verdict "+(ok?"ok":"lost");
+    var vec=flatten(enc.freq,codec.dc,codec.L),nz=0,norm=0;
+    for(var q=0;q<vec.length;q++){if(Math.abs(vec[q])>1e-12)nz++;norm+=vec[q]*vec[q];}
+    document.getElementById(id+"m").textContent=
+      bytes.length+" bytes in · "+got.length+" out\n"+
+      codec.D+" floats · "+nz+" nonzero ("+(100*nz/codec.D).toFixed(1)+"%) · norm "+
+      Math.sqrt(norm).toFixed(6);
+    var sig=document.getElementById(t[2]);
+    sig.style.color=id==="v2"?"var(--kas)":"var(--dense)";
+    sparkline(sig,vec,140);
+  });
+}
+document.getElementById("src").addEventListener("input",run);
+Array.prototype.forEach.call(document.querySelectorAll(".chip"),function(b){
+  b.addEventListener("click",function(){
+    document.getElementById("src").value=b.getAttribute("data-s");run();
+  });
+});
+
+/* ---------- charts ---------- */
+var NS="http://www.w3.org/2000/svg";
+function svg(w,h){return '<svg viewBox="0 0 '+w+' '+h+'" role="img">';}
+function esc(t){return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;");}
+function txt(x,y,t,o){o=o||{};
+  return '<text x="'+x+'" y="'+y+'" fill="'+(o.fill||"var(--ink-3)")+'" font-size="'+(o.size||11)+
+    '" text-anchor="'+(o.anchor||"start")+'" font-family="var(--mono)"'+
+    (o.weight?' font-weight="'+o.weight+'"':'')+'>'+esc(t)+'</text>';}
+
+function chartAlias(){
+  var d=[{L:72,t:.889,a:.789},{L:96,t:.667,a:.366},{L:128,t:.500,a:.050}];
+  var W=620,H=230,ml=52,mr=16,mt=16,mb=42,pw=(W-ml-mr)/d.length,o=svg(W,H);
+  [0,.25,.5,.75,1].forEach(function(g){
+    var y=mt+(1-g)*(H-mt-mb);
+    o+='<line x1="'+ml+'" y1="'+y+'" x2="'+(W-mr)+'" y2="'+y+'" stroke="var(--rule-2)" stroke-width="1"/>';
+    o+=txt(ml-8,y+4,g.toFixed(2),{anchor:"end"});
+  });
+  d.forEach(function(r,i){
+    var x0=ml+i*pw,bw=pw*0.3;
+    [["t",r.t,"var(--kas)",x0+pw*0.14],["a",r.a,"var(--warn)",x0+pw*0.52]].forEach(function(b){
+      var h=b[1]*(H-mt-mb),y=mt+(H-mt-mb)-h;
+      o+='<rect x="'+b[3]+'" y="'+y+'" width="'+bw+'" height="'+h+'" fill="'+b[2]+'" rx="1"/>';
+      o+=txt(b[3]+bw/2,y-5,b[1].toFixed(3),{anchor:"middle",fill:b[2],size:10.5,weight:600});
+    });
+    o+=txt(x0+pw/2,H-16,r.L+" bytes",{anchor:"middle"});
+  });
+  o+=txt(ml,H-2,"byte recovery accuracy, L_max = 64",{size:10});
+  return o+"</svg>";
+}
+
+function chartParams(){
+  var V=[50257,131072,262144,524288,1000000],
+      dense=[38.6,100.7,201.3,402.7,768.0],kas=3.15;
+  var W=620,H=250,ml=54,mr=90,mt=18,mb=40,o=svg(W,H);
+  var lx=function(v){var a=Math.log(50257),b=Math.log(1000000);
+    return ml+(Math.log(v)-a)/(b-a)*(W-ml-mr);};
+  var ly=function(v){var a=Math.log(2),b=Math.log(900);
+    return mt+(1-(Math.log(v)-a)/(b-a))*(H-mt-mb);};
+  [3.15,10,100,768].forEach(function(g){
+    var y=ly(g);
+    o+='<line x1="'+ml+'" y1="'+y+'" x2="'+(W-mr)+'" y2="'+y+'" stroke="var(--rule-2)"/>';
+    o+=txt(ml-8,y+4,g+"M",{anchor:"end"});
+  });
+  var dp=V.map(function(v,i){return lx(v)+","+ly(dense[i]);}).join(" ");
+  var kp=V.map(function(v){return lx(v)+","+ly(kas);}).join(" ");
+  o+='<polyline points="'+dp+'" fill="none" stroke="var(--dense)" stroke-width="2"/>';
+  o+='<polyline points="'+kp+'" fill="none" stroke="var(--kas)" stroke-width="2"/>';
+  V.forEach(function(v,i){
+    o+='<circle cx="'+lx(v)+'" cy="'+ly(dense[i])+'" r="3.5" fill="var(--dense)"/>';
+    o+='<circle cx="'+lx(v)+'" cy="'+ly(kas)+'" r="3.5" fill="var(--kas)"/>';
+    o+=txt(lx(v),H-18,(v>=1e6?"1M":Math.round(v/1000)+"k"),{anchor:"middle"});
+  });
+  o+=txt(W-mr+8,ly(768)+4,"768M",{fill:"var(--dense)",weight:600});
+  o+=txt(W-mr+8,ly(kas)+4,"3.15M",{fill:"var(--kas)",weight:600});
+  o+=txt(W-mr+8,ly(kas)+18,"244x",{fill:"var(--kas)",size:10});
+  o+=txt(ml,H-2,"output-head parameters vs vocabulary size (log-log)",{size:10});
+  return o+"</svg>";
+}
+
+function chartArms(){
+  var d=[["A0 dense",1.9301,"var(--dense)"],["A1 V1+dense",1.9296,"var(--dense)"],
+         ["A2 KAS",2.4161,"var(--kas)"],["A3 KAS tied",2.4147,"var(--kas)"],
+         ["A4 KAS+uni",2.2608,"var(--kas)"]],floor=2.4025;
+  var W=620,H=250,ml=50,mr=16,mt=22,mb=44,o=svg(W,H);
+  var lo=1.85,hi=2.48,py=function(v){return mt+(1-(v-lo)/(hi-lo))*(H-mt-mb);};
+  [1.9,2.0,2.1,2.2,2.3,2.4].forEach(function(g){
+    var y=py(g);
+    o+='<line x1="'+ml+'" y1="'+y+'" x2="'+(W-mr)+'" y2="'+y+'" stroke="var(--rule-2)"/>';
+    o+=txt(ml-8,y+4,g.toFixed(1),{anchor:"end"});
+  });
+  var pw=(W-ml-mr)/d.length;
+  d.forEach(function(r,i){
+    var x=ml+i*pw+pw*0.2,bw=pw*0.6,y=py(r[1]),h=py(lo)-y;
+    o+='<rect x="'+x+'" y="'+y+'" width="'+bw+'" height="'+h+'" fill="'+r[2]+'" rx="1"/>';
+    o+=txt(x+bw/2,y-6,r[1].toFixed(4),{anchor:"middle",fill:r[2],size:10.5,weight:600});
+    o+=txt(x+bw/2,H-24,r[0],{anchor:"middle",size:10});
+  });
+  var fy=py(floor);
+  o+='<line x1="'+ml+'" y1="'+fy+'" x2="'+(W-mr)+'" y2="'+fy+'" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="5 3"/>';
+  o+=txt(W-mr,fy-6,"unigram floor 2.4025",{anchor:"end",fill:"var(--warn)",size:10.5,weight:600});
+  o+=txt(ml,H-4,"validation bits per byte (lower is better)",{size:10});
+  return o+"</svg>";
+}
+
+function chartCoherence(){
+  var d=[{dc:64,L:32,D:2048,b:2.4979,c:.281},{dc:128,L:32,D:4096,b:2.4993,c:.156},
+         {dc:64,L:128,D:8192,b:2.5244,c:.281},{dc:32,L:32,D:1024,b:2.5397,c:.500},
+         {dc:32,L:64,D:2048,b:2.5544,c:.500},{dc:32,L:128,D:4096,b:2.5613,c:.500},
+         {dc:16,L:128,D:2048,b:2.6099,c:1.0}];
+  var W=620,H=300,o=svg(W,H),mt=30,mb=46,pw=(W-40)/2;
+  function panel(ox,title,xof,xlab,xmin,xmax,logx,color){
+    var ml=ox+46,mr=ox+pw-14;
+    o+=txt(ox+4,16,title,{size:11,fill:"var(--ink-2)",weight:600});
+    [2.50,2.55,2.60].forEach(function(g){
+      var y=mt+(1-(g-2.48)/(2.63-2.48))*(H-mt-mb);
+      o+='<line x1="'+ml+'" y1="'+y+'" x2="'+mr+'" y2="'+y+'" stroke="var(--rule-2)"/>';
+      if(ox===0)o+=txt(ml-8,y+4,g.toFixed(2),{anchor:"end"});
+    });
+    d.forEach(function(r){
+      var xv=xof(r),t=logx?(Math.log(xv)-Math.log(xmin))/(Math.log(xmax)-Math.log(xmin))
+                          :(xv-xmin)/(xmax-xmin);
+      var x=ml+t*(mr-ml),y=mt+(1-(r.b-2.48)/(2.63-2.48))*(H-mt-mb);
+      o+='<circle cx="'+x+'" cy="'+y+'" r="5" fill="'+color+'"/>';
+      o+=txt(x+8,y-5,r.dc+"/"+r.L,{size:9.5});
+    });
+    o+=txt((ml+mr)/2,H-16,xlab,{anchor:"middle",size:10});
+  }
+  panel(0,"coherence predicts quality",function(r){return r.c;},
+        "byte-codebook max coherence",0.1,1.05,false,"var(--kas)");
+  panel(pw+40,"D does not",function(r){return r.D;},
+        "D = d_c x L_max",900,9000,true,"var(--dense)");
+  o+=txt(4,H-2,"validation bits per byte, seven configurations",{size:10});
+  return o+"</svg>";
+}
+
+function chartOOD(){
+  var langs=["English","Spanish","Hindi","Telugu"];
+  var arms=[["A0 dense",[2.0106,4.1604,6.4310,10.4354],"var(--dense)",1],
+            ["A1 V1+dense",[2.0181,4.2001,5.6005,10.1041],"var(--dense)",.5],
+            ["A2 KAS",[2.4161,4.3322,4.6450,8.6891],"var(--kas)",1],
+            ["A4 KAS+uni",[2.2723,4.2284,4.5666,8.4242],"var(--kas)",.5]];
+  var W=620,H=260,ml=42,mr=16,mt=18,mb=42,o=svg(W,H),max=11;
+  [0,2,4,6,8,10].forEach(function(g){
+    var y=mt+(1-g/max)*(H-mt-mb);
+    o+='<line x1="'+ml+'" y1="'+y+'" x2="'+(W-mr)+'" y2="'+y+'" stroke="var(--rule-2)"/>';
+    o+=txt(ml-8,y+4,g,{anchor:"end"});
+  });
+  var gw=(W-ml-mr)/langs.length;
+  langs.forEach(function(L,i){
+    var x0=ml+i*gw+gw*0.1,bw=gw*0.8/arms.length;
+    arms.forEach(function(a,j){
+      var v=a[1][i],h=v/max*(H-mt-mb),y=mt+(H-mt-mb)-h,x=x0+j*bw;
+      o+='<rect x="'+x+'" y="'+y+'" width="'+(bw-2)+'" height="'+h+'" fill="'+a[2]+'" opacity="'+a[3]+'" rx="1"/>';
+    });
+    o+=txt(x0+gw*0.4,H-22,L,{anchor:"middle",size:10.5,fill:"var(--ink-2)"});
+  });
+  o+=txt(ml,H-4,"bits per byte, out of domain (lower is better)",{size:10});
+  return o+"</svg>";
+}
+
+function chartDeciles(){
+  var a2=[.690,.903,2.170,2.411,2.816,2.693,2.342,1.578,.564,-.874],
+      a4=[.422,.556,1.317,1.642,2.065,2.068,1.813,1.173,.303,-.935];
+  var W=620,H=250,ml=46,mr=16,mt=18,mb=44,o=svg(W,H),lo=-1.2,hi=3.0;
+  var py=function(v){return mt+(1-(v-lo)/(hi-lo))*(H-mt-mb);},
+      px=function(i){return ml+i/9*(W-ml-mr);};
+  [-1,0,1,2,3].forEach(function(g){
+    var y=py(g);
+    o+='<line x1="'+ml+'" y1="'+y+'" x2="'+(W-mr)+'" y2="'+y+'" stroke="'+(g===0?"var(--ink-3)":"var(--rule-2)")+'" stroke-width="'+(g===0?1.4:1)+'"/>';
+    o+=txt(ml-8,y+4,(g>0?"+":"")+g,{anchor:"end"});
+  });
+  [[a2,"var(--kas)"],[a4,"var(--warn)"]].forEach(function(s){
+    o+='<polyline points="'+s[0].map(function(v,i){return px(i)+","+py(v);}).join(" ")+
+       '" fill="none" stroke="'+s[1]+'" stroke-width="2"/>';
+    s[0].forEach(function(v,i){o+='<circle cx="'+px(i)+'" cy="'+py(v)+'" r="3.2" fill="'+s[1]+'"/>';});
+  });
+  for(var i=0;i<10;i++)o+=txt(px(i),H-24,"d"+i,{anchor:"middle",size:10});
+  o+=txt(ml,H-8,"most frequent",{size:10});
+  o+=txt(W-mr,H-8,"rarest",{anchor:"end",size:10});
+  o+=txt(px(9),py(-.874)+18,"KAS wins",{anchor:"end",fill:"var(--kas)",size:10,weight:600});
+  return o+"</svg>";
+}
+
+var charts={"fig-alias":chartAlias,"fig-params":chartParams,"fig-arms":chartArms,
+            "fig-coh":chartCoherence,"fig-ood":chartOOD,"fig-dec":chartDeciles};
+Object.keys(charts).forEach(function(id){
+  var el=document.getElementById(id);
+  if(el){try{el.innerHTML=charts[id]();}catch(e){el.textContent="";}}
+});
+
+run();
+})();
+</script>
+
+</body>
+</html>

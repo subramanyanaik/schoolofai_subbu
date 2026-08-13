@@ -1,0 +1,72 @@
+{
+  "arms": {
+    "a0_bpe_tied": {
+      "total": 30018816,
+      "head": 0,
+      "input_embedding": 19298688,
+      "body": 10720128,
+      "arm": "a0_bpe_tied",
+      "unused_params": [],
+      "vocab": 50257,
+      "codec": null,
+      "head_has_no_dense_vocab_matrix": true,
+      "delta_params_8k_to_32k_vocab": 9437184
+    },
+    "a1_v1_dense": {
+      "total": 31591680,
+      "head": 19298688,
+      "input_embedding": 1572864,
+      "body": 10720128,
+      "arm": "a1_v1_dense",
+      "unused_params": [],
+      "vocab": 50257,
+      "codec": "KroneckerCodec(variant=v1, d_c=256, L_max=16, D=4096, byte=onehot, pos=identity, overflow=truncate)",
+      "head_has_no_dense_vocab_matrix": false,
+      "delta_params_8k_to_32k_vocab": 9437184
+    },
+    "a2_kronf_kas": {
+      "total": 13865985,
+      "head": 1572993,
+      "input_embedding": 1572864,
+      "body": 10720128,
+      "arm": "a2_kronf_kas",
+      "unused_params": [],
+      "vocab": 50257,
+      "codec": "KroneckerCodec(variant=v2, d_c=32, L_max=128, D=4096, byte=hadamard_bits, pos=dft, overflow=truncate)",
+      "head_has_no_dense_vocab_matrix": false,
+      "delta_params_8k_to_32k_vocab": 0
+    },
+    "a3_kronf_kas_tied": {
+      "total": 12293121,
+      "head": 129,
+      "input_embedding": 1572864,
+      "body": 10720128,
+      "arm": "a3_kronf_kas_tied",
+      "unused_params": [],
+      "vocab": 50257,
+      "codec": "KroneckerCodec(variant=v2, d_c=32, L_max=128, D=4096, byte=hadamard_bits, pos=dft, overflow=truncate)",
+      "head_has_no_dense_vocab_matrix": false,
+      "delta_params_8k_to_32k_vocab": 0
+    },
+    "a4_kas_unigram": {
+      "total": 13916242,
+      "head": 1623250,
+      "input_embedding": 1572864,
+      "body": 10720128,
+      "arm": "a4_kas_unigram",
+      "unused_params": [],
+      "vocab": 50257,
+      "codec": "KroneckerCodec(variant=v2, d_c=32, L_max=128, D=4096, byte=hadamard_bits, pos=dft, overflow=truncate)",
+      "head_has_no_dense_vocab_matrix": false,
+      "delta_params_8k_to_32k_vocab": 24576
+    }
+  },
+  "gates": {
+    "no_unused_params": true,
+    "a2_vocab_independent": true,
+    "a3_vocab_independent": true,
+    "a4_costs_one_scalar_per_token": true,
+    "a0_costs_d_model_per_token": true
+  },
+  "all_gates_pass": true
+}
