@@ -67,6 +67,8 @@ understood yet.
 
 ## Dates — the part that is easiest to get wrong
 
+**Question 2 is answered in [ANSWERS.md](ANSWERS.md)** — what the date order showed, and the 15 mechanisms the session did not cover.
+
 Full table with a source link for every single date: **[DATES.md](DATES.md)**, generated directly
 from [`site/data.js`](site/data.js) so the README and the site cannot drift apart.
 

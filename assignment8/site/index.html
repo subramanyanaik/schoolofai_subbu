@@ -19,6 +19,7 @@
   <a href="#kv">KV calculator</a>
   <a href="#state">Linear state</a>
   <a href="#compare">Compare</a>
+  <a href="#findings">What it shows</a>
   <a href="#next">What's next</a>
   <a href="#sources">Sources</a>
 </div></nav>
@@ -352,6 +353,35 @@
       <th data-k="bill">Bill it attacks</th><th data-k="buys">What it buys</th><th data-k="costs">What it costs</th>
     </tr></thead><tbody></tbody>
   </table></div>
+</div></section>
+
+<!-- ============ FINDINGS ============ -->
+<section id="findings"><div class="wrap">
+  <div class="sec-head">
+    <h2>What the date order shows that a list does not</h2>
+    <p>
+      A list spaces every entry evenly, so it silently throws away the one variable that carries
+      the story: <em>how long things took</em>. Below is the same set of mechanisms on a real time
+      axis, one lane per family. The clusters and the empty stretches are the finding &mdash; and
+      every interval quoted here is measured from the dates, not estimated.
+    </p>
+  </div>
+
+  <div class="panel">
+    <div class="ctl">
+      <button class="chip on" id="gap-toggle">show the intervals</button>
+      <span class="readout mut">larger dots are the mechanisms the rest of the page keeps referring back to</span>
+    </div>
+    <div class="vizbox"><canvas class="wide" id="gap-canvas" width="1120" height="270"></canvas></div>
+    <p class="caption">
+      Note where each family <em>starts</em>. Sparse opens in 2019, KV cache in late 2019 and then goes
+      quiet for years, linear in 2020, systems only in 2022. Position is the one family active across
+      the entire eleven years, because it is the only one whose problem was never solved &mdash; only
+      moved.
+    </p>
+  </div>
+
+  <div id="find-root" style="margin-top:34px"></div>
 </div></section>
 
 <!-- ============ NEXT ============ -->

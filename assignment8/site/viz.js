@@ -589,7 +589,105 @@
     return full;
   }
 
+  /* ================================================================
+     9. The timeline on a real time axis, one lane per family.
+        A list spaces entries evenly. This spaces them by when they
+        actually happened, which is the entire argument.
+     ================================================================ */
+  function drawGaps(canvas, mechs, opts) {
+    const { ctx, w, h } = dpi(canvas);
+    clear(ctx, w, h);
+    const showGaps = !opts || opts.gaps !== false;
+    const pad = { l: 104, r: 22, t: 22, b: 34 };
+    const W = w - pad.l - pad.r, H = h - pad.t - pad.b;
+    const t0 = Date.UTC(2014, 0, 1), t1 = Date.UTC(2027, 0, 1);
+    const X = (iso) => pad.l + ((Date.parse(iso) - t0) / (t1 - t0)) * W;
+
+    const lanes = [
+      ["exact", "exact"], ["pos", "position"], ["sparse", "sparse"],
+      ["linear", "linear"], ["kv", "KV cache"], ["systems", "systems"]
+    ];
+    const laneH = H / lanes.length;
+    const laneY = (f) => pad.t + lanes.findIndex(l => l[0] === f) * laneH + laneH / 2;
+
+    // year gridlines
+    ctx.font = "10px ui-monospace,monospace";
+    for (let y = 2014; y <= 2026; y++) {
+      const x = X(y + "-01-01");
+      ctx.strokeStyle = css("--line") || "#233049";
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x, pad.t - 6); ctx.lineTo(x, pad.t + H); ctx.stroke();
+      if (y % 2 === 0) {
+        ctx.fillStyle = css("--fg3") || "#71809b";
+        ctx.fillText(String(y), x - 11, pad.t + H + 18);
+      }
+    }
+
+    // lane labels
+    lanes.forEach(([f, label]) => {
+      ctx.fillStyle = css("--fg3") || "#71809b";
+      ctx.font = "11px ui-monospace,monospace";
+      ctx.textAlign = "right";
+      ctx.fillText(label, pad.l - 12, laneY(f) + 4);
+      ctx.textAlign = "left";
+      ctx.strokeStyle = css("--line") || "#233049";
+      ctx.globalAlpha = .5;
+      ctx.beginPath(); ctx.moveTo(pad.l, laneY(f)); ctx.lineTo(pad.l + W, laneY(f)); ctx.stroke();
+      ctx.globalAlpha = 1;
+    });
+
+    // one tick per mechanism, at its real date
+    mechs.forEach(m => {
+      const x = X(m.date), y = laneY(m.family);
+      ctx.fillStyle = css("--" + m.family) || "#888";
+      ctx.beginPath();
+      ctx.arc(x, y, m.anchor ? 5 : 3.2, 0, Math.PI * 2);
+      ctx.fill();
+      if (m.anchor) {
+        ctx.globalAlpha = .25;
+        ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+    });
+
+    if (!showGaps) return;
+
+    // the two intervals that a list cannot show
+    const bracket = (fromISO, toISO, family, label) => {
+      const x1 = X(fromISO), x2 = X(toISO), y = laneY(family);
+      ctx.strokeStyle = css("--bad") || "#f87171";
+      ctx.lineWidth = 1.6;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y); ctx.stroke();
+      ctx.setLineDash([]);
+      [x1, x2].forEach(x => {
+        ctx.beginPath(); ctx.moveTo(x, y - 7); ctx.lineTo(x, y + 7); ctx.stroke();
+      });
+      ctx.fillStyle = css("--bad") || "#f87171";
+      ctx.font = "600 10.5px ui-monospace,monospace";
+      const tw = ctx.measureText(label).width;
+      ctx.fillText(label, (x1 + x2) / 2 - tw / 2, y - 12);
+    };
+    bracket("2019-11-06", "2023-05-22", "kv", "3.5 yr — no one was paying this bill yet");
+    bracket("2021-02-22", "2024-06-10", "linear", "3.3 yr — waiting for the hardware");
+
+    // the extinction point of the approximation wave
+    const fx = X("2022-05-27");
+    ctx.strokeStyle = css("--good") || "#4ade80";
+    ctx.setLineDash([3, 3]); ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(fx, pad.t - 6); ctx.lineTo(fx, pad.t + H); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = css("--good") || "#4ade80";
+    ctx.font = "600 10.5px ui-monospace,monospace";
+    const flabel = "FlashAttention — exact beats the approximations";
+    const fw = ctx.measureText(flabel).width;
+    // flip the label to the left of the line rather than let it run off the canvas
+    const fitsRight = fx + 6 + fw < pad.l + W;
+    ctx.fillText(flabel, fitsRight ? fx + 6 : fx - 6 - fw, pad.t + 8);
+  }
+
   global.VIZ = {
+    drawGaps,
     attention, renderMatrix, PATTERNS, buildMask, drawMask,
     drawRope, drawDecay, drawExt, drawState, drawDelta, drawSchedule, hrand
   };

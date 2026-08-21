@@ -1010,6 +1010,70 @@ const MECHANISMS = [
 }
 ];
 
+/* ------------------------------------------------------------------
+   What the date order shows that a list does not.
+   Every interval quoted here is measured from the dates above by
+   tools/gaps.py, not estimated.
+   ------------------------------------------------------------------ */
+const FINDINGS = [
+  {
+    t: "A mechanism can be four years early and simply be ignored",
+    metric: "MQA &rarr; GQA: 1,293 days",
+    body: "MQA lands 6 Nov 2019, in the middle of the sparse-attention gold rush &mdash; Sparse Transformer, Reformer, Longformer, linear attention, BigBird and Performer all appear within fourteen months either side of it. Every one of those attacks the <em>compute</em> bill. MQA attacks the <em>memory</em> bill, and nothing happens for three and a half years until GQA in May 2023.",
+    hidden: "Grouped by family, MQA and GQA sit next to each other and read as a tidy progression. In date order there is a four-year hole between them, and the hole is the finding: nobody optimises a bill they are not yet paying. In 2019 these models were not being served to millions of people, so the KV cache was not anybody's problem yet.",
+    lesson: "The bill you can see is the bill you are currently paying. Ideas that answer the <em>next</em> bottleneck get published and then sit."
+  },
+  {
+    t: "The 2020 approximation wave dies at a single point, and an engineer killed it",
+    metric: "five approximations in nine months, then a two-year silence",
+    body: "Reformer (13 Jan 2020), Longformer (10 Apr), linear attention (29 Jun), BigBird (28 Jul), Performer (30 Sep). Then the family goes quiet. FlashAttention arrives 27 May 2022 and makes <em>exact</em> dense attention faster than most of the approximations that were trying to avoid it.",
+    hidden: "In a family-grouped list FlashAttention is filed under 'systems' and looks like it belongs to a different conversation. In date order it sits exactly at the extinction boundary of the approximation family. They were not beaten by a better approximation. They were beaten by someone who noticed attention was memory-bandwidth-bound, not compute-bound &mdash; which means the whole wave had been optimising the wrong resource.",
+    lesson: "Before you approximate something, check which resource is actually scarce. Three years of clever math lost to one profiling insight."
+  },
+  {
+    t: "The scramble for context length is measured in days, and it happened outside academia",
+    metric: "PI &rarr; NTK-aware: 1 day. NTK &rarr; YaRN: 64 days.",
+    body: "Position Interpolation is submitted 27 Jun 2023. NTK-aware scaled RoPE appears the next day &mdash; as a Reddit post, with no paper, no peer review and no ablations. YaRN follows nine weeks later and fixes both.",
+    hidden: "A list files all three under 'RoPE scaling' and the ordering inside is arbitrary. The dates show a community scramble triggered by Llama-2 shipping a 4K window, not a research programme. It also shows that for several months the most widely deployed context-extension method in the world was a forum post &mdash; which is exactly why it is the one date on this page I could not pin to a day.",
+    lesson: "Deployment pressure sets the pace, and the artefact that wins is not always the one with a paper."
+  },
+  {
+    t: "Good ideas wait about three years for the hardware, and the lag is consistent",
+    metric: "delta rule &rarr; parallel training: 1,204 days",
+    body: "The delta rule for linear attention is published 22 Feb 2021 and then goes essentially unused until the chunkwise parallel algorithm arrives 10 Jun 2024. The mechanism was never the problem &mdash; it was sequentially dependent, so training could not use a GPU, which made it worthless at scale no matter how good it was.",
+    hidden: "As a list entry, 'DeltaNet' is one bullet with one date, and which date you pick is a coin flip. Splitting it into the idea (2021) and the thing that made it runnable (2024) exposes a gap that is almost identical to MQA's, and for a related reason: not conceptual, but engineering.",
+    lesson: "The distance between 'this works' and 'this runs on the hardware we have' is roughly three years, twice, independently. Budget for it."
+  },
+  {
+    t: "The best ideas arrive twice, within days, from different labs",
+    metric: "NSA &rarr; MoBA: 2 days. Learned positions &rarr; sinusoidal: 35 days.",
+    body: "NSA (DeepSeek, 16 Feb 2025) and MoBA (Moonshot, 18 Feb 2025) independently propose the same thing: learned block selection, trained natively rather than bolted on at inference. Forty-eight hours apart. The same pattern appears at the very start of the timeline, with learned absolute positions and sinusoidal five weeks apart.",
+    hidden: "A list shows two similar entries and invites you to ask which one was first, or which is better. The dates show that the question is wrong. When two labs with no contact ship the same idea in the same week, the idea was <em>due</em> &mdash; determined by the hardware and the context lengths people wanted, not by anyone's insight.",
+    lesson: "Simultaneity is a signal that the constraint, not the researcher, is driving. It is also the best evidence that an idea is correct rather than lucky."
+  },
+  {
+    t: "Position encoding is being deleted, monotonically, and you can see where it ends",
+    metric: "2017 &rarr; 2025: parameters go L&times;d &rarr; 0 &rarr; 0 &rarr; none at all",
+    body: "A learned table (2017, L<sub>max</sub>&middot;d parameters and a hard length ceiling) &rarr; sinusoidal (2017, no parameters, still added to the residual stream) &rarr; RoPE (2021, no parameters, moved out of the residual stream and into the score) &rarr; ALiBi (2021, just a bias on the logit) &rarr; DroPE (2025, remove it entirely after training and recalibrate).",
+    hidden: "As a list this is a taxonomy of positional encoding methods and every entry looks like an alternative to the others. In date order every single step <em>removes</em> something, and none ever adds it back. That is not a taxonomy, it is a trend line with a visible endpoint.",
+    lesson: "This is the one place on the timeline where you can extrapolate with real confidence, because the direction has never once reversed in eight years. The endpoint is zero."
+  },
+  {
+    t: "The oscillation is a control loop, and the trigger is always a benchmark",
+    metric: "exactness &rarr; length &rarr; memory &rarr; length &rarr; memory",
+    body: "Every swing back toward memory is triggered by an evaluation exposing what the previous swing forgot. Long Range Arena and failed replications killed the 2020 approximations. Needle-in-a-haystack and RULER exposed ALiBi's extrapolation as increasing locality rather than increasing reach, and exposed pure-linear models' fixed-capacity ceiling.",
+    hidden: "A list of mechanisms contains no benchmarks at all, so the cause of each turn is invisible. On a timeline the benchmark lands between the cheap mechanism and the correction, every time, and the pattern stops looking like fashion and starts looking like feedback.",
+    lesson: "The swings are predictable from which benchmark lands next &mdash; which is what makes the question answerable at all. As of April 2026, aggressive sequence-axis compression has not yet met its adversarial benchmark."
+  },
+  {
+    t: "Attacking both bills at once is a recent capability, not an old one",
+    metric: "first headline claim on both meters: Apr 2026",
+    body: "Era 2 attacks compute. Era 4 attacks memory. Almost nothing before 2025 bills both meters at once &mdash; sliding window is the rare early exception, and it pays for it in retrieval. DeepSeek-V4's CSA + HCA (26 Apr 2026) is the first to report both as headline results: 27% of the FLOPs and 10% of the KV cache of its predecessor.",
+    hidden: "In a family-grouped list, compute methods and memory methods are separate sections, so you never notice that for six years essentially nobody managed both. The date order makes the alternation obvious, and makes the recent convergence look like the genuinely new thing it is.",
+    lesson: "If you are choosing a mechanism today, the pre-2025 ones make you pick a meter. Only the newest generation lets you refuse the choice."
+  }
+];
+
 const PREDICTIONS = [
   { t: "Compression along the sequence axis", body: "MLA compressed the <em>feature</em> axis and won. CSA is the first serious attack on the <em>time</em> axis, and that axis has far more redundancy in it. Expect learned, content-dependent compression rates rather than a fixed m &mdash; a boring paragraph should compress harder than a table of numbers, and right now nothing knows the difference." },
   { t: "The hybrid ratio becomes a theory instead of an ablation", body: "Every hybrid on this page picks its linear:global ratio by measurement. Somebody will derive how much exact-recall capacity a stack actually needs as a function of task and depth, and that paper will be cited for a decade." },
@@ -1018,4 +1082,4 @@ const PREDICTIONS = [
   { t: "Memory comes back a third time", body: "The pattern on this timeline is exactness &rarr; length &rarr; memory &rarr; length &rarr; memory. Each swing back to memory is triggered by a retrieval benchmark exposing the previous swing's amnesia. RULER did it to ALiBi and to pure linear models. The next hard benchmark will do it to aggressive compression." }
 ];
 
-if (typeof module !== "undefined") module.exports = { MECHANISMS, FAMILIES, ERAS, PREDICTIONS };
+if (typeof module !== "undefined") module.exports = { MECHANISMS, FAMILIES, ERAS, FINDINGS, PREDICTIONS };

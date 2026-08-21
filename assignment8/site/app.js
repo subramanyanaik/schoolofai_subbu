@@ -369,6 +369,28 @@
   }));
   renderCmp();
 
+  /* ================= findings (what the date order shows) ================= */
+  let showGaps = true;
+  function drawGapLab() {
+    VIZ.drawGaps($("#gap-canvas"), MECHANISMS, { gaps: showGaps });
+  }
+  $("#gap-toggle").addEventListener("click", function () {
+    showGaps = !showGaps;
+    this.classList.toggle("on", showGaps);
+    this.textContent = showGaps ? "show the intervals" : "just the mechanisms";
+    drawGapLab();
+  });
+  drawGapLab();
+
+  $("#find-root").innerHTML = FINDINGS.map(f => `
+    <div class="finding">
+      <h4>${f.t}</h4>
+      <span class="metric">${f.metric}</span>
+      <p>${f.body}</p>
+      <div class="hid"><b>what a list hides</b>${f.hidden}</div>
+      <p class="lesson"><b>so what</b>${f.lesson}</p>
+    </div>`).join("");
+
   /* ================= predictions ================= */
   $("#pred-root").innerHTML = PREDICTIONS.map(p =>
     `<div class="pred"><h4>${p.t}</h4><p>${p.body}</p></div>`).join("");
@@ -401,7 +423,7 @@
   if (window.matchMedia) {
     window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
       drawMaskLab(); drawRopeLab(); drawDecayLab(); drawExtLab();
-      drawStateLab(); drawDeltaLab(); drawSchedLab();
+      drawStateLab(); drawDeltaLab(); drawSchedLab(); drawGapLab();
     });
   }
 
