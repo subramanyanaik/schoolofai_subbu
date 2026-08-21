@@ -1,4 +1,4 @@
-# How Attention Works Now — every mechanism, in launch order
+# How Attention Works Now
 
 [![validate](https://github.com/subramanyanaik/schoolofai_subbu/actions/workflows/validate.yml/badge.svg)](https://github.com/subramanyanaik/schoolofai_subbu/actions/workflows/validate.yml)
 ![mechanisms](https://img.shields.io/badge/mechanisms-39-blue)
@@ -12,7 +12,7 @@
 **in the order it was actually launched**, and explains each one as an answer to the problem that
 existed at that moment.
 
-> **Live:** _(see [Deploying](#deploying) — one command, needs your GitHub Pages toggle)_
+> **Live:** _(Netlify — see [Deploying](#deploying); publish directory `assignment8/site`)_
 > **Repo:** https://github.com/subramanyanaik/schoolofai_subbu/tree/main/assignment8
 
 ---
@@ -149,13 +149,28 @@ python assignment8/tools/gen_date_table.py
 
 ## Deploying
 
-The site is plain static files, so it works on Netlify, Vercel, Cloudflare Pages or GitHub Pages
-without changes. GitHub Pages is the lowest-friction option since the repo is already there —
-enable Pages on `main` / root in repository settings, and the site is served at
-`https://subramanyanaik.github.io/schoolofai_subbu/assignment8/site/`.
+**Exactly five files get hosted** — everything in `assignment8/site/`:
 
-For Netlify or Vercel, point the project at this repo with **publish directory
-`assignment8/site`** and no build command.
+```
+index.html    styles.css    data.js    viz.js    app.js
+```
+
+Nothing else. `README.md`, `DATES.md` and `tools/` are repo documentation and do not belong on
+the web root. There is no build step, no `node_modules`, no bundler output, and the page makes
+zero external network requests.
+
+**Netlify (repo-connected).** [`netlify.toml`](../netlify.toml) at the repo root already sets
+`publish = "assignment8/site"`, so connecting the repo needs no dashboard configuration — leave
+the build command empty and let the file do the work. It also sets a strict
+`Content-Security-Policy` of `default-src 'none'`, which the site satisfies because every asset
+is same-origin.
+
+**Netlify (drag and drop).** Drop the `assignment8/site` folder itself onto
+[app.netlify.com/drop](https://app.netlify.com/drop). Drop the *folder*, not the repo — otherwise
+`index.html` will not be at the site root.
+
+**Anywhere else.** Vercel, Cloudflare Pages and GitHub Pages all work the same way: serve
+`assignment8/site` as the document root, no build command.
 
 ## Layout
 

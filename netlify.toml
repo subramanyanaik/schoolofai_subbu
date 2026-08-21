@@ -1,0 +1,20 @@
+# The repo holds several assignments; only assignment8 is a website.
+# Netlify publishes that folder as-is — there is nothing to build, since the
+# site is plain HTML/CSS/JS with no dependencies.
+[build]
+  publish = "assignment8/site"
+
+# The page makes no external requests, so it can be locked down tightly.
+#
+# style-src needs 'unsafe-inline' and this was verified, not assumed: the page
+# sets colours, bar widths and per-family accents through inline style
+# attributes, which CSP blocks under a bare 'self'. Tested with the strict
+# policy first — it produced a page with no colour anywhere.
+# The protection that matters is intact: default-src 'none' plus
+# script-src 'self' means no third-party script and no outbound connection.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
