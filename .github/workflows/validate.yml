@@ -124,3 +124,25 @@ jobs:
       - name: Assert committed gates report PASS
         working-directory: assignment7
         run: python experiments/verify_gates.py
+
+  session8-timeline:
+    name: Session 8 - timeline integrity and date discipline
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Every date must carry a source link, the list must stay in
+      # chronological order (the timeline's entire claim), and nothing may be
+      # written up with fewer than three honest downsides.
+      - name: Validate the mechanism dataset
+        run: python assignment8/tools/validate.py
+
+      # DATES.md is generated from data.js. If regenerating it produces a diff,
+      # the README table and the live site have drifted apart.
+      - name: DATES.md is in sync with data.js
+        run: |
+          python assignment8/tools/gen_date_table.py
+          git diff --exit-code -- assignment8/DATES.md

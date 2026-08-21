@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>How Attention Works Now — a chronological timeline</title>
+<meta name="description" content="Every attention mechanism, in the order it was launched, explained as an answer to the problem that existed at that moment. With honest trade-offs and verified dates.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="nav"><div class="wrap">
+  <b>Attention, chronologically</b>
+  <a href="#bills">The two bills</a>
+  <a href="#playground">Start here</a>
+  <a href="#timeline">Timeline</a>
+  <a href="#masks">Sparsity lab</a>
+  <a href="#position">Position lab</a>
+  <a href="#kv">KV calculator</a>
+  <a href="#state">Linear state</a>
+  <a href="#compare">Compare</a>
+  <a href="#next">What's next</a>
+  <a href="#sources">Sources</a>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <div class="kicker">ERA V5 · Session 8 assignment · Modern attention variants</div>
+  <h1>Every attention mechanism, in the order it was actually launched.</h1>
+  <p class="lede">
+    Vanilla attention was never <em>wrong</em>. It was <strong>expensive</strong>. Everything that follows
+    is somebody looking at that bill and trying to pay less of it &mdash; and giving something up to do it.
+    Laid out on a timeline you can watch the field change its mind: first it wants exactness, then it wants
+    memory back, then it wants length, then it wants memory back again.
+  </p>
+  <div class="hero-stats">
+    <div><b id="stat-count">39</b><span>mechanisms</span></div>
+    <div><b>2014&ndash;2026</b><span>11 years, 5 eras</span></div>
+    <div><b id="stat-notes">12</b><span>dates with caveats</span></div>
+    <div><b id="stat-cons">0</b><span>documented downsides</span></div>
+  </div>
+</div></header>
+
+<!-- ============ THE TWO BILLS ============ -->
+<section id="bills"><div class="wrap">
+  <div class="sec-head">
+    <h2>There are exactly two bills</h2>
+    <p>
+      Everything on this page is an attempt to pay less of one or both. They pull against each other:
+      the tricks that shrink the cache usually cost quality, and the tricks that keep quality do not shrink
+      the cache. Knowing which bill a mechanism attacks tells you almost everything about when to use it.
+    </p>
+  </div>
+
+  <div class="bills">
+    <div class="bill compute">
+      <div class="tag">Bill 1 &mdash; compute</div>
+      <h3>The N&times;N score matrix</h3>
+      <p class="mut" style="font-size:14.5px">
+        Every query scores every key. 6 tokens is 36 numbers, which sounds free. 1,000 tokens is a million.
+        1 million tokens is a <em>trillion</em> &mdash; per head, per layer. Doubling the context quadruples
+        the work. This is what makes training long-context models expensive.
+      </p>
+      <table class="costs">
+        <tr><th>Context</th><th>Scores / head / layer</th><th>vs 1K</th></tr>
+        <tr><td>1 K</td><td>1,000,000</td><td>1&times;</td></tr>
+        <tr><td>10 K</td><td>100,000,000</td><td>100&times;</td></tr>
+        <tr><td>100 K</td><td>10,000,000,000</td><td>10,000&times;</td></tr>
+        <tr><td>1 M</td><td>1,000,000,000,000</td><td>1,000,000&times;</td></tr>
+      </table>
+    </div>
+    <div class="bill memory">
+      <div class="tag">Bill 2 &mdash; memory</div>
+      <h3>The KV cache that never shrinks</h3>
+      <p class="mut" style="font-size:14.5px">
+        At generation time you cannot recompute K and V for the whole history at every step, so you store them.
+        Every token you emit permanently adds bytes, per head, per layer, <em>per user</em>. This one grows
+        only linearly &mdash; and it is still the bill that decides how many people you can serve.
+      </p>
+      <table class="costs">
+        <tr><th>Concurrent users @ 32K</th><th>MHA cache</th></tr>
+        <tr><td>1 user</td><td id="b2-1">&mdash;</td></tr>
+        <tr><td>8 users</td><td id="b2-8">&mdash;</td></tr>
+        <tr><td>32 users</td><td id="b2-32">&mdash;</td></tr>
+        <tr><td>32 users @ 1M ctx</td><td id="b2-1m">&mdash;</td></tr>
+      </table>
+      <p class="caption">Assuming a 70B-class model: 80 layers, 64 heads, head_dim 128, fp16. Live numbers in the <a href="#kv">KV calculator</a>.</p>
+    </div>
+  </div>
+</div></section>
+
+<!-- ============ PLAYGROUND ============ -->
+<section id="playground"><div class="wrap">
+  <div class="sec-head">
+    <h2>Start here: the plain scaled dot product</h2>
+    <p>
+      Nothing after this makes sense without it. This is running the real arithmetic on a toy sentence &mdash;
+      six tokens, four dimensions &mdash; not a picture of it. Change the controls and watch which of the
+      properties downstream mechanisms will spend a decade trying to buy back.
+    </p>
+  </div>
+
+  <div class="panel">
+    <div class="ctl">
+      <label>sentence
+        <select id="pg-sent">
+          <option value="the cat sat on the mat">the cat sat on the mat</option>
+          <option value="the bank raised the rate">the bank raised the rate</option>
+          <option value="she opened it and read">she opened it and read</option>
+        </select>
+      </label>
+      <button class="chip" id="pg-scale" aria-pressed="true">&divide; &radic;d<sub>k</sub></button>
+      <button class="chip" id="pg-mask" aria-pressed="true">causal mask</button>
+      <button class="chip" id="pg-softmax" aria-pressed="true">softmax</button>
+      <label>amplitude <input type="range" id="pg-amp" min="0.1" max="4" step="0.1" value="1"><span class="readout" id="pg-amp-v">1.0&times;</span></label>
+    </div>
+
+    <div class="pg-grid">
+      <div>
+        <div id="pg-matrix" class="vizbox"></div>
+        <p class="caption" id="pg-cap"></p>
+      </div>
+      <div>
+        <div class="step"><h4>1. project</h4><p>Each token becomes a Query (what am I looking for), a Key (what do I offer) and a Value (what I actually pass on).</p></div>
+        <div class="step"><h4>2. score</h4><p>QK&#7488; &mdash; one matmul, every pair at once. This is the matrix that costs N&sup2;.</p></div>
+        <div class="step"><h4>3. scale</h4><p id="pg-s3">Divide by &radic;d<sub>k</sub>. Dot products of random d-dim vectors have variance d, so without this the logits are far too wide and softmax saturates into a one-hot. Gradients die.</p></div>
+        <div class="step"><h4>4. mask</h4><p id="pg-s4">Set the future to &minus;&infin;, because e<sup>&minus;&infin;</sup> = 0. Purely to make a parallel matmul behave causally.</p></div>
+        <div class="step"><h4>5. softmax</h4><p id="pg-s5">Amplifies by <em>absolute</em> gap, not relative gap &mdash; try the amplitude slider. It also forces the row to sum to 1, which creates competition, and forces every weight positive.</p></div>
+        <div class="step"><h4>6. read out</h4><p>Weighted sum of the Values. Note step 5 is the only row-wise nonlinearity &mdash; and it is the single thing preventing you from reassociating to K&#7488;V first. Remove it and you get <a href="#m-linear">linear attention</a>.</p></div>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<!-- ============ TIMELINE ============ -->
+<section id="timeline"><div class="wrap">
+  <div class="sec-head">
+    <h2>The timeline</h2>
+    <p>
+      Ordered by the date each mechanism <em>appeared</em> &mdash; v1 arXiv submission or official release, not
+      publication or popularity. Grouped into eras only so the story is readable; the ordering inside is strictly
+      chronological. Click any entry for the problem it answered, what it buys, what it gives up, and when you
+      would actually pick it.
+    </p>
+  </div>
+
+  <div class="tl-filters">
+    <span class="readout" style="margin-right:6px">filter:</span>
+    <button class="chip on" data-fam="all">all</button>
+    <button class="chip" data-fam="pos">position</button>
+    <button class="chip" data-fam="kv">KV cache</button>
+    <button class="chip" data-fam="sparse">sparse</button>
+    <button class="chip" data-fam="linear">linear</button>
+    <button class="chip" data-fam="exact">exact</button>
+    <button class="chip" data-fam="systems">systems</button>
+    <span style="flex:1"></span>
+    <button class="chip" id="only-session">only what Session 8 covered</button>
+    <button class="chip" id="expand-all">expand all</button>
+  </div>
+  <div class="legend" id="legend"></div>
+
+  <div id="tl-root"></div>
+</div></section>
+
+<!-- ============ MASK LAB ============ -->
+<section id="masks"><div class="wrap">
+  <div class="sec-head">
+    <h2>Sparsity lab: which cells do you actually compute?</h2>
+    <p>
+      Half the mechanisms on the timeline are, at bottom, a decision about which cells of the N&times;N matrix
+      you are willing to skip. Here they are on the same 48&times;48 causal grid, so you can see the shapes
+      against each other and against what they cost.
+    </p>
+  </div>
+  <div class="panel">
+    <div class="ctl" id="mask-ctl"></div>
+    <div class="grid2" style="gap:28px">
+      <div>
+        <canvas id="mask-canvas" width="480" height="480"></canvas>
+      </div>
+      <div>
+        <h3 id="mask-title">&mdash;</h3>
+        <p id="mask-desc" style="font-size:14.5px;color:var(--fg2)"></p>
+        <div class="bars" style="margin-top:20px">
+          <div class="bar-row"><span class="lbl">on this 48&times;48 grid</span><div class="bar-track"><div class="bar-fill" id="mask-bar" style="background:var(--sparse)"></div></div><span class="val" id="mask-pct">&mdash;</span></div>
+          <div class="bar-row"><span class="lbl">projected at 128K</span><div class="bar-track"><div class="bar-fill" id="mask-bar2" style="background:var(--good)"></div></div><span class="val" id="mask-pct2">&mdash;</span></div>
+        </div>
+        <p class="caption" id="mask-scale"></p>
+        <p class="caption" id="mask-note"></p>
+        <div class="ctl" style="margin-top:16px">
+          <label>window w <input type="range" id="mask-w" min="2" max="24" step="1" value="8"><span class="readout" id="mask-w-v">8</span></label>
+          <label>sinks <input type="range" id="mask-sink" min="0" max="6" step="1" value="4"><span class="readout" id="mask-sink-v">4</span></label>
+          <label>top-k <input type="range" id="mask-k" min="1" max="16" step="1" value="6"><span class="readout" id="mask-k-v">6</span></label>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<!-- ============ POSITION LAB ============ -->
+<section id="position"><div class="wrap">
+  <div class="sec-head">
+    <h2>Position lab: how a token learns where it is</h2>
+    <p>
+      The whole length story lives here. Four ideas, in order of appearance, and then the three ways people
+      tried to stretch RoPE past the length it was trained on.
+    </p>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h3>RoPE: why the gap is what survives</h3>
+      <p style="font-size:14.5px;color:var(--fg2)">
+        Two tokens on the unit circle, rotated by their positions. Drag both. The <em>absolute</em> angles change;
+        the angle <em>between</em> them does not &mdash; and the dot product only sees that difference.
+        That is the whole trick, and it is an algebraic identity, not a learned tendency.
+      </p>
+      <div class="ctl">
+        <label>pos m <input type="range" id="rope-m" min="0" max="40" value="3"><span class="readout" id="rope-m-v">3</span></label>
+        <label>pos n <input type="range" id="rope-n" min="0" max="40" value="9"><span class="readout" id="rope-n-v">9</span></label>
+      </div>
+      <div class="vizbox"><canvas id="rope-canvas" width="440" height="260"></canvas></div>
+      <p class="caption" id="rope-cap"></p>
+    </div>
+
+    <div class="panel">
+      <h3>Score vs distance: RoPE, ALiBi, sliding window</h3>
+      <p style="font-size:14.5px;color:var(--fg2)">
+        How much attention a token can still get, as a function of how far away it is. ALiBi's extrapolation works
+        by making distant tokens exponentially unlikely &mdash; which is also exactly why it does not help
+        long-range <em>retrieval</em>.
+      </p>
+      <div class="ctl" id="decay-ctl"></div>
+      <div class="vizbox"><canvas id="decay-canvas" width="440" height="260"></canvas></div>
+      <p class="caption" id="decay-cap"></p>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:20px">
+    <h3>Stretching RoPE past its training length</h3>
+    <p style="font-size:14.5px;color:var(--fg2)">
+      Each RoPE dimension pair has its own wavelength. Dimensions whose wavelength is <em>shorter</em> than the
+      training context have been seen rotating many times &mdash; they are fine. Dimensions whose wavelength is
+      <em>longer</em> have never completed a rotation, and those are the ones that go out of distribution when you
+      extend. The three methods differ entirely in which dimensions they squash.
+    </p>
+    <div class="ctl">
+      <label>extension factor s <input type="range" id="ext-s" min="1" max="32" step="1" value="8"><span class="readout" id="ext-s-v">8&times;</span></label>
+      <button class="chip on" data-ext="none">plain RoPE</button>
+      <button class="chip on" data-ext="pi">PI</button>
+      <button class="chip on" data-ext="ntk">NTK-aware</button>
+      <button class="chip on" data-ext="yarn">YaRN</button>
+    </div>
+    <div class="vizbox"><canvas class="wide" id="ext-canvas" width="1080" height="300"></canvas></div>
+    <p class="caption" id="ext-cap"></p>
+  </div>
+</div></section>
+
+<!-- ============ KV CALC ============ -->
+<section id="kv"><div class="wrap">
+  <div class="sec-head">
+    <h2>KV cache calculator</h2>
+    <p>
+      This is the bill that decides how many users you can serve. Set your architecture and watch the
+      KV-shape mechanisms fight over it. Note that GQA, MQA and MLA all divide the <em>constant</em> &mdash;
+      only the hybrid schedule and the linear layers change how it scales.
+    </p>
+  </div>
+  <div class="panel">
+    <div class="ctl">
+      <label>layers <input type="range" id="kv-L" min="8" max="128" step="4" value="80"><span class="readout" id="kv-L-v">80</span></label>
+      <label>heads <input type="range" id="kv-H" min="8" max="128" step="4" value="64"><span class="readout" id="kv-H-v">64</span></label>
+      <label>head dim <input type="range" id="kv-D" min="32" max="256" step="16" value="128"><span class="readout" id="kv-D-v">128</span></label>
+      <label>context <input type="range" id="kv-N" min="10" max="20" step="1" value="15"><span class="readout" id="kv-N-v">32K</span></label>
+      <label>users <input type="range" id="kv-U" min="1" max="128" step="1" value="8"><span class="readout" id="kv-U-v">8</span></label>
+      <label>bytes/num
+        <select id="kv-B"><option value="2">fp16 (2)</option><option value="4">fp32 (4)</option><option value="1">fp8 (1)</option></select>
+      </label>
+    </div>
+    <div class="bars" id="kv-bars"></div>
+    <p class="caption">
+      cache = 2 (K and V) &times; layers &times; kv_heads &times; head_dim &times; bytes &times; tokens &times; users.
+      MLA replaces kv_heads&times;head_dim with a single learned latent (here d<sub>kv</sub>=512 plus a 64-dim decoupled
+      RoPE part, DeepSeek-V2's configuration). The hybrid row assumes 1 full-attention layer in 4.
+    </p>
+  </div>
+</div></section>
+
+<!-- ============ LINEAR STATE ============ -->
+<section id="state"><div class="wrap">
+  <div class="sec-head">
+    <h2>What happens when you delete softmax</h2>
+    <p>
+      Softmax is a row-wise nonlinearity, so it must see the whole row before it can normalise &mdash; that is
+      what forces you to build the N&times;N matrix. Take it out and the parentheses move: compute K&#7488;V first
+      and the entire past collapses into one d&times;d matrix that never grows. Then spend four years
+      buying back what you lost.
+    </p>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h3>The state does not grow</h3>
+      <div class="ctl">
+        <label>tokens generated <input type="range" id="st-n" min="1" max="200" value="8"><span class="readout" id="st-n-v">8</span></label>
+      </div>
+      <div class="vizbox"><canvas id="state-canvas" width="440" height="240"></canvas></div>
+      <p class="caption" id="state-cap"></p>
+    </div>
+
+    <div class="panel">
+      <h3>Add, or overwrite? &mdash; the delta rule</h3>
+      <p style="font-size:14.5px;color:var(--fg2)">
+        Memory currently holds <b>40</b> for this key. The model now wants it to hold <b>55</b>.
+        Plain linear attention only knows how to add.
+      </p>
+      <div class="ctl">
+        <button class="chip on" id="dl-mode-add">plain linear (add)</button>
+        <button class="chip" id="dl-mode-delta">delta rule (correct)</button>
+        <button class="chip" id="dl-step">write the token &rarr;</button>
+        <button class="chip" id="dl-reset">reset</button>
+      </div>
+      <div class="vizbox"><canvas id="delta-canvas" width="440" height="240"></canvas></div>
+      <p class="caption" id="delta-cap"></p>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:20px">
+    <h3>The 2026 answer: don't choose, interleave</h3>
+    <p style="font-size:14.5px;color:var(--fg2)">
+      A fixed-size state provably cannot hold N &gg; d exact facts. That is an information-theoretic bound, not an
+      engineering problem &mdash; which is why every shipping model that uses linear layers also keeps a minority
+      of full-attention layers. Drag the ratio and watch what it does to the cache.
+    </p>
+    <div class="ctl">
+      <label>full-attention layers <input type="range" id="sch-r" min="1" max="16" value="4"><span class="readout" id="sch-r-v">1 in 4</span></label>
+      <label>depth <input type="range" id="sch-L" min="8" max="64" step="4" value="32"><span class="readout" id="sch-L-v">32</span></label>
+    </div>
+    <div class="vizbox"><canvas class="wide" id="sched-canvas" width="1080" height="150"></canvas></div>
+    <p class="caption" id="sched-cap"></p>
+  </div>
+</div></section>
+
+<!-- ============ COMPARE ============ -->
+<section id="compare"><div class="wrap">
+  <div class="sec-head">
+    <h2>All of them, side by side</h2>
+    <p>Click a column heading to sort. Default is chronological, which is the ordering that tells the story.</p>
+  </div>
+  <div class="tblwrap"><table class="cmp" id="cmp">
+    <thead><tr>
+      <th data-k="date">Date</th><th data-k="name">Mechanism</th><th data-k="family">Family</th>
+      <th data-k="bill">Bill it attacks</th><th data-k="buys">What it buys</th><th data-k="costs">What it costs</th>
+    </tr></thead><tbody></tbody>
+  </table></div>
+</div></section>
+
+<!-- ============ NEXT ============ -->
+<section id="next"><div class="wrap">
+  <div class="sec-head">
+    <h2>Once you see the shape, you can guess what comes next</h2>
+    <p>
+      That is the point of ordering by date rather than by family. Five things the timeline's shape suggests,
+      offered as predictions rather than facts.
+    </p>
+  </div>
+  <div id="pred-root"></div>
+</div></section>
+
+<!-- ============ SOURCES ============ -->
+<section id="sources"><div class="wrap">
+  <div class="sec-head">
+    <h2>Dates and sources</h2>
+    <p>
+      Every date is the v1 arXiv submission timestamp or the official release date, checked against the primary
+      source. Where a date was genuinely ambiguous I have said so in the entry rather than picking one quietly.
+      <b id="src-count">12</b> entries carry such a note. If you find one that is wrong, that is a bug &mdash; tell me.
+    </p>
+  </div>
+  <div class="tblwrap"><table class="cmp" id="srctbl">
+    <thead><tr><th>Date</th><th>Mechanism</th><th>Primary source(s)</th><th>Caveat</th></tr></thead>
+    <tbody></tbody>
+  </table></div>
+</div></section>
+
+<footer><div class="wrap">
+  <p>
+    Built for <b>ERA V5, Session 8</b> &mdash; modern attention variants.
+    Content grounded in the session transcript of 15 Aug 2026, extended with every mechanism the session
+    did not have time to reach. <span class="badge session">session</span> marks what was covered in class;
+    <span class="badge extra">extra</span> marks what was added.
+  </p>
+  <p class="mut">
+    No frameworks, no build step, no external requests. All attention arithmetic on this page is computed live in
+    the browser.
+  </p>
+</div></footer>
+
+<script src="data.js"></script>
+<script src="viz.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
