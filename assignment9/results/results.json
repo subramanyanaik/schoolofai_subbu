@@ -1,0 +1,233 @@
+{
+  "gpu": "NVIDIA GeForce RTX 3050 Laptop GPU",
+  "gpu_total_gib": 4.0,
+  "torch_version": "2.5.1+cu121",
+  "seed": 1337,
+  "vocab_size": 50257,
+  "d_model": 256,
+  "n_layer": 4,
+  "n_head": 4,
+  "d_ff": 688,
+  "ln_vocab": 10.8249,
+  "train_tokens": 304222,
+  "val_tokens": 33803,
+  "item1_hidden_numel": 32768,
+  "item1_logits_numel": 6432896,
+  "item1_blowup": 196.3,
+  "item2_shift_verified": true,
+  "item3_tokens_counted": 100,
+  "item3_tokens_masked": 58,
+  "item3_loss_counted_init": 10.79,
+  "item3_loss_masked_init": 10.9393,
+  "item3_pad_fraction_pct": 42.0,
+  "item3b_steps": 400,
+  "item3b_final_counted": 3.3281,
+  "item3b_final_masked": 5.1966,
+  "item3b_gap": 1.8685,
+  "item3b_real_frac": 0.6348,
+  "ref_steps": 600,
+  "ref_final_loss": 3.9919,
+  "item4_n_before": 119,
+  "item4_n_after": 118,
+  "item4_loss_before": 5.4252,
+  "item4_loss_after": 5.4188,
+  "item4_boundary_term": 6.1839,
+  "item4_boundary_ratio": 1.14,
+  "item4_pairs": 256,
+  "item4_mean_boundary": 9.7383,
+  "item4_mean_interior": 4.9676,
+  "item4_mean_ratio": 1.96,
+  "item4_boundary_worse_pct": 87.9,
+  "item5_init_loss": 10.8373,
+  "item5_init_ppl": 50883.2,
+  "item5_ppl_over_vocab": 1.0125,
+  "item5_uniform_control": 10.8249,
+  "item6_body_params": 3164416,
+  "item6_embed_params": 12865792,
+  "item6_untied_total": 28896000,
+  "item6_tied_total": 16030208,
+  "item6_saved": 12865792,
+  "item6_saved_pct": 44.5,
+  "item6_v5_head_params": 536870912,
+  "item7_loss_naive": 10.83994007,
+  "item7_loss_chunked": 10.83993912,
+  "item7_loss_absdiff": 9.537e-07,
+  "item7_grad_absdiff": 1.368e-09,
+  "item7_peak_naive_mib": 2412.0,
+  "item7_peak_chunked_mib": 208.0,
+  "item7_ratio": 11.6,
+  "item7_measured": true,
+  "item7_N": 4096,
+  "item7_chunk": 256,
+  "item7_sweep": [
+    {
+      "chunk": 64,
+      "peak_mib": 170.3,
+      "ratio": 14.2,
+      "loss": 10.83994
+    },
+    {
+      "chunk": 128,
+      "peak_mib": 182.5,
+      "ratio": 13.2,
+      "loss": 10.839938
+    },
+    {
+      "chunk": 256,
+      "peak_mib": 208.0,
+      "ratio": 11.6,
+      "loss": 10.839939
+    },
+    {
+      "chunk": 512,
+      "peak_mib": 303.4,
+      "ratio": 7.9,
+      "loss": 10.839937
+    },
+    {
+      "chunk": 1024,
+      "peak_mib": 499.7,
+      "ratio": 4.8,
+      "loss": 10.839938
+    },
+    {
+      "chunk": 2048,
+      "peak_mib": 892.3,
+      "ratio": 2.7,
+      "loss": 10.839938
+    }
+  ],
+  "part2_head1_loss": 4.8378,
+  "part2_head2_loss": 5.6923,
+  "part2_sum": 10.5301,
+  "part2_gap": 0.8545,
+  "part2_head1_ppl": 126.2,
+  "part2_head2_ppl": 296.6,
+  "part2_baseline_head1_loss": 4.7853,
+  "part2_head1_delta_vs_baseline": 0.0525,
+  "part2_steps": 800,
+  "part2_gap_first": 0.0335,
+  "part2_gap_last": 0.8468,
+  "part2_curve": [
+    {
+      "step": 1,
+      "head1": 10.8393,
+      "head2": 10.8727,
+      "gap": 0.0335,
+      "loss": 21.712
+    },
+    {
+      "step": 100,
+      "head1": 5.6675,
+      "head2": 5.9996,
+      "gap": 0.3321,
+      "loss": 11.6672
+    },
+    {
+      "step": 200,
+      "head1": 5.0989,
+      "head2": 5.6372,
+      "gap": 0.5384,
+      "loss": 10.7361
+    },
+    {
+      "step": 300,
+      "head1": 4.5607,
+      "head2": 5.256,
+      "gap": 0.6953,
+      "loss": 9.8167
+    },
+    {
+      "step": 400,
+      "head1": 4.5204,
+      "head2": 5.2685,
+      "gap": 0.7481,
+      "loss": 9.7889
+    },
+    {
+      "step": 500,
+      "head1": 4.2102,
+      "head2": 5.0119,
+      "gap": 0.8017,
+      "loss": 9.2221
+    },
+    {
+      "step": 600,
+      "head1": 4.1092,
+      "head2": 4.938,
+      "gap": 0.8289,
+      "loss": 9.0472
+    },
+    {
+      "step": 700,
+      "head1": 3.8982,
+      "head2": 4.7025,
+      "gap": 0.8043,
+      "loss": 8.6008
+    },
+    {
+      "step": 800,
+      "head1": 3.1819,
+      "head2": 4.0288,
+      "gap": 0.8468,
+      "loss": 7.2107
+    }
+  ],
+  "part3_bug_steps": 300,
+  "part3_bug_final_loss": 0.2498,
+  "part3_bug_final_ppl": 1.28,
+  "part3_correct_final_loss": 3.1246,
+  "part3_copy_rate_pct": 100.0,
+  "summary": [
+    {
+      "item": "1",
+      "what": "logits vs hidden blow-up in the last axis",
+      "value": "[B,T,V] vs [B,T,D] = 6,432,896 vs 32,768 numbers (196.3x)"
+    },
+    {
+      "item": "2",
+      "what": "shift verified on strings",
+      "value": "target stream == input stream advanced by one (asserted, and printed as text)"
+    },
+    {
+      "item": "3",
+      "what": "contributing tokens, padding counted -> masked",
+      "value": "100 -> 58 (42.0% of the naive denominator was padding)"
+    },
+    {
+      "item": "3b",
+      "what": "training with padding counted, 400 steps",
+      "value": "counted loss 3.3281 vs honest masked loss 5.1966  (gap 1.8685 nats)"
+    },
+    {
+      "item": "4",
+      "what": "packed documents, boundary masked",
+      "value": "loss 5.4252 (119 sites) -> 5.4188 (118 sites); boundary term 6.1839 nats = 1.14x the mean"
+    },
+    {
+      "item": "5",
+      "what": "perplexity of an untrained model",
+      "value": "50,883.2 against V = 50,257 (ratio 1.0125); loss 10.8373 vs ln V = 10.8249"
+    },
+    {
+      "item": "6",
+      "what": "tied vs untied parameters",
+      "value": "28,896,000 untied -> 16,030,208 tied, saving 12,865,792 (44.5%)"
+    },
+    {
+      "item": "7",
+      "what": "peak memory, ordinary vs chunked cross-entropy",
+      "value": "2,412.0 MiB -> 208.0 MiB = 11.6x, same loss to 1e-06"
+    },
+    {
+      "item": "P2",
+      "what": "head 1 (t+1) / head 2 (t+2) / sum",
+      "value": "4.8378 / 5.6923 / 10.5301   (gap 0.8545 nats)"
+    },
+    {
+      "item": "P3",
+      "what": "off-by-one shift, 300 steps",
+      "value": "loss 0.2498 (ppl 1.28) while the correct shift sits at 3.1246; 100.0% of positions are copies"
+    }
+  ]
+}

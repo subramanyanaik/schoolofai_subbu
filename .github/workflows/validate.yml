@@ -146,3 +146,40 @@ jobs:
         run: |
           python assignment8/tools/gen_date_table.py
           git diff --exit-code -- assignment8/DATES.md
+
+  session9-loss-harness:
+    name: Session 9 - loss harness correctness and write-up integrity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install torch (CPU)
+        run: pip install --quiet torch --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install test deps
+        run: pip install --quiet pytest
+
+      # The chunked cross-entropy is only worth anything if it is bit-for-bit the same
+      # objective as F.cross_entropy, gradients included, at every chunk size and with
+      # masked targets. These tests lift the definitions straight out of the notebook
+      # source, so they cannot pass against a stale copy.
+      - name: Chunked cross-entropy and masking invariants
+        working-directory: assignment9
+        run: python -m pytest tests -q
+
+      # loss_harness.py is the single source of truth; loss_harness.ipynb is generated
+      # from it. If the notebook's code has drifted from the script, the thing a grader
+      # opens is not the thing that was tested.
+      - name: Notebook is in sync with the script
+        working-directory: assignment9
+        run: python tools/build_notebook.py --check
+
+      # Every number in README.md is rendered from results/results.json, which the
+      # notebook emits. If they disagree, the write-up is quoting a run that no longer
+      # exists.
+      - name: README numbers match the recorded run
+        working-directory: assignment9
+        run: python tools/render_numbers.py --check

@@ -1,5 +1,6 @@
 # Python
 __pycache__/
+.pytest_cache/
 *.py[cod]
 *.egg-info/
 .venv/
@@ -33,3 +34,9 @@ assignment6/submission_artifacts/checkpoints/*.pt
 # figures/ ARE committed -- every number in the README is read from them.
 assignment7/data/
 assignment7/checkpoints/
+
+# Assignment 9: the corpus the notebook downloads on first run.
+# results/results.json, the two figures and run_log.txt ARE committed -- every
+# number in the README is rendered from that JSON, and CI checks it.
+assignment9/results/tinyshakespeare.txt
+assignment9/results/notebook_exec.log

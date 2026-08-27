@@ -1,0 +1,391 @@
+
+========================================================================================
+Environment
+========================================================================================
+python        : 3.12.6
+torch         : 2.5.1+cu121
+device        : cuda
+gpu           : NVIDIA GeForce RTX 3050 Laptop GPU  (4.00 GiB)
+
+========================================================================================
+Configuration
+========================================================================================
+vocab_size  : 50257
+d_model     : 256
+n_layer     : 4
+n_head      : 4
+d_ff        : 688
+rope_base   : 10000.0
+tie_head    : False
+eot/pad id  : 50256
+ignore_index: -100
+
+ln(V) = ln(50257) = 10.8249   <- the loss an untrained model must start at
+
+========================================================================================
+Data
+========================================================================================
+characters    : 1,115,394
+tokens        : 338,025   (train 304,222 / val 33,803)
+chars/token   : 3.30
+
+========================================================================================
+Model
+========================================================================================
+trunk parameters :   16,030,208
+head  parameters :   12,865,792
+total (untied)   :   28,896,000
+
+========================================================================================
+Item 1 — shapes, and what each dimension means
+========================================================================================
+tokens                [2, 64]                 B sequences | T positions — token ids, the model's only input
+embed(tokens)         [2, 64, 256]            B sequences | T positions | D = d_model, the residual stream enters
+q / k / v (each)      [2, 4, 64, 64]          B sequences | H heads | T positions | head_dim = D/H, this head's slice
+attention out         [2, 4, 64, 64]          B | H | T | head_dim — each position's mix of the values at or before it
+ffn gate / up (each)  [2, 64, 688]            B | T | d_ff — the wide middle; one branch decides what passes
+block 0 output        [2, 64, 256]            B | T | D — same shape in, same shape out: that is the residual stream
+hidden                [2, 64, 256]            B | T | D — one vector per position, having seen the whole context before it
+logits                [2, 64, 50257]          B | T | V — one raw unnormalised score per vocabulary token
+logits[:, :-1]        [2, 63, 50257]          B | T-1 | V — drop the last position: nothing follows it
+tokens[:, 1:]         [2, 63]                 B | T-1 — drop the first token: nothing predicts it
+flat logits           [126, 50257]            B*(T-1) prediction sites | V scores each
+flat targets          [126]                   B*(T-1) — one correct token id per site
+loss                  []                      scalar — the mean surprise, in nats, over every contributing site
+
+B = 2 sequences, T = 64 positions, D = 256, H = 4 heads, head_dim = 64, V = 50257
+hidden holds 32,768 numbers; logits holds 6,432,896 — a factor of V/D = 196.3x, created in the last layer
+contributing sites: B*(T-1) = 126
+loss = 10.8488 nats
+
+========================================================================================
+Item 2 — inputs beside targets, as strings
+========================================================================================
+CORRECT SHIFT  —  target[i] is the token that follows input[i]
+
+ pos  input token (given)       target token (asked for)
+----  ------------------------  ------------------------
+   0  ' the'                    ' sins'                 
+   1  ' sins'                   ' of'                   
+   2  ' of'                     ' your'                 
+   3  ' your'                   ' youth'                
+   4  ' youth'                  '\n'                    
+   5  '\n'                      'are'                   
+   6  'are'                     ' forgiven'             
+   7  ' forgiven'               ' you'                  
+   8  ' you'                    ','                     
+   9  ','                       ' you'                  
+  10  ' you'                    "'re"                   
+  11  "'re"                     ' well'                 
+  12  ' well'                   ' to'                   
+  13  ' to'                     ' live'                 
+  14  ' live'                   '.'                     
+  15  '.'                       ' Gold'                 
+  16  ' Gold'                   '!'                     
+  17  '!'                       ' all'                  
+
+reconstructed input  : " the sins of your youth\nare forgiven you, you're well to live. Gold!"
+reconstructed target : " sins of your youth\nare forgiven you, you're well to live. Gold! all"
+
+assert inp[1:] == tgt[:-1]  ->  OK: the target stream is the input stream advanced by one
+
+
+WRONG SHIFT  --  the forgot-to-shift bug: target[i] IS input[i]
+
+ pos  input token (given)       target token (asked for)
+----  ------------------------  ------------------------
+   0  ' the'                    ' the'                    <-- identical
+   1  ' sins'                   ' sins'                   <-- identical
+   2  ' of'                     ' of'                     <-- identical
+   3  ' your'                   ' your'                   <-- identical
+   4  ' youth'                  ' youth'                  <-- identical
+   5  '\n'                      '\n'                      <-- identical
+   6  'are'                     'are'                     <-- identical
+   7  ' forgiven'               ' forgiven'               <-- identical
+
+Read it: every row asks the model for a token it has already been handed.  The hidden
+state at position i has seen token i, so this is a copy task.  Nothing raises, no shape
+mismatch, no exception -- the loss simply becomes beautiful.  Part 3 trains it and plots it.
+
+========================================================================================
+Item 3 — padding
+========================================================================================
+batch shape           : [4, 26]   (B=4 docs, T=26 positions)
+real token lengths    : [8, 21, 7, 26]   -> 62 real tokens, 42 pads
+
+                            contributing tokens        loss    perplexity
+padding counted                             100     10.7900      48,534.4
+padding masked                               58     10.9393      56,349.0
+change                                      -42      0.1493
+
+B*(T-1) = 100 positions exist; only 58 of them are real predictions.  42.0% of the naive denominator is padding.
+
+========================================================================================
+Item 3b — training with padding counted
+========================================================================================
+  [pad-counted] step    1/400  counted=10.8832  masked_real_only=10.9351  real_frac=0.5925  loss=10.8832
+  [pad-counted] step   50/400  counted=4.4000  masked_real_only=6.5926  real_frac=0.6614  loss=4.4000
+  [pad-counted] step  100/400  counted=3.9912  masked_real_only=6.1179  real_frac=0.6467  loss=3.9912
+  [pad-counted] step  150/400  counted=3.0961  masked_real_only=5.4978  real_frac=0.5571  loss=3.0961
+  [pad-counted] step  200/400  counted=3.5669  masked_real_only=5.3110  real_frac=0.6654  loss=3.5669
+  [pad-counted] step  250/400  counted=3.1539  masked_real_only=5.1167  real_frac=0.6102  loss=3.1539
+  [pad-counted] step  300/400  counted=2.5030  masked_real_only=5.5144  real_frac=0.4478  loss=2.5030
+  [pad-counted] step  350/400  counted=3.1121  masked_real_only=5.2997  real_frac=0.5807  loss=3.1121
+  [pad-counted] step  400/400  counted=3.3281  masked_real_only=5.1966  real_frac=0.6348  loss=3.3281
+  [pad-counted] 400 steps in 40.0s
+
+final counted loss (what the optimiser sees) : 3.3281   ppl       27.9
+final masked loss  (real tokens only)        : 5.1966   ppl      180.6
+gap                                          : 1.8685 nats
+
+The counted loss falls fast because most of the batch is padding and padding is trivially
+predictable: after a pad, another pad.  The masked loss is the honest one, and it is the
+one that barely moved.  A run reported on the counted number looks like it is working.
+(on average only 63% of the positions in these batches are real tokens; the rest is padding predicting padding)
+
+========================================================================================
+Reference model - training on clean text
+========================================================================================
+  [reference] step    1/600  ppl=52832.2461  loss=10.8749
+  [reference] step  100/600  ppl=212.0238  loss=5.3567
+  [reference] step  200/600  ppl=115.1866  loss=4.7466
+  [reference] step  300/600  ppl=101.8975  loss=4.6240
+  [reference] step  400/600  ppl=93.7344  loss=4.5405
+  [reference] step  500/600  ppl=110.6044  loss=4.7060
+  [reference] step  600/600  ppl=54.1597  loss=3.9919
+  [reference] 600 steps in 97.2s
+
+========================================================================================
+Item 4 — packed documents and the boundary
+========================================================================================
+packed sequence : [1, 120]  = doc A (60 tokens) + doc B (60 tokens)
+boundary site   : target index 59  (input = last token of A, target = first token of B)
+
+  ...end of document A : ' shall a buzzard take thee?\n\nKATHAR'
+  start of document B  : ' the\nhorses ran away, how her bridle was'
+
+  the pair being trained on: input 'AR'  ->  target ' the'
+
+                                    contributing      loss    perplexity
+before masking the boundary                  119    5.4252         227.1
+after masking the boundary                   118    5.4188         225.6
+difference                                    -1   -0.0064
+
+Explanation, checked rather than asserted:
+  the boundary site's own term  -log p(first token of B | last token of A) = 6.1839 nats
+  mean of the other 118 terms = (loss_before*119 - 6.1839) / 118 = 5.4188
+  loss after masking                                                       = 5.4188
+  -> match.  Masking removes exactly one term from the numerator and one from the denominator.
+
+  boundary term / mean of every other term = 1.14x   (it ranks 50 of 119 sites in this particular sequence)
+  One draw proves nothing, so the same measurement is repeated below over many pairs.
+
+Over 256 independently packed document pairs:
+  mean loss at the boundary site  : 9.7383 nats
+  mean loss at every other site   : 4.9676 nats
+  ratio                           : 1.96x
+  the boundary is worse than its own sequence average in 88% of pairs
+
+So the boundary is genuinely harder, on average, and harder for a reason no amount of
+training can fix: nothing in document A predicts the first token of document B.
+
+Now read what masking did to the *reported number*: almost nothing, because one site in
+119 cannot move a mean.  That is the trap.  The damage is not to the scalar you
+print, it is to the gradient at that site -- a dense update over all 50,257
+vocabulary rows, teaching the model that unrelated things follow each other.  On a
+4,096-token packed sequence of ~200-token documents that is ~20 such updates per
+sequence, on every step, for the whole run.
+
+========================================================================================
+Item 5 — perplexity of an untrained model
+========================================================================================
+positions evaluated       : 2,040
+loss at initialisation    : 10.8373 nats
+perplexity                :     50,883.2
+vocabulary size V         :       50,257
+ln(V)                     : 10.8249 nats
+loss / ln(V)              : 1.0011
+perplexity / V            : 1.0125
+
+uniform-logits control    : 10.8249 nats  (exactly ln V, as it must be)
+deviation from ln(V)      : +0.0124 nats -> within tolerance, proceed.
+
+If this had come out at, say, 4 nats, the target alignment would be wrong and every
+number after it would be worthless.  Part 3 shows exactly that failure with a curve.
+
+========================================================================================
+Item 6 — tied vs untied head
+========================================================================================
+tied head shares storage with the embedding : True
+
+component                               parameters
+--------------------------------------------------
+transformer body (4 blocks + norm)       3,164,416
+input embedding  [V, D]                 12,865,792
+output head      [V, D]                 12,865,792
+--------------------------------------------------
+UNTIED total                            28,896,000
+TIED total                              16,030,208
+saved by tying                          12,865,792   (44.5% of the model)
+
+The head alone is 44.5% of the untied model, and the body is only 11.0%.
+At this width the two [V, D] matrices are 89.0% of every parameter in it.
+
+The same arithmetic at the V5 configuration from the session (V=131,072, D=4,096):
+  head [V, D]              :     536,870,912  (536.9M)
+  saved by tying           :     536,870,912
+  ...except that V5's input side is a byte codec plus one projection, which has no rows
+  to tie to.  Tying is the standard escape and it is closed; that is Session 9 section 8.
+
+========================================================================================
+Item 7 — correctness of the chunked loss, then memory
+========================================================================================
+ordinary cross-entropy loss : 10.8399400711
+chunked   cross-entropy loss: 10.8399391174
+|difference|                : 9.537e-07
+max |d loss / d hidden| diff: 3.474e-10   (scale 2.716e-05)
+max |d loss / d weight| diff: 1.368e-09   (scale 7.921e-04)
+-> same objective, same gradients.  Only the memory traffic differs.
+tokens N = 4,096   D = 256   V = 50,257   chunk = 256   dtype = fp32
+one full [N, V] logits tensor is 785.3 MiB; one chunk is 49.1 MiB
+
+implementation                measured peak (forward+backward)
+--------------------------------------------------------------
+ordinary cross-entropy                          2,412.0 MiB
+chunked cross-entropy                             208.0 MiB
+ratio                                              11.6x
+
+The measured ratio is smaller than the N/chunk ratio of 16x, and it should be: the chunked run still pays for `hidden` (4.0 MiB), for the head weight and its gradient (98.2 MiB), and those are fixed costs no chunking removes.
+What chunking removes is the part that scales with tokens times vocabulary.
+
+Peak memory against chunk size, same objective every time:
+   chunk   chunks    peak (MiB)   vs ordinary          loss
+-----------------------------------------------------------
+      64       64         170.3         14.2x     10.839940
+     128       32         182.5         13.2x     10.839938
+     256       16         208.0         11.6x     10.839939
+     512        8         303.4          7.9x     10.839937
+    1024        4         499.7          4.8x     10.839938
+    2048        2         892.3          2.7x     10.839938
+
+Every row is the same number to six decimals.  Smaller chunks buy memory and cost
+python-level loop iterations.  Nothing about the objective changes.
+
+The same arithmetic at the V5 configuration (V=131,072, bf16), Session 9 section 8:
+  batch   context      tokens    logits, bf16    +backward   chunked @1024
+      8     8,192      65,536         16.0 GiB      32.0 GiB         256 MiB
+      4    32,768     131,072         32.0 GiB      64.0 GiB         256 MiB
+      1   262,144     262,144         64.0 GiB     128.0 GiB         256 MiB
+A 64 GiB intermediate whose only purpose is to be collapsed into one scalar.
+
+========================================================================================
+Part 2 — a second head predicting t+2
+========================================================================================
+two-head model (t+1 and t+2):
+  [mtp] step    1/800  head1=10.8393  head2=10.8727  gap=0.0335  loss=21.7120
+  [mtp] step  100/800  head1=5.6675  head2=5.9996  gap=0.3321  loss=11.6672
+  [mtp] step  200/800  head1=5.0989  head2=5.6372  gap=0.5384  loss=10.7361
+  [mtp] step  300/800  head1=4.5607  head2=5.2560  gap=0.6953  loss=9.8167
+  [mtp] step  400/800  head1=4.5204  head2=5.2685  gap=0.7481  loss=9.7889
+  [mtp] step  500/800  head1=4.2102  head2=5.0119  gap=0.8017  loss=9.2221
+  [mtp] step  600/800  head1=4.1092  head2=4.9380  gap=0.8289  loss=9.0472
+  [mtp] step  700/800  head1=3.8982  head2=4.7025  gap=0.8043  loss=8.6008
+  [mtp] step  800/800  head1=3.1819  head2=4.0288  gap=0.8468  loss=7.2107
+  [mtp] 800 steps in 294.7s
+
+single-head baseline (t+1 only), identical seed and batch order:
+  [baseline] step    1/800  head1=10.8393  loss=10.8393
+  [baseline] step  100/800  head1=5.5386  loss=5.5386
+  [baseline] step  200/800  head1=4.9146  loss=4.9146
+  [baseline] step  300/800  head1=4.4582  loss=4.4582
+  [baseline] step  400/800  head1=4.4423  loss=4.4423
+  [baseline] step  500/800  head1=4.1277  loss=4.1277
+  [baseline] step  600/800  head1=4.0939  loss=4.0939
+  [baseline] step  700/800  head1=3.8565  loss=3.8565
+  [baseline] step  800/800  head1=3.1246  loss=3.1246
+  [baseline] 800 steps in 169.4s
+
+========================================================================================
+Part 2 — results
+========================================================================================
+                                           loss (nats)    perplexity
+--------------------------------------------------------------------
+head 1  (predicting t+1)                        4.8378         126.2
+head 2  (predicting t+2)                        5.6923         296.6
+sum  (the quantity being optimised)            10.5301
+gap  (head 2 - head 1)                          0.8545
+
+single-head baseline, head 1                    4.7853         119.7
+effect of the extra head on head 1             +0.0525  nats
+
+(validation loss, 20 held-out batches, both models trained on identical batches)
+
+  step      head 1      head 2       gap   gap/head1
+     1     10.8393     10.8727    0.0335       0.003
+   100      5.6675      5.9996    0.3321       0.059
+   200      5.0989      5.6372    0.5384       0.106
+   300      4.5607      5.2560    0.6953       0.152
+   400      4.5204      5.2685    0.7481       0.165
+   500      4.2102      5.0119    0.8017       0.190
+   600      4.1092      4.9380    0.8289       0.202
+   700      3.8982      4.7025    0.8043       0.206
+   800      3.1819      4.0288    0.8468       0.266
+saved: D:\schoolofai\schoolofai_subbu\assignment9\results\part2_curves.png
+
+========================================================================================
+Part 3 — the beautiful loss curve of a broken shift
+========================================================================================
+  [off-by-one] step    1/300  ppl=49848.9336  loss=10.8168
+  [off-by-one] step   50/300  ppl=16.1793  loss=2.7837
+  [off-by-one] step  100/300  ppl=2.8381  loss=1.0431
+  [off-by-one] step  150/300  ppl=1.8749  loss=0.6285
+  [off-by-one] step  200/300  ppl=1.5634  loss=0.4468
+  [off-by-one] step  250/300  ppl=1.2866  loss=0.2520
+  [off-by-one] step  300/300  ppl=1.2837  loss=0.2498
+  [off-by-one] 300 steps in 63.5s
+
+correctly shifted baseline after 800 steps : 3.1246 nats   ppl      22.8
+wrongly shifted model after only 300 steps      : 0.2498 nats   ppl       1.3
+
+ pos  input token             model predicts        
+----  ----------------------  ----------------------
+   0  ' on'                   ' on'                   <-- copied its input
+   1  ' his'                  ' his'                  <-- copied its input
+   2  ' back'                 ' back'                 <-- copied its input
+   3  '.'                     '.'                     <-- copied its input
+   4  '\n'                    '\n'                    <-- copied its input
+   5  '\n'                    '\n'                    <-- copied its input
+   6  'B'                     'B'                     <-- copied its input
+   7  'AP'                    'AP'                    <-- copied its input
+   8  'T'                     'T'                     <-- copied its input
+   9  'IS'                    'IS'                    <-- copied its input
+
+copy rate over the whole sequence: 100.0% of positions reproduce the input.
+The loss is excellent.  The model is a photocopier.  Only the strings show it.
+saved: D:\schoolofai\schoolofai_subbu\assignment9\results\part3_offbyone.png
+
+========================================================================================
+SUMMARY
+========================================================================================
+[ 1] logits vs hidden blow-up in the last axis
+     [B,T,V] vs [B,T,D] = 6,432,896 vs 32,768 numbers (196.3x)
+[ 2] shift verified on strings
+     target stream == input stream advanced by one (asserted, and printed as text)
+[ 3] contributing tokens, padding counted -> masked
+     100 -> 58 (42.0% of the naive denominator was padding)
+[3b] training with padding counted, 400 steps
+     counted loss 3.3281 vs honest masked loss 5.1966  (gap 1.8685 nats)
+[ 4] packed documents, boundary masked
+     loss 5.4252 (119 sites) -> 5.4188 (118 sites); boundary term 6.1839 nats = 1.14x the mean
+[ 5] perplexity of an untrained model
+     50,883.2 against V = 50,257 (ratio 1.0125); loss 10.8373 vs ln V = 10.8249
+[ 6] tied vs untied parameters
+     28,896,000 untied -> 16,030,208 tied, saving 12,865,792 (44.5%)
+[ 7] peak memory, ordinary vs chunked cross-entropy
+     2,412.0 MiB -> 208.0 MiB = 11.6x, same loss to 1e-06
+[P2] head 1 (t+1) / head 2 (t+2) / sum
+     4.8378 / 5.6923 / 10.5301   (gap 0.8545 nats)
+[P3] off-by-one shift, 300 steps
+     loss 0.2498 (ppl 1.28) while the correct shift sits at 3.1246; 100.0% of positions are copies
+
+wrote D:\schoolofai\schoolofai_subbu\assignment9\results\results.json
