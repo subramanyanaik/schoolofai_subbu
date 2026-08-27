@@ -10,8 +10,10 @@
 **Session-9 assignment.** One notebook that takes the three lines between the model output
 and the scalar, and makes them *correct* and — the harder half — *observable*.
 
-> **Notebook:** [`loss_harness.ipynb`](loss_harness.ipynb) — runs top to bottom on a Colab
-> T4, on a local CUDA GPU, or on CPU.
+> **Notebook:** [`loss_harness.ipynb`](loss_harness.ipynb) — executed end to end with
+> `nbclient` on a local CUDA GPU: **22 of 22 code cells, in order, zero error outputs**, and
+> the committed file carries that run's outputs. Not run on Colab itself — see
+> [Honest caveats](#honest-caveats). Use a GPU runtime.
 > **Source of truth:** [`loss_harness.py`](loss_harness.py). The notebook is generated from
 > it, cell for cell, and CI fails if the two drift.
 > **Every number below:** [`results/results.json`](results/results.json), emitted by the run,
@@ -337,6 +339,23 @@ that no longer exists.
 
 ## Honest caveats
 
+* **"Runs top to bottom" was verified in a Jupyter kernel, not on Colab.** The notebook was
+  executed with `nbclient` against a local `ipykernel` — the same execution model Colab
+  uses — on an RTX 3050 with torch 2.5.1+cu121. Proof is in the committed file itself:
+  `execution_count` runs 1…22 with no gaps, and no cell carries an `output_type: "error"`.
+  Two cells carry no output because they only define `ce_loss`/`per_token_ce` and
+  `ChunkedCrossEntropy`. What that does **not** cover, and what was checked separately
+  instead of assumed:
+  * *the tiktoken install branch* — exercised by blocking the first `import tiktoken` with a
+    `meta_path` finder and letting the `except ImportError` run. The control flow recovers
+    and the encoder is usable; the `pip install` itself was a no-op locally, so a genuinely
+    cold install is still untested.
+  * *the CUDA-absent branch* — exercised directly: `measure_peak` returns `None`, the
+    analytic fallback is taken, and `render_numbers.py` reads the sweep with `.get`, so a
+    CPU run degrades rather than crashes. It was **not** run end to end on CPU: four
+    training runs against a 50k-vocab head would take hours. Use a GPU runtime.
+  * *the badge URL and the corpus download* — both plain network fetches on `main`;
+    neither was exercised from inside Colab.
 * **The vocabulary is 50,257, not 131,072.** The harness uses the real GPT-2 BPE vocabulary,
   because item 5's anchor has to be checked against *my* vocabulary. Wherever the session's
   own configuration matters — item 6's parameter count, item 7's memory projection — the
