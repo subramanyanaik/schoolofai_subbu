@@ -96,20 +96,34 @@ Single-head baseline trained on identical batches with an identical seed: **4.78
 
 <!-- BEGIN:colab -->
 
-**Independently reproduced on a Google Colab GPU runtime.** A fresh Colab VM ships without `tiktoken` and without the corpus, so that run also exercised the cold `pip install` and the corpus download that the local execution could not.
+**Independently reproduced on Google Colab.** The run is extracted from its executed notebook by [`tools/extract_colab.py`](tools/extract_colab.py), which refuses the notebook unless its code cells are byte-identical to the committed one and it ran `execution_count` 1…22 with no gaps and no errors. Full stdout: [`results/colab_run_log.txt`](results/colab_run_log.txt).
 
-**16 of the 29 reported quantities came out identical** — every one that is fixed by tensor shapes, integer counts, CPU-seeded initialisation or plain arithmetic, and therefore *must* be:
+It is not the same machine in any respect that matters:
+
+| | this repo's committed run | the Colab run |
+|---|---|---|
+| GPU | NVIDIA GeForce RTX 3050 Laptop GPU (4.0 GiB) | Tesla T4 (14.56 GiB) |
+| torch | 2.5.1+cu121 | 2.11.0+cu128 |
+| Python | 3.12.6 | 3.13.15 |
+
+A fresh Colab VM also ships without `tiktoken` and without the corpus, so that run exercised the cold `pip install` and the corpus download the local execution could only simulate.
+
+### 17 quantities that *must* be identical, and are
+
+Different card, different CUDA, a torch six minor releases apart, a different Python — and these do not move, because nothing about them is a float computed on the device:
 
 | quantity | both runs | why it cannot differ |
 |---|---|---|
+| `item1_hidden_numel` | 32,768 | a product of shapes |
+| `item1_logits_numel` | 6,432,896 | a product of shapes |
+| `item1_blowup` | 196.3 | V/D |
 | `item3_tokens_counted` | 100 | an integer count |
 | `item3_tokens_masked` | 58 | an integer count |
 | `item3_pad_fraction_pct` | 42.0 | a ratio of integer counts |
 | `item4_n_before` | 119 | an integer count |
 | `item4_n_after` | 118 | an integer count |
-| `item5_init_ppl` | 50,883.2 | one forward pass of a CPU-seeded initialisation |
-| `item5_init_loss` | 10.8373 | one forward pass of a CPU-seeded initialisation |
-| `item5_ppl_over_vocab` | 1.0125 | one forward pass of a CPU-seeded initialisation |
+| `item6_body_params` | 3,164,416 | parameter arithmetic |
+| `item6_embed_params` | 12,865,792 | parameter arithmetic |
 | `item6_untied_total` | 28,896,000 | parameter arithmetic |
 | `item6_tied_total` | 16,030,208 | parameter arithmetic |
 | `item6_saved` | 12,865,792 | parameter arithmetic |
@@ -117,31 +131,56 @@ Single-head baseline trained on identical batches with an identical seed: **4.78
 | `item7_peak_naive_mib` | 2,412.0 | allocator bytes, driven by tensor shapes not by the card |
 | `item7_peak_chunked_mib` | 208.0 | allocator bytes, driven by tensor shapes not by the card |
 | `item7_ratio` | 11.6 | allocator bytes, driven by tensor shapes not by the card |
-| `part3_copy_rate_pct` | 100.0 | a saturated rate |
 
-The other 13 sit downstream of hundreds of GPU training steps, so they may only agree, not match. Largest disagreement first:
+Item 7's whole chunk sweep agrees too — peak memory at every chunk size (64, 128, 256, 512, 1024, 2048) is identical across the two machines: 170.3, 182.5, 208.0, 303.4, 499.7, 892.3 MiB. **The 11.6× is a property of the algorithm, not of my card.** `max_memory_allocated` counts allocator bytes, and those are decided by tensor shapes.
 
-| quantity | local (RTX 3050) | Colab | delta | relative |
+### 19 quantities downstream of GPU training, which only agree
+
+These sit behind hundreds of GPU training steps and are *not* enforced, only compared. Largest disagreement first:
+
+| quantity | local | Colab | delta | relative |
 |---|---|---|---|---|
-| `item4_boundary_term` | 6.1839 | 5.9362 | -0.2477 | 4.01% |
-| `part3_bug_final_loss` | 0.2498 | 0.2531 | +0.0033 | 1.32% |
+| `part2_head1_delta_vs_baseline` | 0.0525 | 0.0467 | -0.0058 | 11.05% |
+| `item4_boundary_term` | 6.1839 | 5.9458 | -0.2381 | 3.85% |
+| `part3_bug_final_loss` | 0.2498 | 0.2537 | +0.0039 | 1.56% |
+| `item4_boundary_worse_pct` | 87.9 | 87 | -0.9000 | 1.02% |
+| `item4_mean_ratio` | 1.96 | 1.94 | -0.0200 | 1.02% |
+| `item4_mean_boundary` | 9.7383 | 9.6583 | -0.0800 | 0.82% |
 | `part3_bug_final_ppl` | 1.28 | 1.29 | +0.0100 | 0.78% |
 | `item3b_gap` | 1.8685 | 1.8755 | +0.0070 | 0.37% |
 | `item3b_final_masked` | 5.1966 | 5.216 | +0.0194 | 0.37% |
 | `item3b_final_counted` | 3.3281 | 3.3405 | +0.0124 | 0.37% |
-| `part2_gap` | 0.8545 | 0.8529 | -0.0016 | 0.19% |
-| `part3_correct_final_loss` | 3.1246 | 3.1295 | +0.0049 | 0.16% |
-| `item4_loss_before` | 5.4252 | 5.4218 | -0.0034 | 0.06% |
-| `part2_head1_loss` | 4.8378 | 4.8397 | +0.0019 | 0.04% |
-| `item4_loss_after` | 5.4188 | 5.4175 | -0.0013 | 0.02% |
-| `part2_sum` | 10.5301 | 10.5323 | +0.0022 | 0.02% |
-| `part2_head2_loss` | 5.6923 | 5.6926 | +0.0003 | 0.01% |
+| `item4_loss_after` | 5.4188 | 5.4319 | +0.0131 | 0.24% |
+| `item4_mean_interior` | 4.9676 | 4.9783 | +0.0107 | 0.22% |
+| `item4_loss_before` | 5.4252 | 5.4362 | +0.0110 | 0.20% |
+| `part2_baseline_head1_loss` | 4.7853 | 4.7917 | +0.0064 | 0.13% |
+| `part3_correct_final_loss` | 3.1246 | 3.1274 | +0.0028 | 0.09% |
+| `part2_gap` | 0.8545 | 0.8538 | -0.0007 | 0.08% |
+| `part2_head1_loss` | 4.8378 | 4.8384 | +0.0006 | 0.01% |
+| `part2_sum` | 10.5301 | 10.5306 | +0.0005 | 0.00% |
+| `part2_head2_loss` | 5.6923 | 5.6922 | -0.0001 | 0.00% |
 
-The worst of them, `item4_boundary_term` at 4.01%, is the single most noise-prone number in the whole harness: one prediction site, on one sequence, under a model that has taken 600 GPU training steps. It is exactly why item 4 does not rest on it, and repeats the measurement over 256 packed pairs instead.
+A further 5 came out identical without being required to — `item5_init_loss`, `item5_init_ppl`, `item5_ppl_over_vocab`, `item5_uniform_control`, `part3_copy_rate_pct`. Item 5's anchor is among them, because parameters are seeded on the CPU RNG before the model reaches the device. That is an **observation, not a guarantee**: it is still a forward pass on the GPU, so it is reported rather than enforced, and CI will not fail if a later run moves it in the fourth decimal.
 
-Two results are worth pulling out. Item 5's anchor is **identical** because parameter initialisation runs on the CPU RNG before the model moves to the device, so the cheapest sanity check in the session is hardware-independent. And item 7's memory numbers are **identical** on two different GPUs, because `max_memory_allocated` counts allocator bytes driven by tensor shapes — the 11.6× is a property of the algorithm, not of my card.
+The two largest entries are both the same lesson about what a percentage means.
 
-*Transcribed from [`results/colab_summary.txt`](results/colab_summary.txt) into [`results/colab_summary.json`](results/colab_summary.json); this table is generated from that JSON by [`tools/compare_colab.py`](tools/compare_colab.py), which also fails if a should-be-identical quantity is not identical. The Colab GPU model was not recorded.*
+`part2_head1_delta_vs_baseline` heads the list at 11.0%, but it is a *difference of two nearly-equal losses* — about 0.05 nats formed from two numbers near 4.8. Its operands each agree to a thousandth, and that wobble is most of the 0.0058 nat gap. It has no meaningful relative scale, so the checker compares it in nats instead. The result itself reproduces where it counts: the extra head cost head 1 **+0.0525** nats locally and **+0.0467** on Colab — same sign, same order. Same seed, though, so that is confirmation the finding is not an artefact of my hardware, not a second sample.
+
+`item4_boundary_term` at 3.85% is the genuinely noise-prone one: a single prediction site, on one sequence, under a model that has taken 600 GPU steps. Which is exactly why item 4 does not rest on it. The 256-pair aggregate it uses instead lands at **1.96×** locally against **1.94×** on Colab, with the boundary the worse site in **88%** of pairs against **87%**. The robust statistic reproduces; the single draw does not. That is the case for having built it.
+
+### A third run, which sharpens the diagnosis
+
+An earlier Colab run of the same notebook was reported before its notebook was available, as a pasted summary. It is hand-transcribed into [`results/colab_earlier_partial.json`](results/colab_earlier_partial.json), is not machine-checkable, and no gate depends on it — but it answers a question the two-run comparison cannot.
+
+Of the 18 quantities it covers, **9 are bit-identical between the two Colab runs**, including all of item 3b — which nonetheless differs from the local run. Meanwhile the longer-running quantities differ between the two Colab runs too, by up to 0.0144.
+
+So the drift is not simply "different hardware". Item 3b (400 steps at T=128) is reproducible on a fixed machine and shifts across machines, which is a systematic kernel difference. The reference model (600 steps at T=256) and Part 2 (800 steps) do not even reproduce Colab-to-Colab, which is nondeterminism inside a run being amplified by training length. The honest summary is that **agreement decays with the number of training steps behind a number**, and every quantity in the enforced table above has zero of them.
+
+### What is not comparable
+
+* `item7_loss_absdiff` — the fixture is torch.randn(..., device=device); the two runs hold different random tensors, so only the within-run invariant means anything. Within each run the sweep is flat instead, and that *is* enforced: local losses span 3.0e-06 across all six chunk sizes, Colab's 1.0e-06.
+
+*This section is generated from [`results/colab_summary.json`](results/colab_summary.json) by [`tools/compare_colab.py`](tools/compare_colab.py), which fails if a must-match quantity is not identical or if either run's chunk sweep is not flat.*
 
 <!-- END:colab -->
 
@@ -369,6 +408,10 @@ python tools/extract_log.py
 ```
 
 ```bash
+python tools/extract_colab.py path/to/colab-run.ipynb
+```
+
+```bash
 python tools/compare_colab.py --check
 ```
 
@@ -395,7 +438,8 @@ that no longer exists.
 | [`tools/render_numbers.py`](tools/render_numbers.py) | renders and verifies the tables above |
 | [`tools/extract_log.py`](tools/extract_log.py) | writes `run_log.txt` from the executed notebook, so log and JSON share one run |
 | [`tools/compare_colab.py`](tools/compare_colab.py) | diffs the Colab run against the local one, and fails if a should-be-identical number is not |
-| [`results/colab_summary.txt`](results/colab_summary.txt), [`.json`](results/colab_summary.json) | the verbatim Colab paste, and the transcription the diff reads |
+| [`tools/extract_colab.py`](tools/extract_colab.py) | pulls a Colab run out of its executed notebook, refusing it unless the code matches and it ran clean |
+| [`results/colab_run_log.txt`](results/colab_run_log.txt), [`colab_summary.json`](results/colab_summary.json) | that run's full stdout, and the numbers extracted from it |
 
 ---
 
@@ -413,10 +457,9 @@ that no longer exists.
     a CPU run degrades rather than crashes — but the notebook has never been run end to end
     on CPU, and four training runs against a 50k-vocab head would take hours. Use a GPU
     runtime.
-  * *the Colab GPU model.* The Colab run's own first cell prints it; it was not captured with
-    the pasted summary, so `colab_summary.json` records it as `null`.
-  * *the Colab numbers beyond the summary cell.* Only the final SUMMARY cell was transcribed,
-    so the 256-pair boundary aggregate and the chunk-size sweep were not cross-checked.
+  * *more than one seed.* The Colab run uses the same seed as the local one, so it confirms
+    the findings are not artefacts of my hardware — it is not a second sample. Part 2's
+    baseline comparison in particular is still one seed.
 * **The vocabulary is 50,257, not 131,072.** The harness uses the real GPT-2 BPE vocabulary,
   because item 5's anchor has to be checked against *my* vocabulary. Wherever the session's
   own configuration matters — item 6's parameter count, item 7's memory projection — the

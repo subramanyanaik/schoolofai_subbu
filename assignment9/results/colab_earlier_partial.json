@@ -1,0 +1,29 @@
+{
+  "_source": "A SECOND, EARLIER Colab run of the same notebook, reported as a pasted SUMMARY cell before the executed notebook was available. Hand-transcribed from that paste, so unlike results/colab_summary.json it is NOT machine-extracted and NOT machine-checkable against a log. It is kept only for the one observation it supports: how much of the local-vs-Colab drift is hardware and how much is training length.",
+  "_status": "hand-transcribed, partial, not enforced by any gate",
+  "_covers": "only the quantities the final SUMMARY cell prints",
+
+  "item3b_final_counted": 3.3405,
+  "item3b_final_masked": 5.216,
+  "item3b_gap": 1.8755,
+
+  "item4_loss_before": 5.4218,
+  "item4_loss_after": 5.4175,
+  "item4_boundary_term": 5.9362,
+
+  "item5_init_loss": 10.8373,
+  "item5_init_ppl": 50883.2,
+
+  "item7_peak_naive_mib": 2412.0,
+  "item7_peak_chunked_mib": 208.0,
+  "item7_ratio": 11.6,
+
+  "part2_head1_loss": 4.8397,
+  "part2_head2_loss": 5.6926,
+  "part2_sum": 10.5323,
+  "part2_gap": 0.8529,
+
+  "part3_bug_final_loss": 0.2531,
+  "part3_correct_final_loss": 3.1295,
+  "part3_copy_rate_pct": 100.0
+}
