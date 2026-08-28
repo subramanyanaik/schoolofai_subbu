@@ -183,3 +183,12 @@ jobs:
       - name: README numbers match the recorded run
         working-directory: assignment9
         run: python tools/render_numbers.py --check
+
+      # An independent Colab GPU run of the same notebook. Quantities fixed by tensor
+      # shapes, integer counts, CPU-seeded initialisation or plain arithmetic must come
+      # out IDENTICAL on different hardware; only numbers downstream of GPU training may
+      # drift. This fails if that split is ever violated, which would mean a real bug
+      # rather than float noise.
+      - name: Colab cross-run agrees where it must
+        working-directory: assignment9
+        run: python tools/compare_colab.py --check

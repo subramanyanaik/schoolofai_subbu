@@ -1,0 +1,42 @@
+{
+  "_source": "Transcribed by hand from results/colab_summary.txt, which is the verbatim final SUMMARY cell of an independent run of loss_harness.ipynb on a Google Colab GPU runtime. Keys match results/results.json so tools/compare_colab.py can diff the two.",
+  "_gpu": null,
+  "_note": "Only the quantities the SUMMARY cell prints are here. The per-section numbers above it in that run (the 256-pair boundary aggregate, the chunk-size sweep) were not captured.",
+
+  "item3_tokens_counted": 100,
+  "item3_tokens_masked": 58,
+  "item3_pad_fraction_pct": 42.0,
+
+  "item3b_final_counted": 3.3405,
+  "item3b_final_masked": 5.216,
+  "item3b_gap": 1.8755,
+
+  "item4_loss_before": 5.4218,
+  "item4_loss_after": 5.4175,
+  "item4_n_before": 119,
+  "item4_n_after": 118,
+  "item4_boundary_term": 5.9362,
+
+  "item5_init_ppl": 50883.2,
+  "item5_init_loss": 10.8373,
+  "item5_ppl_over_vocab": 1.0125,
+
+  "item6_untied_total": 28896000,
+  "item6_tied_total": 16030208,
+  "item6_saved": 12865792,
+  "item6_saved_pct": 44.5,
+
+  "item7_peak_naive_mib": 2412.0,
+  "item7_peak_chunked_mib": 208.0,
+  "item7_ratio": 11.6,
+
+  "part2_head1_loss": 4.8397,
+  "part2_head2_loss": 5.6926,
+  "part2_sum": 10.5323,
+  "part2_gap": 0.8529,
+
+  "part3_bug_final_loss": 0.2531,
+  "part3_bug_final_ppl": 1.29,
+  "part3_correct_final_loss": 3.1295,
+  "part3_copy_rate_pct": 100.0
+}

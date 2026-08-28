@@ -11,9 +11,10 @@
 and the scalar, and makes them *correct* and — the harder half — *observable*.
 
 > **Notebook:** [`loss_harness.ipynb`](loss_harness.ipynb) — executed end to end with
-> `nbclient` on a local CUDA GPU: **22 of 22 code cells, in order, zero error outputs**, and
-> the committed file carries that run's outputs. Not run on Colab itself — see
-> [Honest caveats](#honest-caveats). Use a GPU runtime.
+> `nbclient` on a local CUDA GPU (**22 of 22 code cells, in order, zero error outputs**; the
+> committed file carries that run's outputs), and **independently re-run on a Colab GPU
+> runtime**, which agrees on every number that cannot legitimately differ —
+> see [Reproduced on Colab](#reproduced-on-colab). Use a GPU runtime.
 > **Source of truth:** [`loss_harness.py`](loss_harness.py). The notebook is generated from
 > it, cell for cell, and CI fails if the two drift.
 > **Every number below:** [`results/results.json`](results/results.json), emitted by the run,
@@ -88,6 +89,61 @@ Single-head baseline trained on identical batches with an identical seed: **4.78
 *Produced by `loss_harness.ipynb` on NVIDIA GeForce RTX 3050 Laptop GPU, torch 2.5.1+cu121, seed 1337. Every figure above is read straight out of [`results/results.json`](results/results.json) by `tools/render_numbers.py`. GPU float reductions are not bit-reproducible, so a re-run moves the last decimals and the JSON, the log and this table are always re-generated together.*
 
 <!-- END:numbers -->
+
+---
+
+## Reproduced on Colab
+
+<!-- BEGIN:colab -->
+
+**Independently reproduced on a Google Colab GPU runtime.** A fresh Colab VM ships without `tiktoken` and without the corpus, so that run also exercised the cold `pip install` and the corpus download that the local execution could not.
+
+**16 of the 29 reported quantities came out identical** — every one that is fixed by tensor shapes, integer counts, CPU-seeded initialisation or plain arithmetic, and therefore *must* be:
+
+| quantity | both runs | why it cannot differ |
+|---|---|---|
+| `item3_tokens_counted` | 100 | an integer count |
+| `item3_tokens_masked` | 58 | an integer count |
+| `item3_pad_fraction_pct` | 42.0 | a ratio of integer counts |
+| `item4_n_before` | 119 | an integer count |
+| `item4_n_after` | 118 | an integer count |
+| `item5_init_ppl` | 50,883.2 | one forward pass of a CPU-seeded initialisation |
+| `item5_init_loss` | 10.8373 | one forward pass of a CPU-seeded initialisation |
+| `item5_ppl_over_vocab` | 1.0125 | one forward pass of a CPU-seeded initialisation |
+| `item6_untied_total` | 28,896,000 | parameter arithmetic |
+| `item6_tied_total` | 16,030,208 | parameter arithmetic |
+| `item6_saved` | 12,865,792 | parameter arithmetic |
+| `item6_saved_pct` | 44.5 | parameter arithmetic |
+| `item7_peak_naive_mib` | 2,412.0 | allocator bytes, driven by tensor shapes not by the card |
+| `item7_peak_chunked_mib` | 208.0 | allocator bytes, driven by tensor shapes not by the card |
+| `item7_ratio` | 11.6 | allocator bytes, driven by tensor shapes not by the card |
+| `part3_copy_rate_pct` | 100.0 | a saturated rate |
+
+The other 13 sit downstream of hundreds of GPU training steps, so they may only agree, not match. Largest disagreement first:
+
+| quantity | local (RTX 3050) | Colab | delta | relative |
+|---|---|---|---|---|
+| `item4_boundary_term` | 6.1839 | 5.9362 | -0.2477 | 4.01% |
+| `part3_bug_final_loss` | 0.2498 | 0.2531 | +0.0033 | 1.32% |
+| `part3_bug_final_ppl` | 1.28 | 1.29 | +0.0100 | 0.78% |
+| `item3b_gap` | 1.8685 | 1.8755 | +0.0070 | 0.37% |
+| `item3b_final_masked` | 5.1966 | 5.216 | +0.0194 | 0.37% |
+| `item3b_final_counted` | 3.3281 | 3.3405 | +0.0124 | 0.37% |
+| `part2_gap` | 0.8545 | 0.8529 | -0.0016 | 0.19% |
+| `part3_correct_final_loss` | 3.1246 | 3.1295 | +0.0049 | 0.16% |
+| `item4_loss_before` | 5.4252 | 5.4218 | -0.0034 | 0.06% |
+| `part2_head1_loss` | 4.8378 | 4.8397 | +0.0019 | 0.04% |
+| `item4_loss_after` | 5.4188 | 5.4175 | -0.0013 | 0.02% |
+| `part2_sum` | 10.5301 | 10.5323 | +0.0022 | 0.02% |
+| `part2_head2_loss` | 5.6923 | 5.6926 | +0.0003 | 0.01% |
+
+The worst of them, `item4_boundary_term` at 4.01%, is the single most noise-prone number in the whole harness: one prediction site, on one sequence, under a model that has taken 600 GPU training steps. It is exactly why item 4 does not rest on it, and repeats the measurement over 256 packed pairs instead.
+
+Two results are worth pulling out. Item 5's anchor is **identical** because parameter initialisation runs on the CPU RNG before the model moves to the device, so the cheapest sanity check in the session is hardware-independent. And item 7's memory numbers are **identical** on two different GPUs, because `max_memory_allocated` counts allocator bytes driven by tensor shapes — the 11.6× is a property of the algorithm, not of my card.
+
+*Transcribed from [`results/colab_summary.txt`](results/colab_summary.txt) into [`results/colab_summary.json`](results/colab_summary.json); this table is generated from that JSON by [`tools/compare_colab.py`](tools/compare_colab.py), which also fails if a should-be-identical quantity is not identical. The Colab GPU model was not recorded.*
+
+<!-- END:colab -->
 
 ---
 
@@ -312,6 +368,10 @@ python tools/render_numbers.py --write
 python tools/extract_log.py
 ```
 
+```bash
+python tools/compare_colab.py --check
+```
+
 Or open [`loss_harness.ipynb`](loss_harness.ipynb) in Colab with the badge at the top: it
 installs its one missing dependency, downloads its own corpus, and needs no repo checkout.
 
@@ -334,28 +394,29 @@ that no longer exists.
 | [`tools/build_notebook.py`](tools/build_notebook.py) | `.py` to `.ipynb`, plus `--execute` and `--check` |
 | [`tools/render_numbers.py`](tools/render_numbers.py) | renders and verifies the tables above |
 | [`tools/extract_log.py`](tools/extract_log.py) | writes `run_log.txt` from the executed notebook, so log and JSON share one run |
+| [`tools/compare_colab.py`](tools/compare_colab.py) | diffs the Colab run against the local one, and fails if a should-be-identical number is not |
+| [`results/colab_summary.txt`](results/colab_summary.txt), [`.json`](results/colab_summary.json) | the verbatim Colab paste, and the transcription the diff reads |
 
 ---
 
 ## Honest caveats
 
-* **"Runs top to bottom" was verified in a Jupyter kernel, not on Colab.** The notebook was
-  executed with `nbclient` against a local `ipykernel` — the same execution model Colab
-  uses — on an RTX 3050 with torch 2.5.1+cu121. Proof is in the committed file itself:
-  `execution_count` runs 1…22 with no gaps, and no cell carries an `output_type: "error"`.
-  Two cells carry no output because they only define `ce_loss`/`per_token_ce` and
-  `ChunkedCrossEntropy`. What that does **not** cover, and what was checked separately
-  instead of assumed:
-  * *the tiktoken install branch* — exercised by blocking the first `import tiktoken` with a
-    `meta_path` finder and letting the `except ImportError` run. The control flow recovers
-    and the encoder is usable; the `pip install` itself was a no-op locally, so a genuinely
-    cold install is still untested.
-  * *the CUDA-absent branch* — exercised directly: `measure_peak` returns `None`, the
-    analytic fallback is taken, and `render_numbers.py` reads the sweep with `.get`, so a
-    CPU run degrades rather than crashes. It was **not** run end to end on CPU: four
-    training runs against a 50k-vocab head would take hours. Use a GPU runtime.
-  * *the badge URL and the corpus download* — both plain network fetches on `main`;
-    neither was exercised from inside Colab.
+* **"Runs top to bottom" means two GPUs, not every runtime.** Locally, the notebook was
+  executed with `nbclient` against an `ipykernel` on an RTX 3050 with torch 2.5.1+cu121, and
+  the proof is in the committed file rather than in this sentence: `execution_count` runs
+  1…22 with no gaps, and no cell carries an `output_type: "error"`. Two cells carry no output
+  because they only define `ce_loss`/`per_token_ce` and `ChunkedCrossEntropy`. A Colab GPU
+  runtime then reproduced it independently — see [Reproduced on Colab](#reproduced-on-colab).
+  Still **not** covered:
+  * *a CPU runtime.* The CUDA-absent branch is exercised — `measure_peak` returns `None`, the
+    analytic byte fallback is taken, and `render_numbers.py` reads the sweep with `.get`, so
+    a CPU run degrades rather than crashes — but the notebook has never been run end to end
+    on CPU, and four training runs against a 50k-vocab head would take hours. Use a GPU
+    runtime.
+  * *the Colab GPU model.* The Colab run's own first cell prints it; it was not captured with
+    the pasted summary, so `colab_summary.json` records it as `null`.
+  * *the Colab numbers beyond the summary cell.* Only the final SUMMARY cell was transcribed,
+    so the 256-pair boundary aggregate and the chunk-size sweep were not cross-checked.
 * **The vocabulary is 50,257, not 131,072.** The harness uses the real GPT-2 BPE vocabulary,
   because item 5's anchor has to be checked against *my* vocabulary. Wherever the session's
   own configuration matters — item 6's parameter count, item 7's memory projection — the
