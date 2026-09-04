@@ -1,0 +1,836 @@
+
+============================================================================================
+Environment   [t+0m01s]
+============================================================================================
+python        : 3.12.6
+torch         : 2.5.1+cu121
+device        : cuda
+gpu           : NVIDIA GeForce RTX 3050 Laptop GPU  (4.00 GiB, 16 SMs, sm_86)
+
+============================================================================================
+Model   [t+0m02s]
+============================================================================================
+vocab_size  : 50257
+block_size  : 128
+n_layer     : 4
+n_head      : 4
+n_embd      : 256
+dropout     : 0.0
+bias        : True
+head size   : 64  (C / nh)
+parameters  : 16,058,112  (16,025,344 excluding position embeddings)
+tied        : wte.weight is lm_head.weight -> True
+
+============================================================================================
+Data   [t+0m02s]
+============================================================================================
+characters    : 1,115,394
+tokens        : 338,025   (train 304,222 / val 33,803)
+FORWARD — every tensor produced by one step, block 0 traced in full
+tensor               shape                  dtype           numel      MiB
+--------------------------------------------------------------------------------------------
+input_ids            [8, 128]               int64           1,024     0.01
+    [B=8, T=128]  B=rows in this micro-batch, T=positions per row; every entry is one integer token id
+pos                  [128]                  int64             128     0.00
+    [T=128]  T position indices, 0..T-1, shared by every row
+tok_emb              [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  each of the B*T ids replaced by its C-wide row of wte
+pos_emb              [128, 256]             float32        32,768     0.12
+    [T=128, C=256]  one C-wide vector per position, broadcast across the B rows
+x_in                 [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the residual stream entering block 0
+ln_1                 [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  normalised over C for each of the B*T positions independently
+attn.qkv             [8, 128, 768]          float32       786,432     3.00
+    [B=8, T=128, 3C=768]  3C=768 -> query, key and value for every position, concatenated so one matmul produces all three
+attn.q               [8, 4, 128, 64]        float32       262,144     1.00
+    [B=8, nh=4, T=128, hs=64]  nh=4 heads, each reading the same T positions in its own hs=64-wide subspace
+attn.k               [8, 4, 128, 64]        float32       262,144     1.00
+    [B=8, nh=4, T=128, hs=64]  one key vector per head per position
+attn.v               [8, 4, 128, 64]        float32       262,144     1.00
+    [B=8, nh=4, T=128, hs=64]  one value vector per head per position
+attn.scores          [8, 4, 128, 128]       float32       524,288     2.00
+    [B=8, nh=4, T=128, T=128]  T x T -> for each query position (3rd axis), its raw affinity to every key position (4th axis)
+attn.probs           [8, 4, 128, 128]       float32       524,288     2.00
+    [B=8, nh=4, T=128, T=128]  the same T x T after causal masking and softmax; each row sums to 1 over the positions at or before it
+attn.out_heads       [8, 4, 128, 64]        float32       262,144     1.00
+    [B=8, nh=4, T=128, hs=64]  per head, the value vectors averaged under those probabilities
+attn.out_merged      [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the nh heads concatenated back into one C-wide vector per position
+attn.out_proj        [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  attention's contribution to the residual stream
+resid_after_attn     [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the residual stream, unchanged in shape all the way through the model
+ln_2                 [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  normalised over C again, before the MLP
+mlp.fc               [8, 128, 1024]         float32     1,048,576     4.00
+    [B=8, T=128, 4C=1024]  4C=1024 -> the widened per-position feature vector; the same matmul applied independently at every one of the B*T positions
+mlp.gelu             [8, 128, 1024]         float32     1,048,576     4.00
+    [B=8, T=128, 4C=1024]  elementwise, so the shape cannot change
+mlp.out              [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  projected back to C, the MLP's contribution to the residual
+resid_after_mlp      [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the residual stream leaving this block
+block[1].out         [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  block 1 traced only at its output; its interior is identical in shape to block 0
+block[2].out         [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  block 2 traced only at its output; its interior is identical in shape to block 0
+block[3].out         [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  block 3 traced only at its output; its interior is identical in shape to block 0
+ln_f                 [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the final normalisation, still one C-wide vector per position
+logits               [8, 128, 50257]        float32    51,463,168   196.32
+    [B=8, T=128, V=50257]  V=50257 -> one real number per vocabulary entry per position; the widest tensor in the step
+targets              [8, 128]               int64           1,024     0.01
+    [B=8, T=128]  the same [B,T] grid as the input, holding the id that should follow each position (-100 = does not count)
+loss                 []                     float32             1     0.00
+    scalar  a scalar: no axes at all, which is the whole difficulty
+
+============================================================================================
+Audit 1 — backward introduces no new shapes   [t+0m02s]
+============================================================================================
+activations whose dL/dX was checked : 25
+skipped (integer or constant)       : input_ids, pos, targets
+every one satisfied  grad.shape == tensor.shape
+
+============================================================================================
+Audit 2 — module outputs vs traced tensors   [t+0m02s]
+============================================================================================
+leaf modules fired      : 41
+distinct output shapes  : 5
+shapes not in the trace : none
+
+============================================================================================
+Audit 3 — traced path vs the fused kernel used in training   [t+0m03s]
+============================================================================================
+max |logit difference| : 1.371e-06
+|loss difference|      : 9.537e-07
+the [B,nh,T,T] score matrix printed above is real, but the fast path never builds it:
+  it would be 2.00 MiB per layer at this size, and grows with T squared
+
+============================================================================================
+PARAMETERS — shape, gradient, and Adam's two moments   [t+0m05s]
+============================================================================================
+parameter                          shape                   numel  grad   m      v
+--------------------------------------------------------------------------------------------
+transformer.wte.weight             [50257, 256]       12,865,792  same  
+    [V=50257, C=256]  a weight matrix: out-features x in-features
+transformer.wpe.weight             [128, 256]             32,768  same  
+    [T=128, C=256]  a weight matrix: out-features x in-features
+transformer.h.0.ln_1.weight        [256]                     256  same  
+    [C=256]  one number per channel
+transformer.h.0.ln_1.bias          [256]                     256  same  
+    [C=256]  one number per channel
+transformer.h.0.attn.c_attn.weight [768, 256]            196,608  same  
+    [3C=768, C=256]  a weight matrix: out-features x in-features
+transformer.h.0.attn.c_attn.bias   [768]                     768  same  
+    [3C=768]  one number per channel
+transformer.h.0.attn.c_proj.weight [256, 256]             65,536  same  
+    [C=256, C=256]  a weight matrix: out-features x in-features
+transformer.h.0.attn.c_proj.bias   [256]                     256  same  
+    [C=256]  one number per channel
+transformer.h.0.ln_2.weight        [256]                     256  same  
+    [C=256]  one number per channel
+transformer.h.0.ln_2.bias          [256]                     256  same  
+    [C=256]  one number per channel
+transformer.h.0.mlp.c_fc.weight    [1024, 256]           262,144  same  
+    [4C=1024, C=256]  a weight matrix: out-features x in-features
+transformer.h.0.mlp.c_fc.bias      [1024]                  1,024  same  
+    [4C=1024]  one number per channel
+transformer.h.0.mlp.c_proj.weight  [256, 1024]           262,144  same  
+    [C=256, 4C=1024]  a weight matrix: out-features x in-features
+transformer.h.0.mlp.c_proj.bias    [256]                     256  same  
+    [C=256]  one number per channel
+transformer.h.1.ln_1.weight        [256]                     256  same  
+    [C=256]  one number per channel
+transformer.h.1.ln_1.bias          [256]                     256  same  
+    [C=256]  one number per channel
+transformer.h.1.attn.c_attn.weight [768, 256]            196,608  same  
+    [3C=768, C=256]  a weight matrix: out-features x in-features
+transformer.h.1.attn.c_attn.bias   [768]                     768  same  
+    [3C=768]  one number per channel
+transformer.h.1.attn.c_proj.weight [256, 256]             65,536  same  
+    [C=256, C=256]  a weight matrix: out-features x in-features
+transformer.h.1.attn.c_proj.bias   [256]                     256  same  
+    [C=256]  one number per channel
+transformer.h.1.ln_2.weight        [256]                     256  same  
+    [C=256]  one number per channel
+transformer.h.1.ln_2.bias          [256]                     256  same  
+    [C=256]  one number per channel
+transformer.h.1.mlp.c_fc.weight    [1024, 256]           262,144  same  
+    [4C=1024, C=256]  a weight matrix: out-features x in-features
+transformer.h.1.mlp.c_fc.bias      [1024]                  1,024  same  
+    [4C=1024]  one number per channel
+transformer.h.1.mlp.c_proj.weight  [256, 1024]           262,144  same  
+    [C=256, 4C=1024]  a weight matrix: out-features x in-features
+transformer.h.1.mlp.c_proj.bias    [256]                     256  same  
+    [C=256]  one number per channel
+transformer.h.2.ln_1.weight        [256]                     256  same  
+    [C=256]  one number per channel
+transformer.h.2.ln_1.bias          [256]                     256  same  
+    [C=256]  one number per channel
+transformer.h.2.attn.c_attn.weight [768, 256]            196,608  same  
+    [3C=768, C=256]  a weight matrix: out-features x in-features
+transformer.h.2.attn.c_attn.bias   [768]                     768  same  
+    [3C=768]  one number per channel
+transformer.h.2.attn.c_proj.weight [256, 256]             65,536  same  
+    [C=256, C=256]  a weight matrix: out-features x in-features
+transformer.h.2.attn.c_proj.bias   [256]                     256  same  
+    [C=256]  one number per channel
+transformer.h.2.ln_2.weight        [256]                     256  same  
+    [C=256]  one number per channel
+transformer.h.2.ln_2.bias          [256]                     256  same  
+    [C=256]  one number per channel
+transformer.h.2.mlp.c_fc.weight    [1024, 256]           262,144  same  
+    [4C=1024, C=256]  a weight matrix: out-features x in-features
+transformer.h.2.mlp.c_fc.bias      [1024]                  1,024  same  
+    [4C=1024]  one number per channel
+transformer.h.2.mlp.c_proj.weight  [256, 1024]           262,144  same  
+    [C=256, 4C=1024]  a weight matrix: out-features x in-features
+transformer.h.2.mlp.c_proj.bias    [256]                     256  same  
+    [C=256]  one number per channel
+transformer.h.3.ln_1.weight        [256]                     256  same  
+    [C=256]  one number per channel
+transformer.h.3.ln_1.bias          [256]                     256  same  
+    [C=256]  one number per channel
+transformer.h.3.attn.c_attn.weight [768, 256]            196,608  same  
+    [3C=768, C=256]  a weight matrix: out-features x in-features
+transformer.h.3.attn.c_attn.bias   [768]                     768  same  
+    [3C=768]  one number per channel
+transformer.h.3.attn.c_proj.weight [256, 256]             65,536  same  
+    [C=256, C=256]  a weight matrix: out-features x in-features
+transformer.h.3.attn.c_proj.bias   [256]                     256  same  
+    [C=256]  one number per channel
+transformer.h.3.ln_2.weight        [256]                     256  same  
+    [C=256]  one number per channel
+transformer.h.3.ln_2.bias          [256]                     256  same  
+    [C=256]  one number per channel
+transformer.h.3.mlp.c_fc.weight    [1024, 256]           262,144  same  
+    [4C=1024, C=256]  a weight matrix: out-features x in-features
+transformer.h.3.mlp.c_fc.bias      [1024]                  1,024  same  
+    [4C=1024]  one number per channel
+transformer.h.3.mlp.c_proj.weight  [256, 1024]           262,144  same  
+    [C=256, 4C=1024]  a weight matrix: out-features x in-features
+transformer.h.3.mlp.c_proj.bias    [256]                     256  same  
+    [C=256]  one number per channel
+transformer.ln_f.weight            [256]                     256  same  
+    [C=256]  one number per channel
+transformer.ln_f.bias              [256]                     256  same  
+    [C=256]  one number per channel
+
+every gradient and both Adam moments have exactly the parameter's shape
+
+so one step holds 208 parameter-shaped tensors: 52 weights + 52 grads + 104 Adam moments
+= 16 bytes per parameter at fp32 (245.0 MiB for this 16.1M model)
+
+============================================================================================
+Where one step's bytes go   [t+0m05s]
+============================================================================================
+traced activations (block 0 in full) :     228.5 MiB
+   of which the logits alone         :     196.3 MiB (85.9%)
+weights + grads + Adam moments       :     245.0 MiB
+
+the logits are [B,T,V]; every other activation is [B,T,C] or narrower, and V/C = 196x
+
+============================================================================================
+All four blocks   [t+0m05s]
+============================================================================================
+blocks are shape-identical: 17 interior tensors, identical in all 4
+full trace for every block written to results/shapes_full.txt (112 rows)
+
+GPU memory still allocated after section 1: 336.0 MiB
+
+============================================================================================
+Minimal repro: fused attention in float64 on CPU   [t+0m05s]
+============================================================================================
+torch 2.5.1+cu121, device cpu, dtype float64, shape [2, 4, 16, 64]
+  dropout_p=0.0: any NaN in the output -> True
+  dropout_p=0.1: any NaN in the output -> False
+  the explicit arithmetic on the same inputs: any NaN -> False
+
+So the rest of this section runs the explicit attention arithmetic, which section 1
+already checked against the fused kernel in float32 on the GPU. This is why the
+assignment says to verify a gradient by hand: the check found a real defect in the
+stack on the way to its own setup.
+
+============================================================================================
+The weight under test   [t+0m05s]
+============================================================================================
+parameter      : transformer.h.0.mlp.c_fc.weight[0, 0]
+value  w       : -0.0052856169641017914
+loss   L(w)    : 10.818292565178222   (float64, CPU, dropout off)
+backward() says: dL/dw = -0.0027667279184508532
+
+============================================================================================
+Nudge the weight and watch the loss move (float64)   [t+0m05s]
+============================================================================================
+       h                 L(w+h)                 L(w-h)     central diff  digits
+--------------------------------------------------------------------------------------------
+   1e-01     10.818030835170831     10.818583558183541    -0.0027636151     2.9
+   1e-02     10.818265044331794     10.818320378273336    -0.0027666971     5.0
+   1e-03     10.818289799911835     10.818295333367056    -0.0027667276     7.0
+   1e-04     10.818292288520043     10.818292841865627    -0.0027667279     8.9
+   1e-05     10.818292537511088     10.818292592845646    -0.0027667279     8.7
+   1e-06     10.818292562411493     10.818292567944949    -0.0027667282     7.0
+   1e-07     10.818292564901547     10.818292565454891    -0.0027667202     5.6
+   1e-08     10.818292565150555     10.818292565205887    -0.0027665870     4.3
+   1e-09     10.818292565175453     10.818292565180988    -0.0027675640     3.5
+                                   backward() reported    -0.0027667279
+
+best step size h = 1e-04
+  finite difference : -0.002766727922
+  backward()        : -0.002766727918
+  relative error    : 1.399e-09
+  they agree to     : 8.9 significant decimal digits
+
+============================================================================================
+The same check in float32   [t+0m07s]
+============================================================================================
+       h     central diff       backward()   digits
+--------------------------------------------------------------------------------------------
+   1e-01      -0.00277042      -0.00276673      2.9
+   1e-02      -0.00281334      -0.00276673      1.8
+   1e-03      -0.00333786      -0.00276673      0.7
+   1e-04       0.00000000      -0.00276673     -0.0
+   1e-05       0.00000000      -0.00276673     -0.0
+
+float64 confirmed 8.9 digits; float32 confirms 2.9.
+Same gradient, worse ruler.  The fp32 and fp64 gradients themselves agree to 5.9 digits.
+
+============================================================================================
+Ten more gradients at h = 1e-04   [t+0m08s]
+============================================================================================
+parameter                                 finite difference           backward()   digits
+--------------------------------------------------------------------------------------------
+transformer.wte.weight[416, 3]               0.027524781183       0.027524782140      7.5
+transformer.wpe.weight[0, 5]                 0.011088222172       0.011088223013      7.1
+transformer.h.0.ln_1.weight[7]               0.000379957434       0.000379957440      7.8
+transformer.h.0.ln_1.bias[7]                -0.007093144543      -0.007093144542     10.3
+transformer.h.0.attn.c_attn.weight[0, 0]      -0.000259803370      -0.000259803370      9.1
+transformer.h.0.attn.c_attn.bias[11]        -0.000341102329      -0.000341102322      7.7
+transformer.h.0.attn.c_proj.weight[2, 2]      -0.014191744864      -0.014191744782      8.2
+transformer.h.0.mlp.c_proj.weight[3, 9]      -0.026819933590      -0.026819933723      8.3
+transformer.h.3.mlp.c_fc.weight[1, 1]        0.002942584238       0.002942584244      8.7
+transformer.ln_f.weight[4]                  -0.005335082562      -0.005335082575      8.6
+
+worst agreement: transformer.wpe.weight[0, 5] at 7.1 digits (|difference| = 8.42e-10)
+
+============================================================================================
+The entire gradient at once: a directional derivative   [t+0m08s]
+============================================================================================
+random unit direction u over all 16,058,112 parameters
+measured  (L(t+eu) - L(t-eu)) / 2e = -0.005321614260367
+reported   g . u                   = -0.005321614514971
+agree to                           = 7.3 digits
+
+============================================================================================
+What a failing check looks like, and what it means   [t+0m09s]
+============================================================================================
+the same loss, evaluated four times at the same weights, with dropout on:
+    10.852335674749181
+    10.790672167884086
+    10.858369864233902
+    10.79245998259243
+spread across identical evaluations : 6.770e-02
+the nudge only has to move the loss : ~3.187e-07
+
+finite difference : -78.989978
+backward()        : -0.003187
+agreement         : -4.4 digits  <- the check fails
+
+The noise floor is larger than the signal being measured, and it is larger for a
+reason: L(w) is not a function at all here, it is a distribution.  Before blaming
+backward(), evaluate the loss twice without touching anything.  If those two numbers
+differ, the finite-difference check cannot be run yet.
+
+============================================================================================
+Documents, and why their lengths matter   [t+0m09s]
+============================================================================================
+documents            : 7,222  (train 6,499 / val 723)
+token length         : median 26, p90 98, max 858
+short pool (<32 tok) : 3,823 documents, mean length 17.8
+long  pool (>=64 tok): 1,297 documents, mean length 130.3
+
+first short document : 'First Citizen:\nBefore we proceed any further, hear me speak.'
+first long document  : 'First Citizen:\nWe are accounted poor citizens, the patricians good.\nWhat authority surfeit'...
+
+============================================================================================
+One step's four micro-batches   [t+0m09s]
+============================================================================================
+micro-batch    pool       tokens n_i   correct n_i/N   broken 1/G    ratio
+--------------------------------------------------------------------------------------------
+0              long              421          0.4021       0.2500    0.62x
+1              long              490          0.4680       0.2500    0.53x
+2              short              71          0.0678       0.2500    3.69x
+3              short              65          0.0621       0.2500    4.03x
+total                          1,047          1.0000       1.0000
+
+Both columns sum to 1: the broken rule is not a change of learning rate.
+It is a change of *which examples the batch is made of* -- short documents are
+weighted 4.03x too heavily, long ones 0.53x too lightly.
+
+============================================================================================
+The two gradients, at the same weights, from the same four micro-batches   [t+0m10s]
+============================================================================================
+cosine similarity          : 0.874579   (29.00 degrees apart)
+||broken|| / ||correct||   : 1.0796
+||broken - correct|| / ||correct|| : 0.5264
+
+The norms are within 8.0% of each other, so a learning-rate
+adjustment cannot repair this.  The vectors point in different directions.
+
+============================================================================================
+The definition of correct: accumulating must equal not accumulating   [t+0m10s]
+============================================================================================
+all 16 rows in a single forward : loss 10.880198
+max |correct-rule grad - one-shot grad| : 1.192e-07
+max |broken-rule  grad - one-shot grad| : 1.114e-01
+
+The correct rule is not a better approximation.  It is the same number.
+
+============================================================================================
+Control: equal-length micro-batches   [t+0m10s]
+============================================================================================
+tokens per micro-batch : [512, 512, 512, 512]
+cosine similarity      : 1.000000000000
+max |difference|       : 0.000e+00
+
+Identical to the last bit.  The bug is invisible under fixed-length packing, which
+is exactly how it survived in production frameworks for years.
+two 300-step runs in 85.5s
+
+============================================================================================
+After 300 steps, judged by the same held-out, token-weighted loss   [t+1m36s]
+============================================================================================
+                             correct rule    broken rule        gap
+--------------------------------------------------------------------------------------------
+held-out (all docs)                5.4930         5.6149    +0.1219
+held-out (short docs)              4.5083         4.6442    +0.1359
+held-out (long docs)               5.5865         5.7270    +0.1405
+its own reported loss              4.9830         4.5756
+
+(the last row is the number each run prints to its own log -- not comparable
+ between the two, because the broken run is reporting a different quantity)
+natural run: 600 steps in 63.7s, no clipping, lr=0.0012
+final probe loss 5.4032, grad norm range 0.584 .. 753.012
+aggressive run: 600 steps at lr=0.005 in 63.8s, no clipping
+final probe loss 5.6026 (vs 5.4032 at lr=0.0012), grad norm up to 11.13
+
+============================================================================================
+Cross-correlation: change in grad norm vs change in probe loss   [t+3m44s]
+============================================================================================
+  lag  lr=0.0012   lr=0.005    (lag > 0 means the grad norm moved first)
+  -10      0.010      0.023    #
+   -9      0.018      0.040    ##
+   -8     -0.007     -0.035    #
+   -7     -0.033      0.004    
+   -6      0.006     -0.037    #
+   -5      0.009     -0.009    
+   -4     -0.010      0.004    
+   -3      0.029      0.051    ##
+   -2     -0.021     -0.054    ##
+   -1     -0.052     -0.009    
+    0      0.142      0.165    ########
+    1     -0.075     -0.080    ####
+    2     -0.025     -0.047    ##
+    3     -0.028     -0.004    
+    4      0.028      0.020    #
+    5      0.014      0.001    
+    6     -0.003     -0.057    ##
+    7      0.010      0.032    #
+    8     -0.002      0.061    ###
+    9     -0.027     -0.011    
+   10      0.025     -0.062    ###
+
+peak at lag +0 (corr 0.142) and lag +0 (corr 0.165)
+
+So, honestly: across a whole run there is no lead to speak of.  Both peaks sit at
+lag 0 or below and the correlations are weak.  That is not a failed measurement, it
+is the answer to the general question -- on an ordinary step the grad norm and the
+loss are both just reporting the current batch, so of course they move together.
+The lead is not a property of every step.  It is a property of the steps where
+something is actually going wrong, and those have to be found individually.
+
+============================================================================================
+How many such steps exist, at every threshold I might have picked   [t+3m44s]
+============================================================================================
+ z(grad norm) >   z(loss later) >    lr=0.0012     lr=0.005
+--------------------------------------------------------------------------------------------
+            2.0               2.0            2            2
+            2.0               3.0            1            2
+            3.0               2.0            0            1
+            3.0               3.0            0            1
+            4.0               2.0            0            1
+            4.0               3.0            0            1
+            5.0               2.0            0            0
+            5.0               3.0            0            0
+
+At the threshold I would defend (4 sigma on the norm, quiet loss, 3 sigma later):
+  lr=0.0012: 0 steps out of 550
+  lr=0.005: 1 steps out of 550
+
+============================================================================================
+Step 254 of the aggressive run   [t+3m45s]
+============================================================================================
+  grad norm  : 0.6626 against a trailing median of 0.4191  ->  4.3 sigma
+  probe loss : 6.0188 against a trailing median of 6.0076  ->  +1.5 sigma
+  3 steps later the probe loss is 6.0330  ->  3.3 sigma
+
+    step    grad norm      probe   train loss
+     249       0.4186     6.0132       5.5926
+     250       0.4191     6.0266       5.8359
+     251       0.4572     6.0271       5.9513
+     252       0.3161     6.0049       5.5882
+     253       0.4129     6.0050       5.9302
+     254       0.6626     6.0188       5.5651  <- the norm moves
+     255       0.4791     6.0151       5.7726
+     256       0.4594     6.0219       5.7848
+     257       0.4079     6.0330       5.8416  <- the loss follows
+     258       0.4533     6.0264       5.7649
+     259       0.3962     6.0131       5.8316
+     260       1.1221     6.0005       5.6517
+
+  Reported for what it is: this is one marginal event in 1100 logged steps,
+  and the probe only moves by +0.0142 nats. It is evidence that the
+  ordering happens, not that it is common. For an unambiguous one, the cause has
+  to be supplied rather than waited for -- which is the next cell.
+
+============================================================================================
+A corrupted shard at step 300 (3 steps, 25% of targets randomised)   [t+5m51s]
+============================================================================================
+  step    grad norm   probe (no clip)   probe (clip 1.0)    shard
+--------------------------------------------------------------------------------------------
+   297       0.7624            5.7180             5.5087         
+   298       0.8178            5.7268             5.5111         
+   299       0.7949            5.7381             5.5281         
+   300       1.8343            5.7348             5.5344      BAD
+   301       1.2610            5.7175             5.5574      BAD
+   302       1.0418            5.9276             5.7260      BAD
+   303       2.6421            6.3642             6.0916         
+   304       1.8716            6.0983             6.0280         
+   305       1.1278            5.9216             5.7614         
+   306       1.0777            5.8617             5.6333         
+   307       1.2473            5.8439             5.6144         
+   308       1.3854            5.8353             5.6281         
+   309       1.4798            5.8360             5.6238         
+   310       1.0627            5.7881             5.5934         
+   311       0.8325            5.7988             5.5694         
+
+trailing median grad norm before the shard : 0.7647
+grad norm during it                        : 1.8343  (2.4x)
+probe loss on the step the norm spiked     : 5.7348 against a median of 5.7424 (-0.6 sigma -- unmoved)
+the probe loss first breaks trend          : step 302 (2 steps later), at 5.9276
+
+with clip_grad_norm_(1.0), same shard, same seed:
+  probe at step 312: no-clip 5.8303  vs clipped 5.5587
+  probe at step 599: no-clip 5.4141  vs clipped 5.2918
+per-step log for all 600 steps of all four runs -> results/step_log.npz
+
+============================================================================================
+Measured ceiling: large square matmuls on this machine   [t+5m52s]
+============================================================================================
+    size   fp32 (no TF32)   fp32 (TF32 on)         bf16   TFLOP/s
+--------------------------------------------------------------------------------------------
+    1024             4.21             5.66        10.93
+    2048             2.55             4.56        10.17
+    4096             2.52             5.56        10.87
+
+ceiling taken from the 4096-cube matmul: fp32 2.52  tf32 5.56  bf16 10.87 TFLOP/s
+bf16 tensor cores are 4.3x the plain fp32 pipeline here
+worst spread between repeat timings of the same matmul: 32.8% -- every MFU below carries at least that much uncertainty
+
+============================================================================================
+Where this model's FLOPs are   [t+6m03s]
+============================================================================================
+parameters N                       : 16,058,112
+6N (forward 2N + backward 4N)      :      96.35 MFLOP/token
+  of which the output head alone   :      77.19 MFLOP/token (78.8% of the total)
+  of which the 4 transformer blocks:      18.96 MFLOP/token (19.4%)
+attention 12*L*nh*hs*T at T=128    :       1.57 MFLOP/token (1.6%)
+total                              :      97.92 MFLOP/token
+
+The output head is one matmul of shape [B*T, 256] x [256, 50257].  It is 79% of the work,
+and its inner dimension is 256 -- which is the number to remember for the attribution below.
+
+============================================================================================
+The baseline step, measured   [t+6m06s]
+============================================================================================
+batch 8 x T 128 = 1,024 tokens/step, fp32, TF32 off
+step time        : 68.47 ms
+  forward        : 21.58 ms (32%)
+  backward       : 37.38 ms (55%)
+  optimizer+clip : 9.31 ms (14%)
+  everything else: 0.21 ms (0%)
+throughput       : 14,954 tokens/s
+achieved         : 1.464 TFLOP/s
+
+MFU = 1.464 / 2.52 = 58.1%   (against the fp32 ceiling this arm actually runs in)
+    = 1.464 / 10.87 = 13.5%   (against the bf16 tensor-core ceiling, the yardstick everyone quotes)
+
+============================================================================================
+The ceiling, shape by shape   [t+6m06s]
+============================================================================================
+matmul                                M      K       N  x/step     fp32     bf16  bf16 vs square
+--------------------------------------------------------------------------------------------
+lm_head      [B*T,C]x[C,V]        1,024    256  50,257       1     2.38     6.61             61%
+attn c_attn  [B*T,C]x[C,3C]       1,024    256     768       4     2.48     7.32             67%
+attn c_proj  [B*T,C]x[C,C]        1,024    256     256       4     1.73     4.58             42%
+mlp c_fc     [B*T,C]x[C,4C]       1,024    256   1,024       4     2.82     5.77             53%
+mlp c_proj   [B*T,4C]x[4C,C]      1,024  1,024     256       4     2.37     6.58             60%
+square reference [4096]^3         4,096  4,096   4,096       -     2.52    10.87            100%
+
+(TFLOP/s, best of three timings each. The square-4096 row is not re-measured here:
+ it is the same number the ceiling cell used, so the percentages and the MFUs below
+ are all fractions of one measurement rather than of several.)
+
+============================================================================================
+What the shapes alone allow   [t+6m08s]
+============================================================================================
+matmul                             GFLOP/step    share   bf16 TFLOP/s
+--------------------------------------------------------------------------------------------
+lm_head      [B*T,C]x[C,V]              79.05    80.4%           6.61
+mlp c_fc     [B*T,C]x[C,4C]              6.44     6.5%           5.77
+mlp c_proj   [B*T,4C]x[4C,C]             6.44     6.5%           6.58
+attn c_attn  [B*T,C]x[C,3C]              4.83     4.9%           7.32
+attn c_proj  [B*T,C]x[C,C]               1.61     1.6%           4.58
+total                                   98.37   100.0%
+
+A step made of nothing but these matmuls, each at the rate measured above, would
+run at 6.53 TFLOP/s = 60.0% of this machine's bf16 peak of 10.87.
+That is an upper bound on MFU for this model at this batch size, before a single
+LayerNorm, softmax, optimizer update or kernel launch is counted.
+
+The reason is one matmul: the output head is 80% of the arithmetic and runs at
+61% of the square-matmul rate, because its inner dimension is C=256 while a
+tensor core wants a long K to amortise what it reads. C=256 against V=50,257 is a
+property of the model, not of the training loop.
+
+============================================================================================
+Ablation ladder   [t+6m08s]
+============================================================================================
+configuration                      tokens/s    TFLOP/s   MFU vs bf16 peak   step ms
+--------------------------------------------------------------------------------------------
+fp32, TF32 off, batch 8              14,945      1.463              13.5%     68.52
++ TF32 on                            19,963      1.955              18.0%     51.29
++ bf16 autocast                      25,373      2.485              22.8%     40.36
++ batch 16                           31,505      3.085              28.4%     65.01
++ batch 32                           34,903      3.418              31.4%    117.35
++ torch.compile                unavailable here: backend='inductor' raised:
+
+============================================================================================
+MFU against micro-batch size (bf16, TF32 on)   [t+6m46s]
+============================================================================================
+ batch   tokens/step     tokens/s    TFLOP/s      MFU
+--------------------------------------------------------------------------------------------
+     1           128        6,547      0.641     5.9%
+     2           256       11,864      1.162    10.7%
+     4           512       18,520      1.813    16.7%
+     8         1,024       26,247      2.570    23.6%
+    16         2,048       31,826      3.116    28.7%
+    32         4,096       34,913      3.419    31.4%
+    48         6,144       10,710      1.049     9.6%
+
+============================================================================================
+What the distance to 40% is made of   [t+6m46s]
+============================================================================================
+  best measured MFU                        31.4%   + batch 32
+  ceiling from the matmul shapes alone     60.0%   nothing but the matmuls, at their measured rates
+  the target                               40.0%
+
+  100% -> 60.0%  (40.0 points): shape. Gone before the loop starts.
+  60.0% -> 31.4%  (28.6 points): everything that is not a matmul.
+
+  So 40% is *not* out of reach at this model shape -- the shapes allow 60.0%. The
+  loop captures 52% of what they allow; to hit 40% it would have to capture 67%.
+  On this machine the distance to 40% is a loop-and-batch-size problem, not a
+  model-shape problem, and that is the opposite of what I expected to find.
+
+  The 40.0 points of shape, itemised: the output head is 80% of the arithmetic
+  and is one [B*T,256]x[256,50257] matmul. With K=256 a tensor core spends most of
+  its time reading rather than multiplying, and it reaches 61% of the
+  square-matmul rate. The worst-shaped one is attn c_proj at 42%, but it is only
+  1.6% of the work. A wider model fixes this; a better loop does not.
+
+  The 28.6 points the loop loses, itemised as far as I measured them:
+    - the optimizer and gradient clipping: 14% of the step at batch 8, pure memory
+      traffic over 16M parameters x 4 tensors, contributing nothing to the numerator;
+    - LayerNorm, GELU, softmax and the residual adds, all memory-bound;
+    - fixed per-step launch and Python overhead, which is why the sweep runs 5.9% at
+      batch 1 and 31.4% at batch 32; a 4 GiB card is why it stops there;
+    - no kernel fusion: torch.compile does not run in this environment
+      (backend='inductor' raised:...), so every elementwise op is
+      its own launch.
+
+  Not claimed: that those bullets sum to 28.6 points. They are measured
+  contributions, not a partition, and some of the gap is unaccounted for. The
+  largest lever I actually had was precision and batch size together, worth
+  18.0 points; the largest one I did not have is making the model wider.
+
+  One caveat over all of it: the worst spread between repeat timings of the *same*
+  matmul on this laptop was 32.8%. These percentages are honest to about their first
+  digit, and the ordering between them, not to their third.
+
+============================================================================================
+0.1, encoded by hand, from the exact value 1/10   [t+6m46s]
+============================================================================================
+
+fp32   (32 bits: 1 sign, 8 exponent, 23 mantissa, bias 127)
+  sign     : 0                     +
+  exponent : 01111011  = 123 - 127 = -4   -> 2^-4
+  mantissa : 10011001100110011001101  = 1 + 5033165/8388608 = 1.6000000238
+  bits     : 0 01111011 10011001100110011001101   (0x3DCCCCCD)
+  value    : 0.10000000149011612
+  error    : 1.490e-09 absolute, 0.000001% relative
+
+bf16   (16 bits: 1 sign, 8 exponent, 7 mantissa, bias 127)
+  sign     : 0                     +
+  exponent : 01111011  = 123 - 127 = -4   -> 2^-4
+  mantissa : 1001101  = 1 + 77/128 = 1.6015625000
+  bits     : 0 01111011 1001101   (0x3DCD)
+  value    : 0.10009765625
+  error    : 9.766e-05 absolute, 0.097656% relative
+
+fp16   (16 bits: 1 sign, 5 exponent, 10 mantissa, bias 15)
+  sign     : 0                     +
+  exponent : 01011  = 11 - 15 = -4   -> 2^-4
+  mantissa : 1001100110  = 1 + 614/1024 = 1.5996093750
+  bits     : 0 01011 1001100110   (0x2E66)
+  value    : 0.0999755859375
+  error    : 2.441e-05 absolute, 0.024414% relative
+
+fp8 E4M3   (8 bits: 1 sign, 4 exponent, 3 mantissa, bias 7)
+  sign     : 0                     +
+  exponent : 0011  = 3 - 7 = -4   -> 2^-4
+  mantissa : 101  = 1 + 5/8 = 1.6250000000
+  bits     : 0 0011 101   (0x1D)
+  value    : 0.1015625
+  error    : 1.563e-03 absolute, 1.562500% relative
+
+============================================================================================
+Hand-derived bits vs the bits torch stores   [t+6m46s]
+============================================================================================
+format     by hand                              torch                                 match
+--------------------------------------------------------------------------------------------
+fp32       00111101110011001100110011001101     00111101110011001100110011001101       True
+bf16       0011110111001101                     0011110111001101                       True
+fp16       0010111001100110                     0010111001100110                       True
+fp8 E4M3   00011101                             00011101                               True
+
+also: bf16 from 1/10 directly (single rounding) == True -- double rounding does not change 0.1
+
+============================================================================================
+The hand encoder against torch, over 10,000 values   [t+6m47s]
+============================================================================================
+bf16 bit-pattern mismatches     : 0
+fp8 E4M3 bit-pattern mismatches : 0  (values beyond +-448 excluded: they overflow to NaN in this format)
+
+============================================================================================
+Resolution and range   [t+6m47s]
+============================================================================================
+format      exp  mant  dec digits   min subnormal    min normal          max   rel err on 0.1
+--------------------------------------------------------------------------------------------
+fp32          8    23         6.9        1.40e-45      1.18e-38    3.403e+38          0.0000%
+bf16          8     7         2.1        9.18e-41      1.18e-38     3.39e+38          0.0977%
+fp16          5    10         3.0        5.96e-08      6.10e-05     6.55e+04          0.0244%
+fp8 E4M3      4     3         0.9        1.95e-03      1.56e-02          448          1.5625%
+
+bf16 and fp32 have the same 8 exponent bits: identical range, 65536x coarser steps.
+fp16 trades range for resolution -- its smallest normal is 6.1e-05, and gradients
+below that stop being representable, which is what loss scaling exists to fix.
+fp8 E4M3 has 0.9 decimal digits and a maximum of 448.
+
+============================================================================================
+The gradient tensor this step produced, against each format's floor   [t+6m47s]
+============================================================================================
+entries                             : 16,058,112
+|g| median / p1 / min (nonzero)     : 9.827e-08 / 2.168e-09 / 2.839e-14
+  below fp16 min normal  2^-14           81.72%
+  below fp16 min subnormal 2^-24         36.39%
+  below fp8 E4M3 min normal 2^-6         99.99%
+  below fp8 E4M3 min subnormal 2^-9      98.88%
+  below bf16 min normal 2^-126            0.00%
+
+============================================================================================
+Round-trip error on this step's real tensors   [t+6m47s]
+============================================================================================
+tensor       format                  rel L2 err      cosine   >10% off  flushed to 0  inf/NaN
+--------------------------------------------------------------------------------------------
+gradients    bf16                      1.66e-03  0.99999857      0.00%         0.00%    0.00%
+gradients    fp16                      2.13e-04  0.99999988     53.04%        18.60%    0.00%
+gradients    fp8 E4M3                  2.96e-01  0.95659482     99.38%        97.18%    0.00%
+gradients    fp8 E4M3 + scale          2.63e-02  0.99965382     71.41%        68.09%    0.00%
+weights      bf16                      1.65e-03  0.99999869      0.00%         0.00%    0.00%
+weights      fp16                      2.06e-04  1.00000000      0.00%         0.00%    0.00%
+weights      fp8 E4M3                  2.65e-02  0.99964809      7.33%         1.51%    0.00%
+weights      fp8 E4M3 + scale          2.56e-02  0.99967271      0.02%         0.00%    0.00%
+activations  bf16                      1.68e-03  0.99999863      0.00%         0.00%    0.00%
+activations  fp16                      2.09e-04  1.00000000      0.00%         0.00%    0.00%
+activations  fp8 E4M3                  2.80e-02  0.99960768     10.41%         1.92%    0.00%
+activations  fp8 E4M3 + scale          2.61e-02  0.99965835      0.00%         0.00%    0.00%
+
+'>10% off' is the share of individual entries whose value moved by more than 10%.
+It is the column that matters for gradients: the L2 error is set by the few largest
+entries, and the small ones are where the rare-token updates live.
+
+============================================================================================
+300 steps in fp32 and in bf16 autocast, same seed, same batches   [t+7m16s]
+============================================================================================
+                         final loss   mean last 20   wall clock   speedup
+--------------------------------------------------------------------------------------------
+fp32 (TF32 matmuls)          4.8339         4.9255        14.5s     1.00x
+bf16 autocast                4.8376         4.9240        12.2s     1.20x
+
+loss difference over the last 20 steps: -0.0015 nats (0.03%)
+
+============================================================================================
+Which one I would train in   [t+7m16s]
+============================================================================================
+bf16 for the compute; fp32 for the master weights, the optimizer state and the loss.
+
+The case, in the order the measurements make it:
+  1. Range is what gradients need, and range is what bf16 keeps. bf16 has fp32's
+     own 8 exponent bits, so 0.00% of this step's 16,058,112 gradient
+     entries fall below its smallest normal. fp16 has 5 exponent bits, and
+     81.7% of them fall below *its* smallest normal.
+  2. Resolution is what bf16 gives up, and it turns out not to matter. Casting the
+     real gradient to bf16 costs 1.7e-03 relative L2 error, moves 0.00% of entries
+     by more than 10%, and flushes 0.00% to zero.
+  3. fp16's better L2 error is a trap. It reads 2.1e-04 -- better than bf16 -- while
+     sending 18.60% of the entries to exactly zero, because L2 error is set by the
+     largest entries and the smallest ones are where the rare-token updates live.
+     Recovering those needs loss scaling: machinery, a scale factor to tune, and a
+     failure mode (overflow, skipped steps) that bf16 simply does not have.
+  4. fp8 E4M3 is not a training format for gradients at this scale. Unscaled it
+     destroys 97.2% of them; with one scale factor per tensor it still destroys
+     68.1%. Its 3 mantissa bits also put 1.6% of error on a number as
+     ordinary as 0.1. It can work -- but with finer-grained scaling than one factor
+     per tensor, and on hardware that has fp8 tensor cores. This card is sm_86,
+     which does not, so every fp8 number above is a software cast: the numerical
+     cost with none of the speed that would justify paying it.
+  5. And it is free. Measured above: 1.2x faster for -0.0015 nats over 300 steps.
+
+What stays in fp32, and why the answer is not 'bf16 everywhere': the master weights
+and Adam's moments. A weight update is a small number added to a large one, and
+bf16's 8 mantissa bits resolve about 0.0039 relative -- an update smaller than
+that vanishes entirely when the sum is rounded back. So: bf16 activations and
+matmuls, fp32 accumulation inside them, fp32 master weights, fp32 optimizer state.
+That is the 16 bytes per parameter counted in section 1,
+and it is what the extra bytes are buying.
+
+============================================================================================
+Artifacts   [t+7m16s]
+============================================================================================
+  results/accumulation.png               116.3 KiB
+  results/formats.png                     72.8 KiB
+  results/gradcheck.png                   88.2 KiB
+  results/gradnorm.png                   235.1 KiB
+  results/mfu.png                         57.7 KiB
+  results/nbexec.log                       0.7 KiB
+  results/precision.png                  161.2 KiB
+  results/results.json                    18.8 KiB
+  results/run_log.txt                     49.5 KiB
+  results/shapes_full.txt                 19.4 KiB
+  results/step_log.npz                    22.6 KiB
+  results/tinyshakespeare.txt          1,089.3 KiB
+
+210 recorded values, whole run 7.3 minutes on NVIDIA GeForce RTX 3050 Laptop GPU

@@ -192,3 +192,43 @@ jobs:
       - name: Colab cross-run agrees where it must
         working-directory: assignment9
         run: python tools/compare_colab.py --check
+
+  session10-truth-harness:
+    name: Session 10 - instrumentation invariants and write-up integrity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install torch (CPU)
+        run: pip install --quiet torch --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install test deps
+        run: pip install --quiet pytest numpy
+
+      # The claims that are arithmetic rather than measurement, and must therefore hold on
+      # any machine: that token-weighted accumulation is EXACTLY the un-accumulated
+      # gradient, that the average-of-averages is not, that the two coincide when the
+      # micro-batch lengths are equal, and that the hand-written float encoder reproduces
+      # the bits torch stores for fp32, bf16, fp16 and fp8 E4M3 -- including the three
+      # patterns for 0.1 that the write-up quotes. These lift their definitions straight
+      # out of truth_harness.py, so they cannot pass against a stale copy.
+      - name: Accumulation and number-format invariants
+        working-directory: assignment10
+        run: python -m pytest tests -q
+
+      # truth_harness.py is the single source of truth; truth_harness.ipynb is generated
+      # from it. If the notebook's code has drifted from the script, the thing a grader
+      # opens is not the thing that was tested.
+      - name: Notebook is in sync with the script
+        working-directory: assignment10
+        run: python tools/build_notebook.py --check
+
+      # Every number in README.md is rendered from results/results.json, which the
+      # notebook emits. If they disagree, the write-up is quoting a run that no longer
+      # exists.
+      - name: README numbers match the recorded run
+        working-directory: assignment10
+        run: python tools/render_numbers.py --check

@@ -1,0 +1,240 @@
+=== step trace with block 0 expanded ===
+tensor               shape                  dtype           numel      MiB
+--------------------------------------------------------------------------------------------
+input_ids            [8, 128]               int64           1,024     0.01
+    [B=8, T=128]  B=rows in this micro-batch, T=positions per row; every entry is one integer token id
+pos                  [128]                  int64             128     0.00
+    [T=128]  T position indices, 0..T-1, shared by every row
+tok_emb              [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  each of the B*T ids replaced by its C-wide row of wte
+pos_emb              [128, 256]             float32        32,768     0.12
+    [T=128, C=256]  one C-wide vector per position, broadcast across the B rows
+x_in                 [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the residual stream entering block 0
+ln_1                 [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  normalised over C for each of the B*T positions independently
+attn.qkv             [8, 128, 768]          float32       786,432     3.00
+    [B=8, T=128, 3C=768]  3C=768 -> query, key and value for every position, concatenated so one matmul produces all three
+attn.q               [8, 4, 128, 64]        float32       262,144     1.00
+    [B=8, nh=4, T=128, hs=64]  nh=4 heads, each reading the same T positions in its own hs=64-wide subspace
+attn.k               [8, 4, 128, 64]        float32       262,144     1.00
+    [B=8, nh=4, T=128, hs=64]  one key vector per head per position
+attn.v               [8, 4, 128, 64]        float32       262,144     1.00
+    [B=8, nh=4, T=128, hs=64]  one value vector per head per position
+attn.scores          [8, 4, 128, 128]       float32       524,288     2.00
+    [B=8, nh=4, T=128, T=128]  T x T -> for each query position (3rd axis), its raw affinity to every key position (4th axis)
+attn.probs           [8, 4, 128, 128]       float32       524,288     2.00
+    [B=8, nh=4, T=128, T=128]  the same T x T after causal masking and softmax; each row sums to 1 over the positions at or before it
+attn.out_heads       [8, 4, 128, 64]        float32       262,144     1.00
+    [B=8, nh=4, T=128, hs=64]  per head, the value vectors averaged under those probabilities
+attn.out_merged      [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the nh heads concatenated back into one C-wide vector per position
+attn.out_proj        [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  attention's contribution to the residual stream
+resid_after_attn     [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the residual stream, unchanged in shape all the way through the model
+ln_2                 [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  normalised over C again, before the MLP
+mlp.fc               [8, 128, 1024]         float32     1,048,576     4.00
+    [B=8, T=128, 4C=1024]  4C=1024 -> the widened per-position feature vector; the same matmul applied independently at every one of the B*T positions
+mlp.gelu             [8, 128, 1024]         float32     1,048,576     4.00
+    [B=8, T=128, 4C=1024]  elementwise, so the shape cannot change
+mlp.out              [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  projected back to C, the MLP's contribution to the residual
+resid_after_mlp      [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the residual stream leaving this block
+block[1].out         [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  block 1 traced only at its output; its interior is identical in shape to block 0
+block[2].out         [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  block 2 traced only at its output; its interior is identical in shape to block 0
+block[3].out         [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  block 3 traced only at its output; its interior is identical in shape to block 0
+ln_f                 [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the final normalisation, still one C-wide vector per position
+logits               [8, 128, 50257]        float32    51,463,168   196.32
+    [B=8, T=128, V=50257]  V=50257 -> one real number per vocabulary entry per position; the widest tensor in the step
+targets              [8, 128]               int64           1,024     0.01
+    [B=8, T=128]  the same [B,T] grid as the input, holding the id that should follow each position (-100 = does not count)
+loss                 []                     float32             1     0.00
+    scalar  a scalar: no axes at all, which is the whole difficulty
+
+=== step trace with block 1 expanded ===
+tensor               shape                  dtype           numel      MiB
+--------------------------------------------------------------------------------------------
+input_ids            [8, 128]               int64           1,024     0.01
+    [B=8, T=128]  B=rows in this micro-batch, T=positions per row; every entry is one integer token id
+pos                  [128]                  int64             128     0.00
+    [T=128]  T position indices, 0..T-1, shared by every row
+tok_emb              [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  each of the B*T ids replaced by its C-wide row of wte
+pos_emb              [128, 256]             float32        32,768     0.12
+    [T=128, C=256]  one C-wide vector per position, broadcast across the B rows
+x_in                 [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the residual stream entering block 0
+block[0].out         [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  block 0 traced only at its output; its interior is identical in shape to block 1
+ln_1                 [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  normalised over C for each of the B*T positions independently
+attn.qkv             [8, 128, 768]          float32       786,432     3.00
+    [B=8, T=128, 3C=768]  3C=768 -> query, key and value for every position, concatenated so one matmul produces all three
+attn.q               [8, 4, 128, 64]        float32       262,144     1.00
+    [B=8, nh=4, T=128, hs=64]  nh=4 heads, each reading the same T positions in its own hs=64-wide subspace
+attn.k               [8, 4, 128, 64]        float32       262,144     1.00
+    [B=8, nh=4, T=128, hs=64]  one key vector per head per position
+attn.v               [8, 4, 128, 64]        float32       262,144     1.00
+    [B=8, nh=4, T=128, hs=64]  one value vector per head per position
+attn.scores          [8, 4, 128, 128]       float32       524,288     2.00
+    [B=8, nh=4, T=128, T=128]  T x T -> for each query position (3rd axis), its raw affinity to every key position (4th axis)
+attn.probs           [8, 4, 128, 128]       float32       524,288     2.00
+    [B=8, nh=4, T=128, T=128]  the same T x T after causal masking and softmax; each row sums to 1 over the positions at or before it
+attn.out_heads       [8, 4, 128, 64]        float32       262,144     1.00
+    [B=8, nh=4, T=128, hs=64]  per head, the value vectors averaged under those probabilities
+attn.out_merged      [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the nh heads concatenated back into one C-wide vector per position
+attn.out_proj        [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  attention's contribution to the residual stream
+resid_after_attn     [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the residual stream, unchanged in shape all the way through the model
+ln_2                 [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  normalised over C again, before the MLP
+mlp.fc               [8, 128, 1024]         float32     1,048,576     4.00
+    [B=8, T=128, 4C=1024]  4C=1024 -> the widened per-position feature vector; the same matmul applied independently at every one of the B*T positions
+mlp.gelu             [8, 128, 1024]         float32     1,048,576     4.00
+    [B=8, T=128, 4C=1024]  elementwise, so the shape cannot change
+mlp.out              [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  projected back to C, the MLP's contribution to the residual
+resid_after_mlp      [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the residual stream leaving this block
+block[2].out         [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  block 2 traced only at its output; its interior is identical in shape to block 1
+block[3].out         [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  block 3 traced only at its output; its interior is identical in shape to block 1
+ln_f                 [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the final normalisation, still one C-wide vector per position
+logits               [8, 128, 50257]        float32    51,463,168   196.32
+    [B=8, T=128, V=50257]  V=50257 -> one real number per vocabulary entry per position; the widest tensor in the step
+targets              [8, 128]               int64           1,024     0.01
+    [B=8, T=128]  the same [B,T] grid as the input, holding the id that should follow each position (-100 = does not count)
+loss                 []                     float32             1     0.00
+    scalar  a scalar: no axes at all, which is the whole difficulty
+
+=== step trace with block 2 expanded ===
+tensor               shape                  dtype           numel      MiB
+--------------------------------------------------------------------------------------------
+input_ids            [8, 128]               int64           1,024     0.01
+    [B=8, T=128]  B=rows in this micro-batch, T=positions per row; every entry is one integer token id
+pos                  [128]                  int64             128     0.00
+    [T=128]  T position indices, 0..T-1, shared by every row
+tok_emb              [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  each of the B*T ids replaced by its C-wide row of wte
+pos_emb              [128, 256]             float32        32,768     0.12
+    [T=128, C=256]  one C-wide vector per position, broadcast across the B rows
+x_in                 [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the residual stream entering block 0
+block[0].out         [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  block 0 traced only at its output; its interior is identical in shape to block 2
+block[1].out         [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  block 1 traced only at its output; its interior is identical in shape to block 2
+ln_1                 [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  normalised over C for each of the B*T positions independently
+attn.qkv             [8, 128, 768]          float32       786,432     3.00
+    [B=8, T=128, 3C=768]  3C=768 -> query, key and value for every position, concatenated so one matmul produces all three
+attn.q               [8, 4, 128, 64]        float32       262,144     1.00
+    [B=8, nh=4, T=128, hs=64]  nh=4 heads, each reading the same T positions in its own hs=64-wide subspace
+attn.k               [8, 4, 128, 64]        float32       262,144     1.00
+    [B=8, nh=4, T=128, hs=64]  one key vector per head per position
+attn.v               [8, 4, 128, 64]        float32       262,144     1.00
+    [B=8, nh=4, T=128, hs=64]  one value vector per head per position
+attn.scores          [8, 4, 128, 128]       float32       524,288     2.00
+    [B=8, nh=4, T=128, T=128]  T x T -> for each query position (3rd axis), its raw affinity to every key position (4th axis)
+attn.probs           [8, 4, 128, 128]       float32       524,288     2.00
+    [B=8, nh=4, T=128, T=128]  the same T x T after causal masking and softmax; each row sums to 1 over the positions at or before it
+attn.out_heads       [8, 4, 128, 64]        float32       262,144     1.00
+    [B=8, nh=4, T=128, hs=64]  per head, the value vectors averaged under those probabilities
+attn.out_merged      [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the nh heads concatenated back into one C-wide vector per position
+attn.out_proj        [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  attention's contribution to the residual stream
+resid_after_attn     [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the residual stream, unchanged in shape all the way through the model
+ln_2                 [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  normalised over C again, before the MLP
+mlp.fc               [8, 128, 1024]         float32     1,048,576     4.00
+    [B=8, T=128, 4C=1024]  4C=1024 -> the widened per-position feature vector; the same matmul applied independently at every one of the B*T positions
+mlp.gelu             [8, 128, 1024]         float32     1,048,576     4.00
+    [B=8, T=128, 4C=1024]  elementwise, so the shape cannot change
+mlp.out              [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  projected back to C, the MLP's contribution to the residual
+resid_after_mlp      [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the residual stream leaving this block
+block[3].out         [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  block 3 traced only at its output; its interior is identical in shape to block 2
+ln_f                 [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the final normalisation, still one C-wide vector per position
+logits               [8, 128, 50257]        float32    51,463,168   196.32
+    [B=8, T=128, V=50257]  V=50257 -> one real number per vocabulary entry per position; the widest tensor in the step
+targets              [8, 128]               int64           1,024     0.01
+    [B=8, T=128]  the same [B,T] grid as the input, holding the id that should follow each position (-100 = does not count)
+loss                 []                     float32             1     0.00
+    scalar  a scalar: no axes at all, which is the whole difficulty
+
+=== step trace with block 3 expanded ===
+tensor               shape                  dtype           numel      MiB
+--------------------------------------------------------------------------------------------
+input_ids            [8, 128]               int64           1,024     0.01
+    [B=8, T=128]  B=rows in this micro-batch, T=positions per row; every entry is one integer token id
+pos                  [128]                  int64             128     0.00
+    [T=128]  T position indices, 0..T-1, shared by every row
+tok_emb              [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  each of the B*T ids replaced by its C-wide row of wte
+pos_emb              [128, 256]             float32        32,768     0.12
+    [T=128, C=256]  one C-wide vector per position, broadcast across the B rows
+x_in                 [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the residual stream entering block 0
+block[0].out         [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  block 0 traced only at its output; its interior is identical in shape to block 3
+block[1].out         [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  block 1 traced only at its output; its interior is identical in shape to block 3
+block[2].out         [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  block 2 traced only at its output; its interior is identical in shape to block 3
+ln_1                 [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  normalised over C for each of the B*T positions independently
+attn.qkv             [8, 128, 768]          float32       786,432     3.00
+    [B=8, T=128, 3C=768]  3C=768 -> query, key and value for every position, concatenated so one matmul produces all three
+attn.q               [8, 4, 128, 64]        float32       262,144     1.00
+    [B=8, nh=4, T=128, hs=64]  nh=4 heads, each reading the same T positions in its own hs=64-wide subspace
+attn.k               [8, 4, 128, 64]        float32       262,144     1.00
+    [B=8, nh=4, T=128, hs=64]  one key vector per head per position
+attn.v               [8, 4, 128, 64]        float32       262,144     1.00
+    [B=8, nh=4, T=128, hs=64]  one value vector per head per position
+attn.scores          [8, 4, 128, 128]       float32       524,288     2.00
+    [B=8, nh=4, T=128, T=128]  T x T -> for each query position (3rd axis), its raw affinity to every key position (4th axis)
+attn.probs           [8, 4, 128, 128]       float32       524,288     2.00
+    [B=8, nh=4, T=128, T=128]  the same T x T after causal masking and softmax; each row sums to 1 over the positions at or before it
+attn.out_heads       [8, 4, 128, 64]        float32       262,144     1.00
+    [B=8, nh=4, T=128, hs=64]  per head, the value vectors averaged under those probabilities
+attn.out_merged      [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the nh heads concatenated back into one C-wide vector per position
+attn.out_proj        [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  attention's contribution to the residual stream
+resid_after_attn     [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the residual stream, unchanged in shape all the way through the model
+ln_2                 [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  normalised over C again, before the MLP
+mlp.fc               [8, 128, 1024]         float32     1,048,576     4.00
+    [B=8, T=128, 4C=1024]  4C=1024 -> the widened per-position feature vector; the same matmul applied independently at every one of the B*T positions
+mlp.gelu             [8, 128, 1024]         float32     1,048,576     4.00
+    [B=8, T=128, 4C=1024]  elementwise, so the shape cannot change
+mlp.out              [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  projected back to C, the MLP's contribution to the residual
+resid_after_mlp      [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the residual stream leaving this block
+ln_f                 [8, 128, 256]          float32       262,144     1.00
+    [B=8, T=128, C=256]  the final normalisation, still one C-wide vector per position
+logits               [8, 128, 50257]        float32    51,463,168   196.32
+    [B=8, T=128, V=50257]  V=50257 -> one real number per vocabulary entry per position; the widest tensor in the step
+targets              [8, 128]               int64           1,024     0.01
+    [B=8, T=128]  the same [B,T] grid as the input, holding the id that should follow each position (-100 = does not count)
+loss                 []                     float32             1     0.00
+    scalar  a scalar: no axes at all, which is the whole difficulty
+
