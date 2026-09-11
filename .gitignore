@@ -47,3 +47,10 @@ assignment9/results/notebook_exec.log
 # is rendered from that JSON, and CI checks it.
 assignment10/results/tinyshakespeare.txt
 assignment10/results/nbexec.log
+
+# Assignment 11: the corpus the notebook downloads on first run, and the
+# nbclient transcript.  results/results.json, the five figures, run_log.txt and
+# ratio_log.npz ARE committed -- every number in the README is rendered from
+# that JSON, and CI checks it.
+assignment11/results/tinyshakespeare.txt
+assignment11/results/nbexec.log

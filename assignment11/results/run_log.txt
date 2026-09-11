@@ -1,0 +1,653 @@
+
+============================================================================================
+Environment   [t+0m01s]
+============================================================================================
+python        : 3.12.6
+torch         : 2.5.1+cu121
+device        : cuda
+gpu           : NVIDIA GeForce RTX 3050 Laptop GPU  (4.00 GiB, 16 SMs, sm_86)
+
+============================================================================================
+1. Adam by hand -- five steps, in plain Python   [t+0m01s]
+============================================================================================
+w0 = 0.35   lr = 0.001   betas = (0.9, 0.999)   eps = 1e-08
+
+ t        g             m              v         m_hat          v_hat           step                w
+-----------------------------------------------------------------------------------------------------
+ 1     0.10   0.010000000   0.0000100000   0.100000000   0.0100000000   0.0009999999   0.349000000100
+ 2     0.20   0.029000000   0.0000499900   0.152631579   0.0250075038   0.0009651820   0.348034818135
+ 3    -0.05   0.021100000   0.0000524400   0.077859779   0.0174974950   0.0005886067   0.347446211447
+ 4     1.50   0.168990000   0.0023023876   0.491392847   0.5764610077   0.0006472080   0.346799003478
+ 5     0.08   0.160091000   0.0023064852   0.390933066   0.4622205536   0.0005750131   0.346223990333
+ t  quantity                by hand                  torch    abs diff  digits
+------------------------------------------------------------------------------
+ 1  m            0.0100000000000000     0.0100000000000000    0.00e+00    16.0
+ 1  v            0.0000100000000000     0.0000100000000000    0.00e+00    16.0
+ 1  w            0.3490000001000000     0.3490000001000000    0.00e+00    16.0
+------------------------------------------------------------------------------
+ 2  m            0.0290000000000000     0.0290000000000000    3.47e-18    15.9
+ 2  v            0.0000499900000000     0.0000499900000000    0.00e+00    16.0
+ 2  w            0.3480348181352125     0.3480348181352125    0.00e+00    16.0
+------------------------------------------------------------------------------
+ 3  m            0.0211000000000000     0.0211000000000000    6.94e-18    15.5
+ 3  v            0.0000524400100000     0.0000524400100000    0.00e+00    16.0
+ 3  w            0.3474462114469811     0.3474462114469811    0.00e+00    16.0
+------------------------------------------------------------------------------
+ 4  m            0.1689900000000000     0.1689900000000000    0.00e+00    16.0
+ 4  v            0.0023023875699900     0.0023023875699900    0.00e+00    16.0
+ 4  w            0.3467990034778827     0.3467990034778827    0.00e+00    16.0
+------------------------------------------------------------------------------
+ 5  m            0.1600910000000000     0.1600910000000000    0.00e+00    16.0
+ 5  v            0.0023064851824200     0.0023064851824200    0.00e+00    16.0
+ 5  w            0.3462239903329248     0.3462239903329248    0.00e+00    16.0
+------------------------------------------------------------------------------
+
+largest disagreement on the weight over five steps : 0.000e+00
+worst agreement across m, v and w, in digits       : 15.5
+final weight   by hand : 0.3462239903329248
+final weight   torch   : 0.3462239903329248
+
+============================================================================================
+1b. What the five rows actually show   [t+0m02s]
+============================================================================================
+|step 1| / lr                       : 0.9999999000
+   at t=1, m_hat = g and v_hat = g^2, so the step is lr * g/|g| -- the gradient's
+   *size* cancels exactly, and only its sign survives.
+
+gradient at t=4 vs t=3              : 30.0x
+step     at t=4 vs t=3              : 1.10x
+   a 30x gradient bought a 1.10x step.  That ratio is the whole reason Adam is used
+   on language models: v cancels the scale of g, so a parameter that only ever sees
+   tiny gradients still moves, and one that sees a spike does not explode.
+
+step at t=5 (g = 0.08)              : 5.750e-04
+step at t=2 (g = 0.20, same order)  : 9.652e-04
+   the spike is still in v at t=5, shrinking every subsequent step until it decays
+   out of the window -- about 1/(1-b2) = 1000 steps.
+gradients x1000,  largest weight difference : 2.223e-10  (9 digits identical)
+gradients x1e-6,  largest weight difference : 2.064e-04  (3 digits identical)
+   eps = 1e-08 sits in the denominator next to sqrt(v_hat).  When the gradients are small
+   enough that sqrt(v_hat) approaches eps, the scale stops cancelling and Adam degenerates
+   toward plain SGD.  That is the failure mode eps is usually described as preventing, and
+   it is also the one it causes -- which is why eps is a hyperparameter and not a constant.
+                                               by hand               torch   digits
+Adam + L2 (decay in the gradient)   0.3460175049080650  0.3460175049080650     16.0
+AdamW (decoupled)                   0.3460498972312724  0.3460498972312724     16.0
+no decay at all                     0.3462239903329248
+
+the two decay rules differ by 3.239e-05 after five steps at lambda=0.1, and both
+reproduce torch to 16 digits -- so the difference is the algorithm, not the arithmetic.
+
+and a detail found only by insisting on all 16 digits: torch shrinks w *before*
+taking the Adam step, while the AdamW paper's Algorithm 2 subtracts both from the
+same w.  Decaying last instead gives 0.3460502747450490, which differs by
+3.78e-07 -- O(eta^2 lambda) per step, invisible at four decimal
+places and the reason a 'reimplementation of AdamW' can be subtly not AdamW.
+
+============================================================================================
+Data and shapes   [t+0m03s]
+============================================================================================
+characters      : 1,115,394
+vocabulary      : 65 distinct characters
+train / val     : 1,003,854 / 111,540 tokens
+batch           : B=16, T=128  ->  2,048 tokens per step
+held-out ruler  : 16 fixed val batches = 32,768 tokens
+
+============================================================================================
+0b. The hand-written AdamW, checked against torch   [t+0m03s]
+============================================================================================
+open loop, 60 fixed gradients, float64, 4,096 parameters
+  largest absolute difference : 4.441e-16
+  m and v differ by           : 1.388e-17 / 0.000e+00
+  -> the same algorithm, to the limit of float64.
+
+closed loop, 40 steps, fp32 on the GPU, identical seeds
+  parameters, worst relative difference : 1.018e-03  (wte.weight)
+  held-out loss                         : 2.558558926 vs 2.558567747   (gap 8.82e-06)
+  the same code run twice               : 0.000e+00  (so the drift above is not noise)
+
+  Both optimizers are exactly right.  They differ only in the order of two divisions, which
+  costs an ulp on step 1, and 40 steps of feedback turn that ulp into 1e-03 of the weights.
+  Training is chaotic: that is a property of the loop, not a bug in either optimizer.
+300 steps, lr=2e-3, cosine, everything else identical:
+
+  5 data orders, same init : mean 2.1037  sd 0.0069  spread 0.0204
+  5 inits, same data order : mean 2.1108  sd 0.0095  spread 0.0282
+
+  NOISE FLOOR = 0.0282 nats.  A difference in held-out loss smaller than this is
+  not evidence of anything, and every claim below is checked against it.
+
+============================================================================================
+2. Bias correction: the exact multiplier   [t+0m36s]
+============================================================================================
+  t       r(t)     1/r(t)   how much larger the uncorrected step is
+--------------------------------------------------------------------------
+  1   0.316228     3.1623   #########
+  2   0.235317     4.2496   #############
+  3   0.202011     4.9502   ###############
+  4   0.183769     5.4416   ################
+  5   0.172499     5.7971   #################
+  6   0.165108     6.0566   ##################
+  7   0.160131     6.2449   ###################
+  8   0.156771     6.3787   ###################
+  9   0.154558     6.4701   ###################
+ 10   0.153189     6.5279   ####################
+ 11   0.152464     6.5589   ####################
+ 12   0.152241     6.5685   ####################
+ 13   0.152419     6.5609   ####################
+ 14   0.152921     6.5393   ####################
+ 15   0.153690     6.5066   ####################
+ 16   0.154681     6.4649   ###################
+ 17   0.155857     6.4162   ###################
+ 18   0.157189     6.3618   ###################
+ 19   0.158654     6.3030   ###################
+ 20   0.160233     6.2409   ###################
+
+r(1)      = 0.316228   -> step 3.16x too large
+worst t   = 12, r = 0.152241   -> step 6.57x too large
+|r-1|<10% from step 1,660
+|r-1|< 1% from step 3,916
+
+The usual story is that bias correction tames a huge *first* step.  It is not the
+first step: 1-b1^t recovers on a ~10-step timescale and 1-b2^t on a ~1000-step one,
+so the two corrections pull in opposite directions early and the damage peaks at
+step 12, not step 1.  And the tail is long: 3,916 steps to within 1%, which is
+most of a short run.
+  t   step (corrected)     step (not)    ratio    w (corrected)      w (not)
+----------------------------------------------------------------------------
+  1       0.0009999999   0.0031622677    3.162     0.3490000001   0.34683773
+  2       0.0009999999   0.0042495822    4.250     0.3480000002   0.34258815
+  3       0.0009999999   0.0049502263    4.950     0.3470000003   0.33763792
+  4       0.0009999999   0.0054416078    5.442     0.3460000004   0.33219632
+  5       0.0009999999   0.0057971320    5.797     0.3450000005   0.32639918
+  6       0.0009999999   0.0060566283    6.057     0.3440000006   0.32034256
+  7       0.0009999999   0.0062448960    6.245     0.3430000007   0.31409766
+  8       0.0009999999   0.0063787132    6.379     0.3420000008   0.30771895
+  9       0.0009999999   0.0064700711    6.470     0.3410000009   0.30124888
+ 10       0.0009999999   0.0065278742    6.528     0.3400000010   0.29472100
+ 11       0.0009999999   0.0065589216    6.559     0.3390000011   0.28816208
+ 12       0.0009999999   0.0065685142    6.569     0.3380000012   0.28159357
+ 13       0.0009999999   0.0065608506    6.561     0.3370000013   0.27503271
+ 14       0.0009999999   0.0065392975    6.539     0.3360000014   0.26849342
+ 15       0.0009999999   0.0065065807    6.507     0.3350000015   0.26198684
+ 16       0.0009999999   0.0064649239    6.465     0.3340000016   0.25552191
+ 17       0.0009999999   0.0064161513    6.416     0.3330000017   0.24910576
+ 18       0.0009999999   0.0063617668    6.362     0.3320000018   0.24274399
+ 19       0.0009999999   0.0063030140    6.303     0.3310000019   0.23644098
+ 20       0.0009999999   0.0062409238    6.241     0.3300000020   0.23020006
+
+distance travelled in 20 steps : 0.020000 corrected, 0.119800 not (5.99x)
+
+============================================================================================
+2b. Bias correction on the real model, 1200 steps, no warmup   [t+0m36s]
+============================================================================================
+model: 1,641,472 parameters, width 256, lr=0.002, constant schedule
+
+    t  predicted 1/r  counterfactual   two runs   update RMS on          off
+----------------------------------------------------------------------------
+    1          3.162           3.113      3.113       1.996e-03    6.214e-03
+    2          4.250           4.211      4.185       1.403e-03    5.872e-03
+    5          5.797           5.777      5.182       8.823e-04    4.572e-03
+   10          6.528           6.517      5.296       5.210e-04    2.759e-03
+   12          6.569           6.557      5.169       4.354e-04    2.251e-03
+   20          6.241           6.231      2.883       3.681e-04    1.061e-03
+   50          4.504           4.500      4.856       3.597e-04    1.747e-03
+  100          3.241           3.239      3.499       2.366e-04    8.278e-04
+  300          1.964           1.963      2.152       2.846e-04    6.126e-04
+  600          1.488           1.488      1.347       3.280e-04    4.419e-04
+ 1200          1.196           1.196      0.823       4.245e-04    3.496e-04
+
+The counterfactual column reproduces the scalar to 1.57% at every one of 1200 steps.
+Bias correction really is one number per step, applied identically to all 1,641,472
+parameters -- it is not a per-parameter effect and it cannot be, since r(t) has no
+dependence on the gradient at all.
+
+The 'two runs' column is the one that looks wrong, and it is the honest one: by step 20
+the two arms are no longer the same model, so their step sizes stop being comparable.
+That is the first hint of the answer to 'when does it stop mattering'.
+
+============================================================================================
+2c. Three answers to 'when does it stop mattering'   [t+1m28s]
+============================================================================================
+(A) THE STEP.  The multiplier r(t) is a property of the betas, not of the run:
+    within 10% of 1 from step 1,660  (measured on the model: step 1,201)
+    within  1% of 1 from step 3,916  (measured on the model: step > 1200)
+    -> on the usual 2,000-10,000-step budget of a small run, the correction is still
+       worth more than 1% for most of the run.  It never fully stops mattering; it decays.
+
+(B) THE TWO RUNS' STEPS.  Within 10% of each other: never within 1200 steps
+    This is the wrong question, and it is worth saying why: after a few steps the two
+    arms are different models seeing the same data, so this ratio is measuring their
+    divergence, not the correction.
+
+(C) THE MODEL.  Held-out loss, against the 0.0282-nat noise floor:
+      step    25: 3.1746 on / 3.3933 off   gap +0.2187
+      step    50: 2.8405 on / 3.2885 off   gap +0.4480
+      step   100: 2.6139 on / 2.9901 off   gap +0.3762
+      step   200: 2.5309 on / 2.8318 off   gap +0.3009
+      step   400: 2.4883 on / 2.6817 off   gap +0.1934
+      step   600: 2.4665 on / 2.6292 off   gap +0.1626
+      step   800: 2.4615 on / 2.6085 off   gap +0.1470
+      step  1000: 2.4362 on / 2.5798 off   gap +0.1436
+      step  1200: 2.4132 on / 2.5515 off   gap +0.1384
+
+    worst gap : +0.4480 nats at step 50  (16x the noise floor)
+    final gap : +0.1384 nats at step 1200  (5x the noise floor)
+    first step inside the noise floor : never, in 1200 steps
+
+    and in parameter space, at step 1200: ||w_off - w_on|| / ||w_on|| = 1.81,
+    with ||w_off|| / ||w_on|| = 1.80 -- the uncorrected run's weights grew,
+    because the first few dozen steps were up to 6.6x too large and nothing gives that back.
+
+    THE ANSWER: the *step* stops differing by more than 10% after ~1,660 steps and by
+    more than 1% after ~3,916.  The *model* never recovers within 1200 steps -- the gap
+    peaks at 0.45 nats and is still 5x the noise floor at the end.  Bias correction
+    is not a transient: it is a permanent difference introduced during a transient.
+
+============================================================================================
+2d. With a 100-step warmup, does the difference survive?   [t+1m28s]
+============================================================================================
+largest update RMS taken by the UNCORRECTED run in its first 100 steps
+  no warmup      : 6.214e-03
+  100-step warmup : 7.198e-04   (8.6x smaller)
+
+held-out loss at step 1200   (noise floor 0.0282)
+  no warmup      : 2.4132 corrected / 2.5515 not   gap +0.1384
+  100-step warmup : 1.7454 corrected / 1.7711 not   gap +0.0257
+
+  warmup is worth +0.6678 nats to the corrected run and +0.7804 to the uncorrected one.
+
+  the gap at step 1200 shrinks 5.4x when warmup is added (+0.1384 -> +0.0257),
+  and over the second half of the run the warmed-up gap is inside the noise floor 68% of
+  the time, against 0% without warmup.
+
+  Stated carefully, because it only just clears: with warmup the penalty for dropping bias
+  correction falls to 0.9x the noise floor -- the edge of what this experiment can
+  resolve -- while without warmup it is 5x it and never in doubt.  So warmup
+  largely substitutes for bias correction: not by making the early steps correct, but by
+  making them small enough that being 6.6x too large costs little.  That is why a modern
+  recipe gets away with either, and why the two are so often confused -- different
+  mechanisms aimed at the same hundred steps.
+
+============================================================================================
+3. Update-to-weight ratio, logged for every layer at every step   [t+2m13s]
+============================================================================================
+width 256, lr 0.002, 100-step linear warmup then constant, 600 steps
+21 parameter tensors logged at every step
+
+layer                        step 1    step 10    step 50   step 100   step 300   step 600
+------------------------------------------------------------------------------------------
+wte.weight                 9.28e-04   5.60e-03   1.21e-02   1.35e-02   8.92e-03   4.76e-03
+wpe.weight                 1.00e-03   3.91e-03   1.21e-02   1.84e-02   1.25e-02   7.71e-03
+h.0.ln1.weight             2.00e-05   9.00e-05   3.21e-04   8.71e-04   8.14e-04   9.33e-04
+h.0.ln1.bias               1.00e+00   1.20e-01   4.39e-02   5.16e-02   2.65e-02   1.46e-02
+h.0.ln2.weight             2.00e-05   1.21e-04   2.24e-04   3.77e-04   4.62e-04   4.39e-04
+h.0.ln2.bias               1.00e+00   1.27e-01   8.26e-02   1.08e-01   1.40e-02   5.01e-03
+h.0.attn.weight            1.00e-03   5.35e-03   1.55e-02   2.29e-02   1.50e-02   9.24e-03
+h.0.attn_proj.weight       2.00e-03   8.42e-03   1.56e-02   2.65e-02   3.07e-02   1.89e-02
+h.0.fc.weight              9.98e-04   5.99e-03   8.77e-03   1.13e-02   1.26e-02   9.62e-03
+h.0.fc_proj.weight         2.00e-03   1.17e-02   1.37e-02   1.77e-02   1.44e-02   1.04e-02
+h.1.ln1.weight             2.00e-05   8.87e-05   1.42e-04   4.26e-04   5.65e-04   6.32e-04
+h.1.ln1.bias               1.00e+00   1.24e-01   4.49e-02   3.87e-02   1.60e-02   8.11e-03
+h.1.ln2.weight             2.00e-05   1.23e-04   1.74e-04   2.73e-04   3.95e-04   4.54e-04
+h.1.ln2.bias               1.00e+00   1.44e-01   4.08e-02   4.17e-02   1.80e-02   5.02e-03
+h.1.attn.weight            9.93e-04   4.81e-03   1.20e-02   2.04e-02   1.58e-02   1.10e-02
+h.1.attn_proj.weight       2.00e-03   9.51e-03   1.04e-02   1.69e-02   1.78e-02   1.46e-02
+h.1.fc.weight              9.97e-04   5.82e-03   7.37e-03   1.00e-02   1.10e-02   9.70e-03
+h.1.fc_proj.weight         2.00e-03   1.15e-02   1.29e-02   1.71e-02   1.35e-02   1.07e-02
+ln_f.weight                2.00e-05   1.54e-04   5.08e-04   3.08e-04   2.87e-04   3.32e-04
+ln_f.bias                  1.00e+00   1.79e-01   2.43e-02   1.15e-02   6.00e-03   7.87e-03
+lm_head.weight             1.01e-03   7.81e-03   1.16e-02   1.16e-02   8.29e-03   6.40e-03
+
+5 tensors read exactly 1.000 at step 1 (h.0.ln1.bias, h.0.ln2.bias, h.1.ln1.bias...):
+  they are the LayerNorm shifts, initialised to zero, so at step 1 the weight IS the
+  update.  An artefact of the init, not a layer moving fast -- and a reminder that this
+  ratio is only meaningful once a tensor has a scale of its own.
+
+at the end of warmup (median over steps 95-105), over the 11 matrices and embeddings:
+  slowest : h.1.fc.weight          9.83e-03
+  fastest : h.0.attn_proj.weight   2.66e-02   (3x the slowest)
+  the 1e-3 rule of thumb sits above that spread -- at lr=0.002 this model is running the whole band high.
+
+and the thing the word 'plateau' would have hidden: with the learning rate held
+CONSTANT after step 100, the ratio does not stay put.  It peaks at the end of warmup
+and then decays -- median 0.61x by step 600 across those tensors -- because
+RMS(dw) is pinned near eta by Adam while RMS(w) keeps growing.  A constant learning
+rate is not a constant update-to-weight ratio, and the ratio is the one of the two
+that describes what the model is doing.
+
+============================================================================================
+3b. Warmup's share of the movement, step by step   [t+2m23s]
+============================================================================================
+  step    d log lr (warmup)    d log rho~ (Adam)     who wins
+--------------------------------------------------------------
+     2               0.6931               0.3424       warmup
+     3               0.4055               0.2082       warmup
+     5               0.2231               0.1483       warmup
+     8               0.1335               0.1117       warmup
+    12               0.0870               0.0596       warmup
+    20               0.0513               0.0764         Adam
+    40               0.0253               0.0745         Adam
+    60               0.0168               0.0876         Adam
+    80               0.0126               0.0752         Adam
+    99               0.0102               0.0681         Adam
+   100               0.0101               0.0811         Adam
+   101               0.0000               0.0696         Adam
+   150               0.0000               0.0432         Adam
+   300               0.0000               0.0427         Adam
+
+This is the opposite of what the schedule suggests.  Warmup's per-step contribution is
+log((t+1)/t), which is 0.69 at step 2 and falls like 1/t; Adam's is roughly flat.  So:
+
+  warmup is the larger term for steps 2 to 26
+  from step 27 to the end of warmup at 100, Adam's own transient moves the ratio more
+  after step 100 the learning rate is constant, d log lr = 0 exactly, and warmup contributes nothing
+
+Over the whole warmup, the schedule accounts for 36% of the total movement in log ratio,
+and it spends almost all of that in the first 26 steps.
+
+So the answer has two halves and they are different numbers:
+  warmup stops CHANGING the ratio at step 100 -- by construction, since eta stops changing;
+  warmup stops being what DRIVES the ratio at step 26, which is measured, and which is
+  3x earlier than the schedule would lead you to believe.
+
+============================================================================================
+3c. The same ratio at two widths, under both parameterisations   [t+2m23s]
+============================================================================================
+median update-to-weight ratio of the hidden matrices, after warmup, 150 steps, lr=0.002
+
+            width 256   width 1024   measured   predicted
+----------------------------------------------------------
+sp           1.26e-02     7.22e-03      0.57x       1.00x
+mup          1.26e-02     6.77e-03      0.54x       0.50x
+
+So the ratio does NOT separate them: 0.57x against 0.54x, a difference of
+7% where the theory asks for 2x.  muP lands on its prediction; SP misses its own badly.
+
+The reason SP misses is worth more than the check: at lr=0.002, width 1024 is far past
+SP's optimum (section 5 puts it near 5e-04 there), so that arm is training badly and its
+weights are growing for reasons that have nothing to do with parameterisation.  The
+diagnostic is confounded by exactly the condition it is supposed to detect.
+
+CONCLUSION, against the folklore: the update-to-weight ratio is a good instrument for
+'is this layer moving at a sane speed', and a bad one for 'is this model parameterised
+correctly at a new width'.  The quantity that answers the second question is the scale of
+the activations, and section 5e measures it.
+
+============================================================================================
+4. Tuning both schedules before comparing them   [t+3m04s]
+============================================================================================
+grid: ['5e-04', '1e-03', '2e-03', '4e-03', '8e-03'], 5 trials per arm, selection on held-out loss at each arm's own horizon
+
+  cosine, 300-step budget      5e-04:2.3454  1e-03:2.2380  2e-03:2.1113  4e-03:2.1144  8e-03:2.4836   -> best lr 2e-03
+  WSD, 300-step budget         5e-04:2.2405  1e-03:2.0881  2e-03:2.0554  4e-03:2.0967  8e-03:2.4993   -> best lr 2e-03
+  cosine, 200-step budget      5e-04:2.4164  1e-03:2.3794  2e-03:2.3555  4e-03:2.3464  8e-03:2.5012   -> best lr 4e-03
+  WSD cooled into 200          5e-04:2.3808  1e-03:2.3110  2e-03:2.2121  4e-03:2.2836  8e-03:2.5126   -> best lr 2e-03
+
+============================================================================================
+4b. The four arms   [t+3m59s]
+============================================================================================
+held-out loss, mean of 3 data orders (spread in brackets)
+arm                            lr            at step 200         at its own end
+--------------------------------------------------------------------------------
+cosine, budget 300          2e-03         2.2484 [0.015]         2.1050 [0.015]
+WSD, budget 300             2e-03         2.2424 [0.020]         2.0478 [0.014]
+cosine, budget 200          4e-03         2.3340 [0.048]         2.3340 [0.048]
+WSD cooled into 200         2e-03         2.2099 [0.020]         2.2099 [0.020]
+
+THE LITERAL ANSWER TO THE ASSIGNMENT -- both budgeted for 300, both stopped at 200:
+  cosine 2.2484   WSD 2.2424   gap -0.0060 nats (0.2x the noise floor)
+
+  AND IT IS A TIE.  0.0060 nats against a noise floor of 0.0282: the two arms are
+  separated by less than the spread of runs that differ only in their data order.  The
+  comparison the assignment asks for, run carefully with three seeds a side and both
+  peak learning rates tuned, DOES NOT HAVE AN ANSWER at this scale.  Reporting 'WSD wins
+  by 0.0060' would be reporting a coin flip.
+
+  The reason is in the schedules rather than the optimizer: at step 200 the cosine arm has
+  already decayed to 36% of its peak while the WSD arm is still at 100%.  A model at a high
+  learning rate is mid-exploration and its loss is supposed to look worse; a model that has
+  decayed has consolidated and stopped exploring.  Stopping both at the same step compares
+  two different stages of two different plans.
+
+============================================================================================
+4c. The verdict   [t+4m48s]
+============================================================================================
+at step 200, best to worst:
+  WSD cooled into 200      2.2099
+  WSD, budget 300          2.2424
+  cosine, budget 300       2.2484
+  cosine, budget 200       2.3340
+
+at each arm's own end:
+  WSD, budget 300          2.0478  (step 300)
+  cosine, budget 300       2.1050  (step 300)
+  WSD cooled into 200      2.2099  (step 200)
+  cosine, budget 200       2.3340  (step 200)
+
+1. Of the two arms the assignment names: neither, and not because I dislike the question.
+   2.2424 against 2.2484 is 0.2x the noise floor.  Forced to pick I would take the
+   WSD checkpoint, and I would not defend the choice.
+2. What I would actually keep is 'WSD cooled into 200' at 2.2099 --
+   +0.0385 nats better than the stopped cosine arm, 1.4x the noise floor, and
+   available for the same 200 steps of compute.  WSD's cooldown is aimed at the step you
+   intend to stop on; aiming it correctly is worth more than the choice of schedule family.
+3. And the arm that did NOT work, because it is the one I expected to win: cosine re-planned
+   for a 200-step budget is the WORST of the four at 2.3340, despite being tuned
+   over the same grid and picking a higher peak (4e-03) to compensate.  A full cosine
+   decay inside 200 steps spends too much of a short run at a low learning rate; the arm
+   that was 'interrupted' had simply taken bigger steps for longer.  At this horizon, being
+   caught mid-decay beats having decayed.
+
+And the question everyone actually wants answered -- does WSD beat cosine?  At its own
+300-step horizon WSD reaches 2.0478 against cosine's 2.1050: -0.0572 nats,
+2.0x the noise floor.  On this run, WSD wins, and the margin is resolvable.
+
+What that does NOT license is the general claim.  This is 1.6M parameters, 300 steps,
+three seeds, one depth, one batch size, and a stable phase 220 steps long.  The published WSD results
+are about runs where that phase is thousands of times longer, and the mechanism usually
+offered for why it works -- that a long high-LR phase finds wider basins -- cannot be
+tested at this scale at all.  A result that agrees with the literature for reasons this
+experiment cannot check is still only one data point.
+
+What this run does establish is narrower and more useful: WSD's cooldown can be aimed at
+a stopping point chosen after the run started, and doing so is worth +0.0385 nats against
+a cosine schedule that had to commit to its horizon in advance.
+
+============================================================================================
+5. Learning-rate sweep at widths 256, 512 and 1024, in SP and muP   [t+4m49s]
+============================================================================================
+  sp   width   256 :  2.521   2.460   2.416   2.379   2.356   2.346   2.501   2.853
+  sp   width   512 :  2.418   2.363   2.302   2.164   2.438   2.514   2.635   2.897
+  sp   width  1024 :  2.368   2.304   2.236   2.438   2.488   2.552   2.741   2.949
+  mup  width   256 :  2.521   2.460   2.416   2.379   2.356   2.346   2.501   2.853
+  mup  width   512 :  2.479   2.432   2.392   2.356   2.314   2.209   2.498   2.747
+  mup  width  1024 :  2.459   2.422   2.378   2.339   2.277   2.238   2.495   2.678
+
+sanity: at the base width the two parameterisations must be the same model.
+  largest difference across the 8 learning rates : 0.00e+00
+
+============================================================================================
+5b. The three minima   [t+12m09s]
+============================================================================================
+         width    grid best      refined   bracketed  loss at best
+------------------------------------------------------------------
+sp         256     4.00e-03     2.94e-03        True        2.3464
+sp         512     1.00e-03     8.92e-04        True        2.1642
+sp        1024     5.00e-04     4.21e-04        True        2.2356
+mup        256     4.00e-03     2.94e-03        True        2.3464
+mup        512     4.00e-03     3.40e-03        True        2.2086
+mup       1024     4.00e-03     3.10e-03        True        2.2384
+
+across a 4x change in width, the optimum moves by
+  SP  : 0.143x
+  muP : 1.054x
+
+============================================================================================
+5c. What to use at width 4096   [t+12m09s]
+============================================================================================
+fitting log2(lr*) against log2(width) over the three widths:
+
+  SP  : exponent -1.401   residuals +0.11, -0.21, +0.11 in log2
+  muP : exponent +0.038
+
+Those two exponents are the entire section.  Zero means the tuning transfers; anything
+else means it has to be re-done at every width.  muP's theory for Adam predicts -1 for SP's
+hidden layers and 0 for muP; measured, -1.40 and +0.04.
+
+SP  -> width 2048 : 1.48e-04
+       width 4096 : 5.61e-05   (a power law fitted to three points, extended two doublings)
+muP -> width 2048 and 4096 : 2.94e-03, the base width's own optimum, unchanged
+
+============================================================================================
+5d. Held-out check at width 2048   [t+12m09s]
+============================================================================================
+  sp   predicted 1.48e-04 : 7.4e-05->2.3659  1.5e-04->2.2507  3.0e-04->2.1702   prediction is the best of three: False
+  mup  predicted 2.94e-03 : 1.5e-03->2.3187  2.9e-03->2.2107  5.9e-03->2.4683   prediction is the best of three: True
+
+at the predicted learning rate, width 2048:
+  SP  : 2.2507   (best of its three: 2.1702, cost of trusting the fit +0.0805)
+  muP : 2.2107   (best of its three: 2.2107, cost of trusting the transfer +0.0000)
+
+============================================================================================
+5e. Coordinate check -- the reason muP transfers   [t+19m02s]
+============================================================================================
+RMS of the residual stream and of the logits, at lr=0.002 in both, constant schedule, no warmup
+
+      quantity                    width 256   width 1024    growth
+------------------------------------------------------------------
+sp    resid, at init                  0.087        0.380     4.34x
+sp    logits, at init                 0.305        0.597     1.96x
+sp    resid, after 10 steps           6.463      122.785    19.00x
+sp    logits, after 10 steps          1.861        2.858     1.54x
+------------------------------------------------------------------
+mup   resid, at init                  0.087        0.087     1.00x
+mup   logits, at init                 0.305        0.319     1.05x
+mup   resid, after 10 steps           6.463        8.823     1.37x
+mup   logits, after 10 steps          1.861        1.666     0.90x
+------------------------------------------------------------------
+
+At initialisation muP holds both coordinates to within 5% across 4x width;
+SP moves the residual stream 4.34x.  After ten steps the gap becomes the point:
+SP's residual stream is 19.0x larger at 4x width, muP's 1.37x.
+
+That is the mechanism, and it also explains 3c: at a learning rate tuned for width 256,
+the width-1024 SP model is being driven far too hard, its activations blow up, and the
+same nominal learning rate is effectively a much larger one.  The optimum has to move
+because the model it is acting on is not the same model.
+
+============================================================================================
+5f. The value I would use at width 4096   [t+19m06s]
+============================================================================================
+THE VALUE : 2.9e-03 under muP, with the width multiple m = 4096/256 = 16
+            applied inside the optimizer -- so the hidden and readout matrices
+            actually see 1.84e-04, and the embeddings and LayerNorm
+            gains see 2.9e-03.
+
+            Under SP the same question has the answer 5.6e-05, from a power law
+            fitted to three points; I would not use it.
+
+CONFIDENCE, in the order that matters:
+  What was tested. The muP optimum moved 1.05x across a 4x width range, and the
+    prediction was then checked at a width not used to make it: at 2048, 2.9e-03 was
+    the best of three candidates a factor of two apart, costing +0.0000 nats
+    against the best of them.  4096 is one further doubling, 16x the base width.
+  What was not tested. Depth is fixed at 2 and only width moves; muP's
+    guarantees are about width, and depth transfer is a separate and weaker claim.
+    The horizon is 200 steps, the batch is 16x128 tokens, and the optimal
+    learning rate depends on both -- neither was swept, so this number is the best
+    learning rate *for this recipe*, not a constant of the architecture.
+  The width that was not run. 4096 does not fit in 4.0 GiB at 16 bytes
+    per parameter, so the last doubling is an extrapolation in every case.
+
+  So: HIGH confidence that 2.9e-03 is within a factor of 2 of the optimum at 4096 for
+  this recipe -- a factor of 2 being the resolution the sweep itself has.  The transfer
+  was given a chance to fail at a width it had never seen, and did not.
+
+  Either way: no confidence in a third significant figure, and no claim at all about a
+  different depth, batch size or token budget.  The practical form of that is that I would
+  run one three-point confirmation sweep at the target width before committing a long run --
+  exactly what 5d does -- and that is affordable precisely because muP made it three
+  runs instead of 8.
+
+============================================================================================
+6. Comparison one: AdamW against SGD with momentum   [t+19m06s]
+============================================================================================
+  AdamW                   2.411  2.345  2.238  2.111  2.116  2.491  2.777   best 0.002
+  SGD + momentum 0.9      2.465  2.435  2.416  2.405  2.400  2.463  2.644   best 0.2
+
+  both optima interior to their grids : True
+
+the comparison                                   AdamW     SGD+m       gap
+--------------------------------------------------------------------------
+SGD run at AdamW's learning rate                2.1112    2.6359   +0.5246
+AdamW run at SGD's learning rate                3.3364    2.3997   -0.9367
+both tuned, 7 trials each                       2.1112    2.3997   +0.2885
+
+the untuned comparison overstates AdamW's advantage by 1.8x.
+and run the other way round it reverses the result entirely: at SGD's learning rate
+AdamW loses to SGD.  Either direction is available to anyone who
+only tunes one side, which is why the direction chosen tends to be the flattering one.
+
+the real gap, +0.2885 nats, is 10.2x the 0.0282-nat noise floor, so it is a real result:
+AdamW is genuinely better here -- by much less than the careless comparison says, and it
+cost 14 runs rather than 2 to find out.
+
+============================================================================================
+6b. Comparison two: a challenger that is not one   [t+19m55s]
+============================================================================================
+  AdamW, beta2=0.95       2.417  2.359  2.283  2.142  2.159  2.481  2.664   best 0.002
+
+  challenger (beta2=0.95), tuned over 7 learning rates : 2.1417 at lr 2e-03
+  baseline  (beta2=0.999) at the default lr 3e-04       : 2.3899
+  baseline  (beta2=0.999), tuned over the same 7          : 2.1112 at lr 2e-03
+
+  THE PAPER I COULD HAVE WRITTEN : 'shortening the second-moment window improves
+    held-out loss by 0.2482 nats' -- 9x the noise floor, reproducible on demand,
+    and false.
+  THE MEASUREMENT                : -0.0305 nats, outside the 0.0282-nat noise floor.
+    The claimed improvement does not merely vanish -- IT REVERSES.  With both sides
+    tuned, beta2=0.95 is 0.0305 nats WORSE than the baseline it was supposed to beat.
+    The untuned comparison got the sign wrong, not just the size.
+
+  Nothing about the first claim requires dishonesty.  The baseline ran, it converged, its
+  loss curve looks healthy, and 3e-4 is what the field's own folklore recommends.
+  The only thing wrong with it is that 2e-03 was 7x better and nobody looked.
+
+============================================================================================
+Done   [t+20m21s]
+============================================================================================
+wrote results/results.json  (188 recorded values)
+figures: bias_correction.png, update_ratio.png, schedules.png, lr_sweep.png, tuning.png
+elapsed: 20.4 minutes on NVIDIA GeForce RTX 3050 Laptop GPU
+
+the six answers, in one place
+----------------------------
+1. Adam by hand reproduces torch's m, v and w to
+   16 digits over five gradients; the first step is
+   exactly lr regardless of the gradient, and a 30x gradient
+   spike buys only a 1.10x step.
+2. Bias correction is one scalar per step, worst at step 12
+   (6.57x too large without it), within 1% of 1 only after
+   3,916 steps.  The step converges; the model does not -- the gap
+   never came back inside the noise floor in 1200 steps without warmup.  A
+   100-step warmup shrinks it 5.4x, to
+   the edge of what this experiment can resolve.
+3. The update-to-weight ratio spans 3x across the matrices and
+   decays 0.61x after warmup at a CONSTANT learning rate; warmup is
+   the dominant driver of it only up to step
+   26, and contributes exactly nothing after step
+   100.
+4. Stopped at 200: cosine
+   2.2484, WSD
+   2.2424.  Re-planned for the budget
+   actually used, WSD reaches
+   2.2099.
+5. The optimum moves 0.14x over 4x width under SP and
+   1.05x under muP; at width 4096 I would use
+   2.9e-03 under muP.
+6. Tuning only one side overstated AdamW's margin over SGD by
+   1.8x -- and reversed it outright when run the other way
+   round.  It also manufactured a 0.2482-nat "improvement" from a
+   change whose real effect is -0.0305 -- the opposite direction.
+
