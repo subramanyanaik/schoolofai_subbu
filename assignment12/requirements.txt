@@ -1,0 +1,12 @@
+# The harness itself.
+torch>=2.4
+numpy>=1.26
+matplotlib>=3.8
+
+# Only for the repo tooling, not for running the notebook:
+#   tools/build_notebook.py --execute   (rebuilds zero_harness.ipynb with outputs)
+#   pytest tests/                       (the correctness tests)
+nbformat>=5.10
+nbclient>=0.10
+ipykernel>=6.29
+pytest>=8.0

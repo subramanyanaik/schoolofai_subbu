@@ -54,3 +54,10 @@ assignment10/results/nbexec.log
 # that JSON, and CI checks it.
 assignment11/results/tinyshakespeare.txt
 assignment11/results/nbexec.log
+
+# Session 12: the corpus is downloaded on first run and the notebook execution
+# transcript is a build artifact.  results/results.json, the two figures and
+# run_log.txt ARE committed -- every number in the README is rendered from the
+# JSON and CI diffs the two, so the recorded run has to be in the repo.
+assignment12/results/tinyshakespeare.txt
+assignment12/results/nbexec.log

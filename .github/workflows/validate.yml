@@ -272,3 +272,46 @@ jobs:
       - name: README numbers match the recorded run
         working-directory: assignment11
         run: python tools/render_numbers.py --check
+
+  session12-zero-harness:
+    name: Session 12 - ZeRO simulator invariants and write-up integrity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install torch (CPU)
+        run: pip install --quiet torch --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install test deps
+        run: pip install --quiet pytest numpy
+
+      # The claims that are arithmetic or structure rather than measurement, and must
+      # therefore hold on any machine: that the memory ledger refuses an allocation it
+      # cannot fit and keeps an honest high-water mark; that the ring all-reduce equals a
+      # plain sum; that reduce-scatter leaves member i holding chunk i (the NCCL convention
+      # every sharded stage assumes, and an off-by-one that still trains); that back-to-back
+      # collectives do not corrupt each other's slots; that the measured per-rank volume is
+      # 2*Psi*(N-1)/N rather than the 2*Psi everyone quotes; that the hierarchical all-reduce
+      # computes the same sum over less InfiniBand; that a rank which OOMs does not hang the
+      # other 31; that the ZeRO stage formulas reproduce the session's own 30B table; and
+      # that a sharding bucket covers whole forward segments. These lift their definitions
+      # straight out of zero_harness.py, so they cannot pass against a stale copy.
+      - name: Simulator, collective and ZeRO invariants
+        working-directory: assignment12
+        run: python -m pytest tests -q
+
+      # zero_harness.py is the single source of truth; zero_harness.ipynb is generated from
+      # it. If the notebook's code has drifted from the script, the thing a grader opens is
+      # not the thing that was tested.
+      - name: Notebook is in sync with the script
+        working-directory: assignment12
+        run: python tools/build_notebook.py --check
+
+      # Every number in README.md is rendered from results/results.json, which the notebook
+      # emits. If they disagree, the write-up is quoting a run that no longer exists.
+      - name: README numbers match the recorded run
+        working-directory: assignment12
+        run: python tools/render_numbers.py --check

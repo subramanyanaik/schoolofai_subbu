@@ -1,0 +1,258 @@
+
+============================================================================================
+Environment   [t+0m00s]
+============================================================================================
+python        : 3.12.6
+torch         : 2.5.1+cu121
+host cpu cores: 16
+host gpu      : NVIDIA GeForce RTX 3050 Laptop GPU (4.00 GiB) -- present, and deliberately unused: see the note below
+
+============================================================================================
+The 32 virtual GPUs   [t+0m01s]
+============================================================================================
+world size    : 32 GPUs = 4 nodes x 8
+per-GPU memory: 8 MiB  (a real 80 GiB card, scaled down by 10,240x)
+intra-node    : NVLink   450 GB/s
+inter-node    : InfiniBand 50 GB/s  (9x slower)
+flat 32-ring  : 4 of 32 links cross nodes, so the whole ring runs at 50 GB/s
+
+ring all-reduce vs naive sum   : agrees to 15.3 digits (max abs error 1.07e-14)
+reduce-scatter reassembled     : max abs error 1.07e-14
+bytes per rank, measured       : 507,904 = 1.9375 x Psi
+bytes per rank, ring theory    : 507,904 = 1.9375 x Psi   <- not 2, and never 2
+hops, measured / theory        : 1,984 / 1,984
+simulator wall-clock for one   : 151 ms of real threads (this is the simulator's own speed, and it is not modelling anything)
+
+all four checks pass -- the fabric can be trusted with the rest of the notebook
+
+============================================================================================
+Model and data   [t+0m01s]
+============================================================================================
+corpus        : 1,115,394 characters, 65 distinct
+model         : 3 blocks, d=96, 4 heads, context 64
+Psi           : 354,336 parameters in 41 tensors, 5 sharding groups
+state at 16 B : 5.41 MiB per GPU under plain data parallelism, x32 GPUs = 173.0 MiB of which 167.6 MiB is the same numbers again
+GPU capacity  : 8.00 MiB -- so DDP spends 68% of the card before a single activation
+
+the five copies of every parameter
+  w16      2 B/param     0.68 MiB
+  g16      2 B/param     0.68 MiB
+  master   4 B/param     1.35 MiB
+  m        4 B/param     1.35 MiB
+  v        4 B/param     1.35 MiB
+  total    16 B/param     5.41 MiB
+
+sharding groups (what ZeRO-3 gathers and frees as a unit)
+  embed     2 tensors   12,384 params   3.5% of Psi
+  block0   12 tensors  111,840 params  31.6% of Psi
+  block1   12 tensors  111,840 params  31.6% of Psi
+  block2   12 tensors  111,840 params  31.6% of Psi
+  head      3 tensors    6,432 params   1.8% of Psi
+
+============================================================================================
+One step at each ZeRO stage, on all 32 GPUs   [t+0m02s]
+============================================================================================
+stage 0 done in 1.3s  (loss 4.1840)
+stage 1 done in 1.3s  (loss 4.1840)
+stage 2 done in 1.3s  (loss 4.1840)
+stage 3 done in 2.8s  (loss 4.1840)
+
+                 state/GPU     theory     err   peak/GPU    activ  transient   comm/rank  vs 1 GPU
+DP (ZeRO-0)         5.407M     5.407M +0.00%     6.657M   1.251M     0.000M     1.9375x     1.00x
+ZeRO-1              1.478M     1.478M +0.00%     2.729M   1.251M     0.000M     1.9375x     3.66x
+ZeRO-2              0.824M     0.824M +0.00%     2.074M   1.251M     0.000M     1.9375x     6.56x
+ZeRO-3              0.169M     0.169M +0.00%     0.453M   0.111M     0.213M     2.9062x    32.00x
+
+the state breakdown the ledger actually recorded, per GPU, in MiB
+                 params    grads  optimizer    total
+DP (ZeRO-0)       0.676    0.676      4.055    5.407
+ZeRO-1            0.676    0.676      0.127    1.478
+ZeRO-2            0.676    0.234      0.127    0.824
+ZeRO-3            0.021    0.021      0.127    0.169
+
+the other redundancy: how many weights each rank applies an Adam step to
+  DP (ZeRO-0)     354,336 of 354,336 weights per rank per step (100.0%)  -- x32 ranks = 32.00x the work one GPU would do
+  ZeRO-1           11,073 of 354,336 weights per rank per step (  3.1%)  -- x32 ranks =  1.00x the work one GPU would do
+  ZeRO-2           11,073 of 354,336 weights per rank per step (  3.1%)  -- x32 ranks =  1.00x the work one GPU would do
+  ZeRO-3           11,073 of 354,336 weights per rank per step (  3.1%)  -- x32 ranks =  1.00x the work one GPU would do
+  plain data parallelism does 32x the optimizer arithmetic of the sharded stages, and throws away 96.9% of it.  This is the ONLY arithmetic ZeRO removes: the forward and backward FLOPs are identical at every stage, which is why the loss curves are.
+
+worst disagreement between the ledger and the DeepSpeed formula: 0.000%
+spread of the first-step loss across the four stages: 0.00e+00 -- they are running the same model
+
+============================================================================================
+Equivalence: four stages against one GPU   [t+0m09s]
+============================================================================================
+float64    stage 0: weights agree to  13.8 digits (worst h0.attn_b, 6.60e-16 abs), final loss 3.775751 vs reference 3.775751
+float64    stage 1: weights agree to  13.8 digits (worst h2.attn_b, 7.49e-16 abs), final loss 3.775751 vs reference 3.775751
+float64    stage 2: weights agree to  13.8 digits (worst h2.attn_b, 7.49e-16 abs), final loss 3.775751 vs reference 3.775751
+float64    stage 3: weights agree to  13.8 digits (worst h2.attn_b, 7.49e-16 abs), final loss 3.775751 vs reference 3.775751
+bf16/fp32  stage 0: weights agree to   1.7 digits (worst h0.attn_b, 5.96e-04 abs), final loss 3.776051 vs reference 3.775751
+bf16/fp32  stage 1: weights agree to   1.7 digits (worst h0.attn_b, 5.96e-04 abs), final loss 3.776051 vs reference 3.775751
+bf16/fp32  stage 2: weights agree to   1.7 digits (worst h0.attn_b, 5.96e-04 abs), final loss 3.776051 vs reference 3.775751
+bf16/fp32  stage 3: weights agree to   1.7 digits (worst h0.attn_b, 5.96e-04 abs), final loss 3.776051 vs reference 3.775751
+
+across the four stages, in the bf16 run that you would actually launch, the largest
+disagreement on ANY weight is 9.3e-10 -- about one fp32 ulp at this
+weight scale.  Not bit-identical, and nearly so for a reason worth knowing: all four
+route the gradient through the same ring reduce-scatter, so they sum it in the same
+order.  DDP's extra all-gather moves numbers around, it does not change any of them.
+What residue is left comes from where each stage rounds the gradient to bf16 --
+stages 0-2 after the whole backward, stage 3 at each layer boundary.
+
+float64  : every stage reproduces one GPU to at least 13.8 digits after 6 steps -- same algorithm, not an approximation of it
+bf16/fp32: the same four stages agree with the reference to only 1.7 digits, and with each other to 0.00e+00 nats of loss
+the difference between those two lines is rounding, not ZeRO
+
+============================================================================================
+ZeRO-3: what sets the peak   [t+1m26s]
+============================================================================================
+per block (default)     5 bucket(s)  largest 111,840 params  gathered  0.213 MiB  peak  0.453 MiB   15 collectives/step
+whole model             1 bucket(s)  largest 354,336 params  gathered  0.676 MiB  peak  0.845 MiB    3 collectives/step
+
+gathering the whole model at once costs 1.9x the peak memory of gathering one block at a time, for the same shards and the same result (losses 4.183971 / 4.183971)
+
+same Psi, different shapes -- what the largest block costs ZeRO-3
+   3 blocks x d= 96  Psi=354,336  shard  0.169 MiB  gathered  0.213 MiB  peak  0.453 MiB   15 collectives
+   6 blocks x d= 68  Psi=351,560  shard  0.168 MiB  gathered  0.108 MiB  peak  0.375 MiB   24 collectives
+  12 blocks x d= 48  Psi=348,672  shard  0.166 MiB  gathered  0.054 MiB  peak  0.361 MiB   42 collectives
+
+4.0x less gathered memory for 2.8x the collectives, at essentially the same parameter count. The architecture and the sharding are one decision.
+
+============================================================================================
+How big a model fits: grow it until it does not   [t+1m41s]
+============================================================================================
+DP (ZeRO-0)    widest model that fits 8 MiB/GPU: d= 112  Psi=  472,528  peak 7.530 MiB   (10s)
+ZeRO-1         widest model that fits 8 MiB/GPU: d= 216  Psi=1,720,008  peak 7.774 MiB   (16s)
+ZeRO-2         widest model that fits 8 MiB/GPU: d= 268  Psi=2,635,780  peak 7.778 MiB   (31s)
+ZeRO-3         widest model that fits 8 MiB/GPU: d= 440  Psi=7,051,880  peak 7.885 MiB   (49s)
+
+ZeRO-3 trained a model 14.9x the size of the largest one plain data parallelism could hold, on identical hardware -- and that is the honest number, not 32x, because the gathered bucket does not shard and by the top of ZeRO-3's range it is most of the budget.
+
+the same width ZeRO-3 just trained, attempted under plain data parallelism:
+  DeviceOOM: rank 0: 'block0.master' needs 8.88 MiB, 7.46 MiB free of 8.00 MiB
+
+============================================================================================
+How big a batch fits   [t+3m27s]
+============================================================================================
+DP (ZeRO-0)    largest micro-batch:   1   peak  6.657 MiB, of which  1.251 MiB is activations (19%)
+ZeRO-1         largest micro-batch:   4   peak  7.009 MiB, of which  5.530 MiB is activations (79%)
+ZeRO-2         largest micro-batch:   5   peak  7.734 MiB, of which  6.910 MiB is activations (89%)
+ZeRO-3         largest micro-batch:  70   peak  7.911 MiB, of which  7.742 MiB is activations (98%)
+
+ZeRO-3 runs 70x the micro-batch of plain data parallelism -- but at its own limit 98% of the card is activations, which no ZeRO stage can do anything about.  That is what gradient checkpointing and sequence parallelism are for, and they are a different axis from this one.
+
+============================================================================================
+Communication: measured bytes, modelled seconds   [t+4m50s]
+============================================================================================
+                bytes/rank/step  in units of Psi    theory   over IB
+DP (ZeRO-0)          1,373,052B          1.9375x   1.9375x    12.5%
+ZeRO-1               1,373,052B          1.9375x   1.9375x    12.5%
+ZeRO-2               1,373,052B          1.9375x   1.9375x    12.5%
+ZeRO-3               2,059,578B          2.9062x   2.9062x    12.5%
+
+the same all-reduce, run two ways on the same 4 nodes:
+  flat 32-ring         5.238 MiB over InfiniBand,   3.1275 ms modelled
+  hierarchical         4.055 MiB over InfiniBand,   0.6554 ms modelled
+  -> 1.3x less traffic on the slow wire, 4.8x faster, identical result (loss 4.183971 / 4.183971)
+
+note the two ratios are very different, and the gap is the whole point: only
+12.5% of a flat ring's bytes ever cross a node boundary, so its InfiniBand VOLUME was
+never the problem.  Its TIME is, because a ring step ends when its slowest hop ends,
+so all 62 steps run at InfiniBand speed.  Restructuring the collective is worth far
+more than the byte count suggests -- 4.8x against 1.3x.
+
+============================================================================================
+Projection: the same ratios on hardware that exists   [t+4m51s]
+============================================================================================
+a 7B-parameter model, 4,096 tokens per GPU per step
+
+                B/param    GPU   compute  comm NVLink  bubble   comm IB  bubble
+DP (ZeRO-0)      3.875B   H100    0.430s       0.060s  12.3%    0.542s  55.8%
+                 3.875B   B200    0.191s       0.060s  24.0%    0.542s  73.9%
+ZeRO-1           3.875B   H100    0.430s       0.060s  12.3%    0.542s  55.8%
+                 3.875B   B200    0.191s       0.060s  24.0%    0.542s  73.9%
+ZeRO-2           3.875B   H100    0.430s       0.060s  12.3%    0.542s  55.8%
+                 3.875B   B200    0.191s       0.060s  24.0%    0.542s  73.9%
+ZeRO-3           5.812B   H100    0.430s       0.090s  17.4%    0.814s  65.4%
+                 5.812B   B200    0.191s       0.090s  32.1%    0.814s  81.0%
+
+the session's point, reproduced: the same 0.54s of communication is 56% of an H100 step and 74% of a B200 step.  Buying the faster GPU made the idle fraction WORSE, because it shortened the only half of the step that got faster.
+and inside one node, ZeRO-3's 1.5x traffic is 17.4% of the step -- which is the real answer to 'what does ZeRO-3 cost': on NVLink, almost nothing; across InfiniBand, most of your money.
+
+============================================================================================
+Memory per GPU as the world grows   [t+4m51s]
+============================================================================================
+  N= 1  DP (ZeRO-0)= 5.407M  ZeRO-1= 5.407M  ZeRO-2= 5.407M  ZeRO-3= 5.407M
+  N= 2  DP (ZeRO-0)= 5.407M  ZeRO-1= 3.379M  ZeRO-2= 3.041M  ZeRO-3= 2.703M
+  N= 4  DP (ZeRO-0)= 5.407M  ZeRO-1= 2.365M  ZeRO-2= 1.859M  ZeRO-3= 1.352M
+  N= 8  DP (ZeRO-0)= 5.407M  ZeRO-1= 1.859M  ZeRO-2= 1.267M  ZeRO-3= 0.676M
+  N=16  DP (ZeRO-0)= 5.407M  ZeRO-1= 1.605M  ZeRO-2= 0.972M  ZeRO-3= 0.338M
+  N=32  DP (ZeRO-0)= 5.407M  ZeRO-1= 1.478M  ZeRO-2= 0.824M  ZeRO-3= 0.169M
+
+from 1 GPU to 32: stage 0's per-GPU state changed by 1.00x (it cannot change), stage 1 by 3.7x, stage 2 by 6.6x, stage 3 by 32.0x
+stage 1 is already 91% of the way to its floor of 4*Psi at N=32; doubling to 64 GPUs would buy it 4.3% more.  Stage 3 has no floor.
+
+============================================================================================
+The session's 30B table, rebuilt from this notebook's measurements   [t+5m01s]
+============================================================================================
+bytes per parameter, measured by the ledger in section 5: 16.0000  (the textbook says 16)
+
+fitted from the measured sweep, against what the ZeRO paper says
+                 a (never shards)    b (shards)         textbook  worst point
+DP (ZeRO-0)              16.0000B       0.0000B      (16.0, 0.0)    0.00e+00B
+ZeRO-1                    4.0000B      12.0000B      (4.0, 12.0)    0.00e+00B
+ZeRO-2                    2.0000B      14.0000B      (2.0, 14.0)    0.00e+00B
+ZeRO-3                    0.0000B      16.0000B      (0.0, 16.0)    0.00e+00B
+
+the fit reproduces every measured world size to 0.0e+00 bytes per parameter, and the published coefficients to 0.0e+00
+
+extrapolated to 30B parameters on 8 GPUs:
+                this notebook  the session  difference
+DP (ZeRO-0)            447.0G       447.0G     +0.01%
+ZeRO-1                 153.7G       153.0G     +0.44%
+ZeRO-2                 104.8G       104.0G     +0.74%
+ZeRO-3                  55.9G        55.9G     -0.04%
+
+worst disagreement with the session's table: 0.74%
+and the 80 GiB card in the session: a 30B model under plain data parallelism needs 447 GiB per GPU, so it does not start.  Under ZeRO-3 on 8 GPUs it needs 55.9 GiB, so it does -- with 24 GiB left for activations, which is the number that actually decides the batch size.
+
+============================================================================================
+Figures   [t+5m01s]
+============================================================================================
+
+============================================================================================
+Done   [t+5m02s]
+============================================================================================
+wrote results/results.json  (150 recorded values)
+figures: memory.png, communication.png
+elapsed: 5.0 minutes on 16 CPU cores
+
+the answers, in one place
+-------------------------
+1. 32 virtual GPUs, 4 nodes of 8, with a hard 8 MiB ceiling each and
+   ring collectives run over 32 threads.  The ring reproduces a plain sum to
+   15.3 digits and moves 1.9375xPsi
+   per rank per all-reduce -- the (N-1)/N that the "2Psi" shorthand drops.
+2. Memory measured, not derived: 5.407 /
+   1.478 / 0.824 /
+   0.169 MiB per GPU for stages 0/1/2/3, which is
+   3.66x, 6.56x and 32x
+   less than plain data parallelism, and agrees with the DeepSpeed formula to
+   0.00%.
+3. All four stages reproduce a single GPU's weights to
+   13.8 digits in float64 after 6 steps, and each
+   other to 9.3e-10 in the bf16 run you would launch.
+   They are one algorithm.
+4. Communication: stages 1 and 2 move EXACTLY what stage 0 moves
+   (1.9375xPsi), so 6.6x the memory is free.
+   Stage 3 moves 2.9062xPsi -- 1.5x - which is
+   17.4% of a step on NVLink and
+   65% across InfiniBand.
+5. ZeRO-3's peak is NOT 16Psi/N: the gathered bucket is
+   1.26x everything it stores permanently, does not
+   shrink with N, and is set by the largest block -- an architecture decision.
+6. Grown until it broke: ZeRO-3 trained 14.9x the parameters and
+   70x the micro-batch of plain data parallelism on
+   the same card.
+
