@@ -315,3 +315,49 @@ jobs:
       - name: README numbers match the recorded run
         working-directory: assignment12
         run: python tools/render_numbers.py --check
+
+  session13-reversible-llm:
+    name: Session 13 - reversible transformer gradient correctness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # No CUDA runner here, so this job cannot reproduce the assignment's own 20M/50M-token
+      # Colab GPU run -- README.md says so and carries a "results pending" placeholder until
+      # someone runs reversible_llm.ipynb on a real GPU and commits results/results.json.
+      # What CI *can* and does check on every push: that the two custom autograd.Functions
+      # (euler additive coupling, midpoint leapfrog) compute exactly the gradients an
+      # ordinary, fully-materialized autograd graph would for the same forward math --
+      # the claim that makes "reversible" true rather than just "smaller-looking".
+      - name: NumPy-only derivation (no torch involved at all)
+        working-directory: assignment13
+        run: python tools/verify_reversible_math.py
+
+      - name: Install torch (CPU)
+        run: pip install --quiet torch --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install test deps
+        run: pip install --quiet pytest numpy matplotlib
+
+      # These exercise the real EulerBlockFunction / MidpointFunction classes reversible_llm.py
+      # trains with, including the P[-1]:=P[0] bootstrap-gradient regression guard.
+      - name: Reversible gradient-correctness tests
+        working-directory: assignment13
+        run: python -m pytest tests -q
+
+      # reversible_llm.py is the single source of truth; reversible_llm.ipynb is generated
+      # from it. If the notebook's code has drifted from the script, the thing a grader opens
+      # on Colab is not the thing that was tested.
+      - name: Notebook is in sync with the script
+        working-directory: assignment13
+        run: python tools/build_notebook.py --check
+
+      # README.md's numbers block is rendered from results/results.json when it exists, and a
+      # fixed "results pending" placeholder when it doesn't -- either way this must match, or
+      # the write-up is stale relative to whatever's actually committed.
+      - name: README numbers match results/results.json (or the pending placeholder)
+        working-directory: assignment13
+        run: python tools/render_numbers.py --check

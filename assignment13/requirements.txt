@@ -1,0 +1,18 @@
+# The harness itself. Colab already ships torch + numpy + matplotlib; this is here for
+# running it anywhere else.
+torch>=2.4
+numpy>=1.26
+matplotlib>=3.8
+
+# Optional: only used as a memory-measurement fallback on non-CUDA devices, and only if
+# `resource` (Unix) isn't available either (e.g. Windows CPU-only runs).
+psutil>=5.9
+
+# Only for the repo tooling, not for running the notebook itself:
+#   tools/build_notebook.py [--execute|--check]
+#   tools/render_numbers.py [--check]
+#   pytest tests/
+nbformat>=5.10
+nbclient>=0.10
+ipykernel>=6.29
+pytest>=8.0
