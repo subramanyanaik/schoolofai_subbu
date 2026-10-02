@@ -20,6 +20,9 @@ than sized to hit a parameter target.
 > machine this repo was built on (an RTX 3050 Laptop GPU — unlike
 > [assignment13](../assignment13), torch loads fine here), injected into this README by
 > [`tools/render_numbers.py`](tools/render_numbers.py). Nothing below is typed by hand.
+> **Training log:** [`results/run_log.txt`](results/run_log.txt) — the full stdout of the run
+> that wrote `results.json` (per-50-step loss and tokens/s for both phases, the loss right
+> after conversion, the final table), extracted from the executed notebook's saved outputs.
 
 ---
 
