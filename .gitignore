@@ -61,3 +61,8 @@ assignment11/results/nbexec.log
 # JSON and CI diffs the two, so the recorded run has to be in the repo.
 assignment12/results/tinyshakespeare.txt
 assignment12/results/nbexec.log
+
+# Session 14: the corpus is downloaded on first run.  results/results.json and
+# the two figures ARE committed -- every number in the README is rendered from
+# that JSON, and CI checks it.
+assignment14/results/tinyshakespeare.txt

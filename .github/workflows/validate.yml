@@ -361,3 +361,40 @@ jobs:
       - name: README numbers match results/results.json (or the pending placeholder)
         working-directory: assignment13
         run: python tools/render_numbers.py --check
+
+  session14-moe-llm:
+    name: Session 14 - MoE upcycling and loss-free balancing correctness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install torch (CPU)
+        run: pip install --quiet torch --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install test deps
+        run: pip install --quiet pytest numpy matplotlib
+
+      # These exercise the real GPT/MoEMLP/upcycle_to_moe classes moe_llm.py trains with: the
+      # zero-noise upcycling exactness invariant, router gate/selection math, the loss-free
+      # balancing bias update, and the active-vs-total parameter accounting. CPU is plenty --
+      # none of these need the real run's model size or token count.
+      - name: MoE upcycling and balancing tests
+        working-directory: assignment14
+        run: python -m pytest tests -q
+
+      # moe_llm.py is the single source of truth; moe_llm.ipynb is generated from it. If the
+      # notebook's code has drifted from the script, the thing a grader opens is not the thing
+      # that was tested.
+      - name: Notebook is in sync with the script
+        working-directory: assignment14
+        run: python tools/build_notebook.py --check
+
+      # README.md's numbers block is rendered from results/results.json when it exists, and a
+      # fixed "results pending" placeholder when it doesn't -- either way this must match, or
+      # the write-up is stale relative to whatever's actually committed.
+      - name: README numbers match results/results.json (or the pending placeholder)
+        working-directory: assignment14
+        run: python tools/render_numbers.py --check
