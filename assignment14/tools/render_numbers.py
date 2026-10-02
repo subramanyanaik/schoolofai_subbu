@@ -38,38 +38,60 @@ def render_table(results):
         f"**Device:** `{results.get('device', '?')}`  |  **seed:** `{results.get('seed', '?')}`  "
         f"|  **experts:** `{cfg.get('n_experts', '?')}`  |  **top-k:** `{cfg.get('top_k', '?')}`",
         "",
-        "| run | mode | total params | active params | steps | tokens trained | "
-        "final loss | min loss | tokens/s | wall clock | peak memory |",
+        "| run | starts from | total params | active params | tokens in this run | "
+        "final train loss | final val loss | best val loss | tokens/s | wall clock | peak memory |",
         "|---|---|---|---|---|---|---|---|---|---|---|",
     ]
-    totals = {"dense": pc.get("dense_total"), "moe": pc.get("moe_total")}
-    actives = {"dense": pc.get("dense_total"), "moe": pc.get("moe_active")}
+    totals = {"dense": pc.get("dense_total"), "moe": pc.get("moe_total"),
+              "dense_continued": pc.get("dense_total")}
+    actives = {"dense": pc.get("dense_total"), "moe": pc.get("moe_active"),
+               "dense_continued": pc.get("dense_total")}
+    starts = {"dense": "random init", "moe": "`dense`, upcycled",
+              "dense_continued": "`dense`, unchanged"}
     for name, r in runs.items():
         mem = f"{r['peak_memory_mib']:.0f} MiB" if r.get("peak_memory_mib") is not None else "n/a"
-        total = totals.get(name)
-        active = actives.get(name)
+        best_val = min(p["val_loss"] for p in r["val_curve"])
         lines.append(
-            f"| `{name}` | {r['mode']} | {total:,} | {active:,} | {r['steps']:,} | "
-            f"{r['tokens_trained']:,} | {r['final_loss']:.4f} | {r['min_loss']:.4f} | "
-            f"{r['tokens_per_s']:,.0f} | {r['wall_clock_s'] / 60:.1f} min | {mem} |")
+            f"| `{name}` | {starts.get(name, '?')} | {totals[name]:,} | {actives[name]:,} | "
+            f"{r['tokens_trained']:,} | {r['final_loss']:.4f} | {r['final_val_loss']:.4f} | "
+            f"{best_val:.4f} | {r['tokens_per_s']:,.0f} | {r['wall_clock_s'] / 60:.1f} min | {mem} |")
     lines.append("")
 
     if pc:
         ratio_total = pc["moe_total"] / pc["dense_total"]
         ratio_active = pc["moe_active"] / pc["dense_total"]
-        lines.append(f"- MoE total parameters are **{ratio_total:.2f}x** the dense model's; "
-                     f"MoE *active* parameters per token are **{ratio_active:.2f}x** the dense "
-                     f"model's (**{pc['moe_active'] / pc['moe_total']:.1%}** of the MoE total).")
-    seam = results.get("seam_loss_right_after_conversion")
-    if seam is not None and "dense" in runs:
-        lines.append(f"- loss immediately after conversion, before any MoE-phase training: "
-                      f"**{seam:.4f}** (dense model's own final training loss: "
-                      f"**{runs['dense']['final_loss']:.4f}**).")
-    if "moe" in runs and "dense" in runs:
-        d_final, m_final = runs["dense"]["final_loss"], runs["moe"]["final_loss"]
-        lines.append(f"- after continued training, the MoE model's final loss "
-                      f"(**{m_final:.4f}**) is {'below' if m_final < d_final else 'above'} the "
-                      f"dense model's final loss (**{d_final:.4f}**).")
+        lines.append(f"- **Parameters:** the MoE has **{ratio_total:.2f}x** the dense model's total "
+                     f"parameters but only **{ratio_active:.2f}x** its *active* parameters per "
+                     f"token (**{pc['moe_active'] / pc['moe_total']:.1%}** of the MoE total).")
+    seam = results.get("seam")
+    if seam:
+        lines.append(f"- **Cost of the conversion:** validation loss went from "
+                     f"**{seam['dense_val_before']:.4f}** (dense, end of its run) to "
+                     f"**{seam['moe_val_after']:.4f}** (MoE, before its first training step).")
+    if "moe" in runs:
+        m = runs["moe"]
+        lines.append(f"- **The MoE keeps training:** over its {m['tokens_trained']:,} tokens, "
+                     f"training loss went from {m['loss_curve'][0]:.4f} to "
+                     f"**{m['final_loss']:.4f}** and validation loss from "
+                     f"{m['initial_val_loss']:.4f} to **{m['final_val_loss']:.4f}**.")
+    if "moe" in runs and "dense_continued" in runs:
+        m, c = runs["moe"], runs["dense_continued"]
+        diff = c["final_val_loss"] - m["final_val_loss"]
+        verdict = ("lower than" if diff > 0 else "higher than" if diff < 0 else "equal to")
+        lines.append(f"- **Fair comparison (same starting weights, same {m['tokens_trained']:,} "
+                     f"tokens, same batches):** the MoE's final validation loss "
+                     f"(**{m['final_val_loss']:.4f}**) is {verdict} the dense control's "
+                     f"(**{c['final_val_loss']:.4f}**), a difference of **{abs(diff):.4f}**.")
+    gaps, rising = [], []
+    for name, r in runs.items():
+        best_val = min(p["val_loss"] for p in r["val_curve"])
+        gaps.append(f"`{name}` {r['final_val_loss'] - r['final_loss']:+.4f}")
+        if r["final_val_loss"] > best_val:
+            rising.append(f"`{name}` ends {r['final_val_loss'] - best_val:.4f} above its best")
+    trend = ("validation loss is still at its lowest point at the end of every run, so none of "
+             "them has started to overfit" if not rising else "; ".join(rising))
+    lines.append("- **Overfitting check:** gap between final validation and training loss — "
+                 + ", ".join(gaps) + f". {trend[0].upper() + trend[1:]}.")
     lines.append("")
     lines.append("![loss curves](results/loss_curves.png)")
     if os.path.exists(os.path.join(HERE, "results", "expert_balance.png")):

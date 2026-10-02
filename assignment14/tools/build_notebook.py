@@ -144,6 +144,20 @@ def execute(path):
                    resources={"metadata": {"path": HERE}}).execute()
     nbformat.write(nb, path)
     print(f"executed and saved outputs into {path}")
+    write_run_log(nb)
+
+
+def write_run_log(nb):
+    """The executed notebook's stdout is the training log of the run that wrote
+    results/results.json, so save it next to that file."""
+    chunks = []
+    for cell in nb.cells:
+        for out in cell.get("outputs", []):
+            if out.get("output_type") == "stream" and out.get("name") == "stdout":
+                chunks.append(out["text"] if isinstance(out["text"], str) else "".join(out["text"]))
+    log_path = os.path.join(HERE, "results", "run_log.txt")
+    io.open(log_path, "w", encoding="utf-8", newline="\n").write("".join(chunks))
+    print(f"wrote {log_path}")
 
 
 if __name__ == "__main__":

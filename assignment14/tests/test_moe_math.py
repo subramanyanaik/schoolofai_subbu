@@ -218,6 +218,31 @@ def test_rebalance_pushes_busy_expert_down_and_idle_expert_up():
     assert torch.allclose(mlp.count_accum, torch.zeros(n_experts))
 
 
+def test_eval_mode_forward_does_not_feed_balancing():
+    """Validation passes run in eval mode and must leave the expert-load window untouched,
+    otherwise scoring the model on held-out text would move the training-time routing bias."""
+    torch.manual_seed(8)
+    mlp = MoEMLP(dim=8, mult=2, n_experts=4, top_k=2, dropout=0.0, balance_gamma=0.01)
+    x = torch.randn(2, 5, 8)
+    mlp.eval()
+    with torch.no_grad():
+        mlp(x)
+    assert torch.equal(mlp.count_accum, torch.zeros(4))
+    mlp.train()
+    mlp(x)
+    assert mlp.count_accum.sum().item() == 2 * 5 * 2  # B*T tokens, top_k experts each
+
+
+def test_fixed_val_batches_are_identical_across_calls():
+    make_fixed_batches = _ns["make_fixed_batches"]
+    data = torch.arange(500)
+    a = make_fixed_batches(data, 3, 4, 16, seed=42)
+    b = make_fixed_batches(data, 3, 4, 16, seed=42)
+    for (xa, ya), (xb, yb) in zip(a, b):
+        assert torch.equal(xa, xb) and torch.equal(ya, yb)
+        assert torch.equal(xa[:, 1:], ya[:, :-1])  # targets are inputs shifted by one
+
+
 def test_rebalance_is_noop_with_no_tokens_seen():
     mlp = MoEMLP(dim=8, mult=2, n_experts=4, top_k=1, dropout=0.0, balance_gamma=0.01)
     bias_before = mlp.bias.clone()

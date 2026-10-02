@@ -332,6 +332,10 @@ jobs:
       # (euler additive coupling, midpoint leapfrog) compute exactly the gradients an
       # ordinary, fully-materialized autograd graph would for the same forward math --
       # the claim that makes "reversible" true rather than just "smaller-looking".
+      # A fresh setup-python has no numpy, so it has to be installed before the NumPy-only check.
+      - name: Install numpy
+        run: pip install --quiet numpy
+
       - name: NumPy-only derivation (no torch involved at all)
         working-directory: assignment13
         run: python tools/verify_reversible_math.py

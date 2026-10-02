@@ -3,13 +3,13 @@
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/subramanyanaik/schoolofai_subbu/blob/main/assignment14/moe_llm.ipynb)
 ![status](https://img.shields.io/badge/run-local%20GPU%2C%20real%20results-brightgreen)
 ![balancing](https://img.shields.io/badge/balancing-auxiliary--loss--free%20(bias)-blue)
-![tests](https://img.shields.io/badge/invariants-9%20tests-blue)
+![tests](https://img.shields.io/badge/invariants-11%20tests-blue)
 
 **Session-14 assignment.** Train a linear (dense) model. Convert it into a mixture of
 experts. Show that it keeps training — loss keeps dropping — after the conversion. Model
 size and data are an open choice; this one is a small character-level decoder-only
-transformer, sized to train twice, for real, on a laptop GPU in a couple of minutes, rather
-than sized to hit a parameter target.
+transformer, sized so all three runs (dense, MoE, dense control) train for real on a laptop
+GPU in under five minutes, rather than sized to hit a parameter target.
 
 > **Notebook:** [`moe_llm.ipynb`](moe_llm.ipynb) — runs fine on CPU for a model this size; a
 > GPU just makes it faster.
@@ -21,8 +21,10 @@ than sized to hit a parameter target.
 > [assignment13](../assignment13), torch loads fine here), injected into this README by
 > [`tools/render_numbers.py`](tools/render_numbers.py). Nothing below is typed by hand.
 > **Training log:** [`results/run_log.txt`](results/run_log.txt) — the full stdout of the run
-> that wrote `results.json` (per-50-step loss and tokens/s for both phases, the loss right
-> after conversion, the final table), extracted from the executed notebook's saved outputs.
+> that wrote `results.json`: training and validation loss and tokens/s every 50 steps for all
+> three runs, the validation loss either side of the conversion, and the final table.
+> `tools/build_notebook.py --execute` writes it from the executed notebook's outputs, so it
+> always comes from the same run as the numbers.
 
 ---
 
@@ -32,24 +34,45 @@ than sized to hit a parameter target.
 |---|---|---|
 | 1 | train a linear model | a small pre-LN decoder transformer where each block has exactly one feed-forward network (`DenseMLP`) — the "linear model" the session's own narrative starts from |
 | 2 | convert it into an MoE | **sparse upcycling, copy method** (Komatsuzaki et al. 2022, named directly in the session): each layer's single `DenseMLP` is cloned into `n_experts=8` experts plus noise, behind a freshly initialized router — attention, embeddings and the LM head are untouched |
-| 3 | show it continues to train and the loss drops | `results/loss_curves.png` — training continues directly on the upcycled weights with a fresh optimizer, no restart from random init, and the loss curve is one continuous (if briefly bumped) descent across the conversion point |
+| 3 | show it continues to train and the loss drops | `results/loss_curves.png` — training continues directly on the upcycled weights with a fresh optimizer, no restart from random init. Both training **and held-out validation** loss jump briefly at the conversion and then keep falling for the rest of the run |
+| — | (not asked, but needed to read #3 honestly) | a **dense control**: the same dense weights the MoE was built from, trained for the same extra tokens on the identical batch sequence. Without it, "the MoE ends lower than the dense model" would only mean the dense model stopped training earlier |
 
 <!-- BEGIN:numbers -->
 **Device:** `cuda`  |  **seed:** `1337`  |  **experts:** `8`  |  **top-k:** `2`
 
-| run | mode | total params | active params | steps | tokens trained | final loss | min loss | tokens/s | wall clock | peak memory |
+| run | starts from | total params | active params | tokens in this run | final train loss | final val loss | best val loss | tokens/s | wall clock | peak memory |
 |---|---|---|---|---|---|---|---|---|---|---|
-| `dense` | dense | 1,809,984 | 1,809,984 | 366 | 2,998,272 | 2.1794 | 2.1367 | 116,903 | 0.4 min | 455 MiB |
-| `moe` | moe | 10,073,664 | 2,995,776 | 732 | 5,996,544 | 1.4644 | 1.4130 | 29,731 | 3.4 min | 2176 MiB |
+| `dense` | random init | 1,809,984 | 1,809,984 | 2,998,272 | 2.1289 | 2.1491 | 2.1491 | 125,864 | 0.4 min | 455 MiB |
+| `moe` | `dense`, upcycled | 10,073,664 | 2,995,776 | 5,996,544 | 1.4677 | 1.6757 | 1.6757 | 31,160 | 3.2 min | 2188 MiB |
+| `dense_continued` | `dense`, unchanged | 1,809,984 | 1,809,984 | 5,996,544 | 1.5823 | 1.7407 | 1.7407 | 128,093 | 0.8 min | 609 MiB |
 
-- MoE total parameters are **5.57x** the dense model's; MoE *active* parameters per token are **1.66x** the dense model's (**29.7%** of the MoE total).
-- loss immediately after conversion, before any MoE-phase training: **2.4592** (dense model's own final training loss: **2.1794**).
-- after continued training, the MoE model's final loss (**1.4644**) is below the dense model's final loss (**2.1794**).
+- **Parameters:** the MoE has **5.57x** the dense model's total parameters but only **1.66x** its *active* parameters per token (**29.7%** of the MoE total).
+- **Cost of the conversion:** validation loss went from **2.1491** (dense, end of its run) to **2.4700** (MoE, before its first training step).
+- **The MoE keeps training:** over its 5,996,544 tokens, training loss went from 2.4607 to **1.4677** and validation loss from 2.4700 to **1.6757**.
+- **Fair comparison (same starting weights, same 5,996,544 tokens, same batches):** the MoE's final validation loss (**1.6757**) is lower than the dense control's (**1.7407**), a difference of **0.0650**.
+- **Overfitting check:** gap between final validation and training loss — `dense` +0.0202, `moe` +0.2080, `dense_continued` +0.1584. Validation loss is still at its lowest point at the end of every run, so none of them has started to overfit.
 
 ![loss curves](results/loss_curves.png)
 
 ![expert balance](results/expert_balance.png)
 <!-- END:numbers -->
+
+## Reading the results
+
+- **The assignment's claim holds on held-out text, not just training text.** Validation loss
+  jumps at the conversion (the noise and the untrained router cost something), recovers past
+  the dense model's pre-conversion level within the first couple of validation checks, and is
+  still falling at the end of the run.
+- **The MoE beats the dense control, but it isn't a compute-matched win.** Copy upcycling
+  makes every expert full-size, so with top-2 routing each token uses about 1.7x the dense
+  model's parameters (see the parameters bullet above). Some of the gap may simply be that
+  extra compute per token. A compute-matched comparison would need the *partition* method
+  (each expert a slice of the dense layer, so top-k of them add up to one dense layer) or a
+  wider dense control.
+- **The MoE memorizes more.** Its gap between validation and training loss is wider than the
+  control's, which is what extra capacity on a ~1M-character corpus should do. Neither run
+  has started to overfit yet (validation is still at its lowest at the end of each), but on
+  this corpus the MoE would get there first.
 
 ## Design choices, and why — tied directly to the session
 
@@ -108,13 +131,15 @@ is built to catch:
 | `test_router_gate_sums_to_one`, `test_bias_affects_selection_not_gate_weight` | the router math itself — gate weights must sum to 1, and the balancing bias must be able to change *who* gets selected without changing *how much* a selected expert's output counts |
 | `test_rebalance_pushes_busy_expert_down_and_idle_expert_up`, `test_rebalance_is_noop_with_no_tokens_seen`, `test_repeated_rebalancing_narrows_an_artificial_imbalance` | the loss-free balancing update itself — direction, magnitude, the no-tokens-seen edge case, and that repeated correction actually knocks a structurally-favored expert out of the top-k, not just nudges a number that never does anything |
 | `test_param_counts_active_less_than_total_for_moe` | the active/total parameter accounting matching a hand-computed `per_expert * (n_experts - top_k) * n_layer` |
+| `test_eval_mode_forward_does_not_feed_balancing` | validation passes leaking into the expert-load window, which would let scoring the model on held-out text move its training-time routing |
+| `test_fixed_val_batches_are_identical_across_calls` | the validation batches changing between evaluations, which would make every validation number incomparable with every other |
 
 ## Running it
 
 ```bash
 pip install -r requirements.txt
 python moe_llm.py                             # trains both phases, writes results/
-python -m pytest tests -q                     # 9 correctness tests, no GPU needed, ~5s
+python -m pytest tests -q                     # 11 correctness tests, no GPU needed, ~5s
 python tools/build_notebook.py --check        # notebook in sync with moe_llm.py?
 python tools/render_numbers.py --check        # README numbers match results/results.json?
 ```

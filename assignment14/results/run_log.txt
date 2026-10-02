@@ -2,39 +2,59 @@ device: cuda
   NVIDIA GeForce RTX 3050 Laptop GPU, 4.3 GB
 corpus: 1,115,394 characters, 65 distinct tokens, 1,059,625 train / 55,769 val
 dense model: 1,809,984 parameters
-[dense] step     0/366  loss 4.1973  26,644 tok/s  8,192/3,000,000 tokens
-[dense] step    50/366  loss 2.6751  111,468 tok/s  417,792/3,000,000 tokens
-[dense] step   100/366  loss 2.5135  114,619 tok/s  827,392/3,000,000 tokens
-[dense] step   150/366  loss 2.4621  115,379 tok/s  1,236,992/3,000,000 tokens
-[dense] step   200/366  loss 2.3628  115,940 tok/s  1,646,592/3,000,000 tokens
-[dense] step   250/366  loss 2.3237  116,451 tok/s  2,056,192/3,000,000 tokens
-[dense] step   300/366  loss 2.2424  116,708 tok/s  2,465,792/3,000,000 tokens
-[dense] step   350/366  loss 2.1720  116,893 tok/s  2,875,392/3,000,000 tokens
-[dense] step   365/366  loss 2.1794  116,903 tok/s  2,998,272/3,000,000 tokens
+[dense] val loss before training: 4.2018
+[dense] step     0/366  loss 4.2004  30,352 tok/s  8,192/3,000,000 tokens
+[dense] step    49/366  loss 2.6659  val 2.6702  121,512 tok/s  409,600/3,000,000 tokens
+[dense] step    99/366  loss 2.5184  val 2.5176  125,342 tok/s  819,200/3,000,000 tokens
+[dense] step   149/366  loss 2.4373  val 2.4513  126,086 tok/s  1,228,800/3,000,000 tokens
+[dense] step   199/366  loss 2.3763  val 2.3683  125,960 tok/s  1,638,400/3,000,000 tokens
+[dense] step   249/366  loss 2.2914  val 2.3060  125,270 tok/s  2,048,000/3,000,000 tokens
+[dense] step   299/366  loss 2.2340  val 2.2424  124,878 tok/s  2,457,600/3,000,000 tokens
+[dense] step   349/366  loss 2.1597  val 2.1663  125,719 tok/s  2,867,200/3,000,000 tokens
+[dense] step   365/366  loss 2.1289  val 2.1491  125,864 tok/s  2,998,272/3,000,000 tokens
 moe model:   10,073,664 parameters total, 2,995,776 active per token (29.7%)
              5.57x the dense model's total parameters, 1.66x its active parameters
-loss immediately after conversion (before any MoE-phase training): 2.4592  (dense model's final training loss was 2.1794)
-[moe] step     0/732  loss 2.4790  26,488 tok/s  8,192/6,000,000 tokens
-[moe] step    50/732  loss 2.1548  27,869 tok/s  417,792/6,000,000 tokens
-[moe] step   100/732  loss 2.0492  28,619 tok/s  827,392/6,000,000 tokens
-[moe] step   150/732  loss 1.9149  28,125 tok/s  1,236,992/6,000,000 tokens
-[moe] step   200/732  loss 1.8475  28,278 tok/s  1,646,592/6,000,000 tokens
-[moe] step   250/732  loss 1.7951  28,395 tok/s  2,056,192/6,000,000 tokens
-[moe] step   300/732  loss 1.6647  28,794 tok/s  2,465,792/6,000,000 tokens
-[moe] step   350/732  loss 1.7040  28,888 tok/s  2,875,392/6,000,000 tokens
-[moe] step   400/732  loss 1.6347  29,067 tok/s  3,284,992/6,000,000 tokens
-[moe] step   450/732  loss 1.5994  29,145 tok/s  3,694,592/6,000,000 tokens
-[moe] step   500/732  loss 1.5422  29,305 tok/s  4,104,192/6,000,000 tokens
-[moe] step   550/732  loss 1.5578  29,423 tok/s  4,513,792/6,000,000 tokens
-[moe] step   600/732  loss 1.5264  29,533 tok/s  4,923,392/6,000,000 tokens
-[moe] step   650/732  loss 1.4552  29,609 tok/s  5,332,992/6,000,000 tokens
-[moe] step   700/732  loss 1.4968  29,688 tok/s  5,742,592/6,000,000 tokens
-[moe] step   731/732  loss 1.4644  29,731 tok/s  5,996,544/6,000,000 tokens
+val loss: dense model at the end of run 1 2.1491 -> MoE right after conversion 2.4700
+[moe] val loss before training: 2.4700
+[moe] step     0/732  loss 2.4607  29,988 tok/s  8,192/6,000,000 tokens
+[moe] step    49/732  loss 2.1111  val 2.1497  31,277 tok/s  409,600/6,000,000 tokens
+[moe] step    99/732  loss 2.0408  val 2.0663  31,400 tok/s  819,200/6,000,000 tokens
+[moe] step   149/732  loss 1.8859  val 1.9966  31,430 tok/s  1,228,800/6,000,000 tokens
+[moe] step   199/732  loss 1.8226  val 1.9474  31,419 tok/s  1,638,400/6,000,000 tokens
+[moe] step   249/732  loss 1.7958  val 1.8845  31,271 tok/s  2,048,000/6,000,000 tokens
+[moe] step   299/732  loss 1.7405  val 1.8501  31,250 tok/s  2,457,600/6,000,000 tokens
+[moe] step   349/732  loss 1.6570  val 1.8078  31,182 tok/s  2,867,200/6,000,000 tokens
+[moe] step   399/732  loss 1.6142  val 1.7812  31,183 tok/s  3,276,800/6,000,000 tokens
+[moe] step   449/732  loss 1.6117  val 1.7527  31,177 tok/s  3,686,400/6,000,000 tokens
+[moe] step   499/732  loss 1.5337  val 1.7354  31,178 tok/s  4,096,000/6,000,000 tokens
+[moe] step   549/732  loss 1.5535  val 1.7212  31,172 tok/s  4,505,600/6,000,000 tokens
+[moe] step   599/732  loss 1.5650  val 1.7158  31,166 tok/s  4,915,200/6,000,000 tokens
+[moe] step   649/732  loss 1.5163  val 1.6958  31,161 tok/s  5,324,800/6,000,000 tokens
+[moe] step   699/732  loss 1.4545  val 1.6859  31,160 tok/s  5,734,400/6,000,000 tokens
+[moe] step   731/732  loss 1.4677  val 1.6757  31,160 tok/s  5,996,544/6,000,000 tokens
+[dense_continued] val loss before training: 2.1491
+[dense_continued] step     0/732  loss 2.1034  122,834 tok/s  8,192/6,000,000 tokens
+[dense_continued] step    49/732  loss 2.0666  val 2.1153  132,142 tok/s  409,600/6,000,000 tokens
+[dense_continued] step    99/732  loss 2.0370  val 2.0668  130,047 tok/s  819,200/6,000,000 tokens
+[dense_continued] step   149/732  loss 1.9329  val 2.0285  129,195 tok/s  1,228,800/6,000,000 tokens
+[dense_continued] step   199/732  loss 1.8983  val 1.9998  129,709 tok/s  1,638,400/6,000,000 tokens
+[dense_continued] step   249/732  loss 1.8658  val 1.9509  129,242 tok/s  2,048,000/6,000,000 tokens
+[dense_continued] step   299/732  loss 1.8369  val 1.9269  128,961 tok/s  2,457,600/6,000,000 tokens
+[dense_continued] step   349/732  loss 1.7788  val 1.8872  128,682 tok/s  2,867,200/6,000,000 tokens
+[dense_continued] step   399/732  loss 1.7244  val 1.8670  128,584 tok/s  3,276,800/6,000,000 tokens
+[dense_continued] step   449/732  loss 1.7192  val 1.8366  128,667 tok/s  3,686,400/6,000,000 tokens
+[dense_continued] step   499/732  loss 1.6594  val 1.8198  128,644 tok/s  4,096,000/6,000,000 tokens
+[dense_continued] step   549/732  loss 1.6553  val 1.7984  128,793 tok/s  4,505,600/6,000,000 tokens
+[dense_continued] step   599/732  loss 1.6689  val 1.7883  128,952 tok/s  4,915,200/6,000,000 tokens
+[dense_continued] step   649/732  loss 1.6364  val 1.7691  128,313 tok/s  5,324,800/6,000,000 tokens
+[dense_continued] step   699/732  loss 1.5693  val 1.7521  128,109 tok/s  5,734,400/6,000,000 tokens
+[dense_continued] step   731/732  loss 1.5823  val 1.7407  128,093 tok/s  5,996,544/6,000,000 tokens
 wrote D:\schoolofai\schoolofai_subbu\assignment14\results\results.json
 wrote results/loss_curves.png
 wrote results/expert_balance.png
 
-| run | mode | params (total/active) | steps | final loss | min loss | tok/s |
-|---|---|---|---|---|---|---|
-| dense | dense | 1,809,984 / 1,809,984 | 366 | 2.1794 | 2.1367 | 116,903 |
-| moe | moe | 10,073,664 / 2,995,776 | 732 | 1.4644 | 1.4130 | 29,731 |
+| run | params (total/active) | tokens | final train loss | final val loss | tok/s |
+|---|---|---|---|---|---|
+| dense | 1,809,984 / 1,809,984 | 2,998,272 | 2.1289 | 2.1491 | 125,864 |
+| moe | 10,073,664 / 2,995,776 | 5,996,544 | 1.4677 | 1.6757 | 31,160 |
+| dense_continued | 1,809,984 / 1,809,984 | 5,996,544 | 1.5823 | 1.7407 | 128,093 |
